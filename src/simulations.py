@@ -470,8 +470,6 @@ class gadget_simulation:
         gen_merger_animation(self,numproc=numproc,fps=fps,ids=ids,useminpot=useminpot,verbose=verbose)
 
 
-
-
     # KETJU binaries
     def plot_bhbinarypars(self,binaries=None):
 
