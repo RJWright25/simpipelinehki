@@ -93,7 +93,7 @@ def basic_halofinder(snapshot,delta=200,useminpot=False,verbose=False):
             os.remove(logging_folder+file)
 
     logging_name=logging_folder+f'halofinder_{str(snapshot.snapshot_idx).zfill(3)}.log'
-    logging.basicConfig(filename=logging_name level=logging.INFO)
+    logging.basicConfig(filename=logging_name, level=logging.INFO)
 
 
     logging.info(f'')

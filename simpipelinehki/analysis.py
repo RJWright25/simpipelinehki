@@ -134,7 +134,7 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
             os.remove(logging_folder+file)
 
     logging_name=logging_folder+f'galaxies_{str(snapshot.snapshot_idx).zfill(3)}.log'
-    logging.basicConfig(filename=logging_name level=logging.INFO)
+    logging.basicConfig(filename=logging_name, level=logging.INFO)
 
     logging.info(f'')
     logging.info(f'************{datetime.now()}************')
