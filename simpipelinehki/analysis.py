@@ -140,16 +140,16 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
     logging.info(f'************{datetime.now()}************')
     logging.info(f'')
 
-    logging.info(f'===========================================================================================')
+    logging.info(f'===================================================================================================================')
     logging.info(f'Characterising galaxies in snapshot {snapshot.snapshot_file}...')
-    logging.info(f'===========================================================================================')
+    logging.info(f'===================================================================================================================')
     logging.info()
 
 
     if verbose:
-        print(f'===========================================================================================')
+        print(f'===================================================================================================================')
         print(f'Characterising galaxies in snapshot {snapshot.snapshot_file}...')
-        print(f'===========================================================================================')
+        print(f'===================================================================================================================')
         print()
 
     t0=time.time()
@@ -435,7 +435,7 @@ def stack_galaxies_worker(snaplist,haloes,iproc,shells_kpc=None,useminpot=False,
     #initialise the output
     isnap_outputs=[]
     #for each snapshot in the list, find the haloes
-    print(f'Analysing galaxies in snaps {snaplist} snapshots for process {iproc}...')
+    print(f'Analysing galaxies in {len(snaplist)} snapshots for process {iproc}...')
     for isnap,snapshot in enumerate(snaplist):
         print(f'Analysing galaxies in snapshot {snapshot.snapshot_file} for process {iproc}... [snap {isnap+1}/{len(snaplist)} for iproc {iproc}]')
         isnap_gals=galaxy_analysis(snapshot=snapshot,haloes=haloes,shells_kpc=shells_kpc,useminpot=useminpot,rfac_offset=rfac_offset,verbose=verbose)
