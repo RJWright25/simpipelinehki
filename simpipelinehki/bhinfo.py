@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 
 # This function is used to postprocess the blackhole details files. (credit: Shihong Liao reprocess.py)
-def postprocess_bhdata(path=None):
+def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
     """
     Postprocesses the black hole details files.
 
@@ -95,16 +95,16 @@ def postprocess_bhdata(path=None):
         BHDetails[f"{BHIDs[ibh]}"].reset_index(inplace=True,drop=True)
         
     # Save files
-    if not os.path.exists('blackhole_details_post_processing'):
-        os.mkdir('blackhole_details_post_processing')
+    if not os.path.exists(f'{outpath}'):
+        os.mkdir(f'{outpath}')
     else:
         # Remove all files in the directory
-        files = os.listdir('blackhole_details_post_processing')
+        files = os.listdir(f'{outpath}')
         for file in files:
-            os.remove(f'blackhole_details_post_processing/{file}')
+            os.remove(f'{outpath}/{file}')
 
     for ibh in range(BHNum):
-        fname = f'blackhole_details_post_processing/BH_{BHIDs[ibh]}.txt'
+        fname = f'{outpath}/BH_{BHIDs[ibh]}.txt'
         BHDetails[str(BHIDs[ibh])].to_csv(fname, sep=' ', index=False, header=False)
 
     return BHDetails
