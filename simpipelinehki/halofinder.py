@@ -96,7 +96,7 @@ def basic_halofinder(snapshot,delta=200,useminpot=False,verbose=False):
     logging.info(f'===================================================================================================================')
     logging.info(f'Finding haloes in snapshot {snapshot.snapshot_file}...')
     logging.info(f'===================================================================================================================')
-    logging.info()
+    logging.info(f'')
 
 
     if verbose:

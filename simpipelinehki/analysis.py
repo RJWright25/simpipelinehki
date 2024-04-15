@@ -143,7 +143,7 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
     logging.info(f'===================================================================================================================')
     logging.info(f'Characterising galaxies in snapshot {snapshot.snapshot_file}...')
     logging.info(f'===================================================================================================================')
-    logging.info()
+    logging.info(f'')
 
 
     if verbose:
