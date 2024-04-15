@@ -131,7 +131,7 @@ def basic_halofinder(snapshot,delta=200,useminpot=False,verbose=True):
             #find the average velocity of these particles weighted by their mass
             velcop = np.average(centralstar.loc[:,['Velocities_x','Velocities_y','Velocities_z']].values,weights=centralstar['Masses'].values,axis=0)
         else:
-            print('No potential data found for star particles. Using BH location as halo minpot.')
+            # print('No potential data found for star particles. Using BH location as halo minpot.')
             poscop = np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])
             
             #select DM particles within 2 kpc of the BH
@@ -177,7 +177,7 @@ def basic_halofinder(snapshot,delta=200,useminpot=False,verbose=True):
         halo_output[f'Halo_M_Crit{delta}'][ibh]=sorted_cummass[iradius]
         halo_output[f'Halo_R_Crit{delta}'][ibh]=sorted_radius[iradius]
 
-        print(f'Halo {bhlocs["ParticleIDs"].values[ibh]} found with mass = {halo_output[f"Halo_M_Crit{delta}"][ibh]:.2e} Msun and radius = {halo_output[f"Halo_R_Crit{delta}"][ibh]:.2f} kpc.')
+        print(f'Halo {bhlocs["ParticleIDs"].values[ibh]} found at snap {snapshot.snapshot_idx} with mass = {halo_output[f"Halo_M_Crit{delta}"][ibh]:.2e} Msun and radius = {halo_output[f"Halo_R_Crit{delta}"][ibh]:.2f} kpc.')
 
     print(f'----> Halo finding complete for {snapshot.snapshot_file.split("/")[-1]} in {time.time()-t0:.2f} seconds.')
     if verbose:
