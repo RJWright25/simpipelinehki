@@ -253,7 +253,7 @@ class gadget_simulation:
         #load in outputs and save
         print()
         print('Consolidating halo outputs...')
-        chunk_fnames=[os.getcwd()+'/tmphalo/'+file for file in os.listdir(os.getcwd()+'/tmphalo/')]
+        chunk_fnames=[os.getcwd()+'/outputs/haloes/'+file for file in os.listdir(os.getcwd()+'/outputs/haloes/')]
         chunk_dfs=[pd.read_hdf(fname,key='chunk') for fname in chunk_fnames]
         haloes=pd.concat(chunk_dfs)
         haloes.sort_values(by=['Time','ID'],ascending=[True,True],inplace=True)
