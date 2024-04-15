@@ -11,7 +11,7 @@
 import os
 import time
 import logging
-import datetime
+from datetime import datetime
 import numpy as np
 import pandas as pd
 import astropy.units as apy_units
