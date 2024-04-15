@@ -10,6 +10,8 @@
 
 import os
 import time
+import logging
+import datetime
 import numpy as np
 import pandas as pd
 import astropy.units as apy_units
@@ -121,6 +123,29 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
 
     """ 
     
+    logging_folder=f'{os.getcwd()}/logs/'
+    if not os.path.exists(logging_folder):
+        os.mkdir(logging_folder)
+    logging_folder=f'{os.getcwd()}/logs/galaxies/'
+    if not os.path.exists(logging_folder):
+        os.mkdir(logging_folder)
+    else:
+        for file in os.listdir(logging_folder):
+            os.remove(logging_folder+file)
+
+    logging_name=logging_folder+f'galaxies_{str(snapshot.snapshot_idx).zfill(3)}.log'
+    logging.basicConfig(filename=logging_name level=logging.INFO)
+
+    logging.info(f'')
+    logging.info(f'************{datetime.now()}************')
+    logging.info(f'')
+
+    logging.info(f'===========================================================================================')
+    logging.info(f'Characterising galaxies in snapshot {snapshot.snapshot_file}...')
+    logging.info(f'===========================================================================================')
+    logging.info()
+
+
     if verbose:
         print(f'===========================================================================================')
         print(f'Characterising galaxies in snapshot {snapshot.snapshot_file}...')
@@ -136,9 +161,12 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
     isnap=snapshot.snapshot_idx
     haloes=haloes.loc[haloes['isnap'].values==isnap,:]
     haloes.reset_index(inplace=True,drop=True)
+    numhaloes=haloes.shape[0]
     
     if not haloes.shape[0]:
-        print(f'----> No haloes tracked in snapshot {snapshot.snapshot_file.split("/")[-1]}.')
+        logging.info(f'----> No haloes tracked in snapshot {snapshot.snapshot_file.split("/")[-1]}.')
+        if verbose:
+            print(f'----> No haloes tracked in snapshot {snapshot.snapshot_file.split("/")[-1]}.')
     
     #deal with the shells
     if shells_kpc is None: 
@@ -149,10 +177,20 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
         else:shells_kpc_str.append(f'0p{str(int(ishellkpc*100)).zfill(2)}kpc')
     shells_kpc={shell_kpc_str:shell_kpc for shell_kpc_str,shell_kpc in zip(shells_kpc_str,shells_kpc)}
 
+    logging.info(f'There are **{numhaloes}** haloes to use for analysing galaxies in snapshot {snapshot.snapshot_file}.')
+    logging.info(f'')
+    if verbose:
+        
+        print(f'There are **{numhaloes]}** haloes to use for analysing galaxies in snapshot {snapshot.snapshot_file}.')
+        print(f'')
+
     #loop over the haloes
     for ihalo,halo in haloes.iterrows():
+
+        logging.info(f'Considering halo {ihalo+1}/{numhaloes} [{(ihalo+1)/numhaloes*100:.1f}% done with snap] ID={int(halo["ID"])})...')
+
         if verbose:
-            print(f'Considering galaxy {ihalo+1}/{haloes.shape[0]} (ID={int(halo["ID"])})...')
+            print(f'Considering halo {ihalo+1}/{numhaloes} [{(ihalo+1)/numhaloes*100:.1f}% done with snap] ID={int(halo["ID"])})...')
 
         #calculate cap for rhalf if the halo is close to another halo
         r_to_closest_halo=1e5
@@ -209,8 +247,7 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
                 galaxy_output[f're{phasestr}_sphere']=np.nan
                 
         if doanalysis:
-            if verbose:
-                print(f'Effective half-mass radii of stars and gas calculated for galaxy {halo["ID"]}.')
+
             #fix coordinates with halo
             galaxy['Coordinates_xrel']=galaxy['Coordinates_x'].values-center[0].value
             galaxy['Coordinates_yrel']=galaxy['Coordinates_y'].values-center[1].value
@@ -334,9 +371,20 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
             galaxy_output=pd.Series(galaxy_output).to_frame().T
             galaxy_output_all.append(galaxy_output)
 
-        else:
+            #logging
+            logging.info(f'--> Galaxy {int(halo["ID"])} analysed at snap {snapshot.snapshot_idx}.')
+            logging.info(f"--> Runtime: {time.time()-t0:.2f} seconds.")
+            logging.info(f'')
+
             if verbose:
-                print(f'No baryonic particles to analyse in galaxy {int(halo["ID"])}.')
+                print(f'--> Galaxy {int(halo["ID"])} analysed at snap {snapshot.snapshot_idx}.')
+                print(f"--> Runtime: {time.time()-t0:.2f} seconds.")
+                print()
+
+        else:
+            logging.info(f'--> No baryonic particles to analyse in galaxy {int(halo["ID"])}.')
+            if verbose:
+                print(f'--> No baryonic particles to analyse in galaxy {int(halo["ID"])}.')
 
             galaxy_output_all.append(pd.Series(halo).to_frame().T)
             continue
@@ -346,11 +394,12 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
         galaxies=pd.concat(galaxy_output_all)
         galaxies.reset_index(drop=True,inplace=True)
     else:
-        print(f'No galaxies found in snapshot {snapshot.snapshot_file.split("/")[-1]}.')
+        logging.info(f'No haloes found in snapshot {snapshot.snapshot_file.split("/")[-1]}.')
+        print(f'No haloes found in snapshot {snapshot.snapshot_file.split("/")[-1]}.')
         galaxies=pd.DataFrame()
     
-    print(f'----> Galaxy characterisation for {snapshot.snapshot_file.split("/")[-1]} complete in {time.time()-t0:.2f} seconds.')
     if verbose:
+        print(f'----> Galaxy characterisation for {snapshot.snapshot_file.split("/")[-1]} complete in {time.time()-t0:.2f} seconds.')
         print()
 
     return galaxies
@@ -385,14 +434,16 @@ def stack_galaxies_worker(snaplist,haloes,iproc,shells_kpc=None,useminpot=False,
 
     #initialise the output
     isnap_outputs=[]
-    #loop over the snapshots
-    for snapshot in snaplist:
+    #for each snapshot in the list, find the haloes
+    print(f'Analysing galaxies in snaps {snaplist} snapshots for process {iproc}...')
+    for isnap,snapshot in enumerate(snaplist):
+        print(f'Analysing galaxies in snapshot {snapshot.snapshot_file} for process {iproc}... [snap {isnap+1}/{len(snaplist)} for iproc {iproc}]')
         isnap_gals=galaxy_analysis(snapshot=snapshot,haloes=haloes,shells_kpc=shells_kpc,useminpot=useminpot,rfac_offset=rfac_offset,verbose=verbose)
         isnap_outputs.append(isnap_gals)
     
     #concatenate the outputs
     isnap_gals=pd.concat(isnap_outputs)
-    fname=os.getcwd()+f'/tmpgalx/chunk_{str(iproc).zfill(3)}.hdf5'
+    fname=os.getcwd()+f'/outputs/galaxies/chunk_{str(iproc).zfill(3)}.hdf5'
 
     #write the output to a file
     if os.path.exists(fname):

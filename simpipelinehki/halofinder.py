@@ -11,12 +11,14 @@
 
 import os
 import time
+import logging
+import datetime
 import numpy as np
 import pandas as pd
 import astropy.units as apy_units
 
 # This function is used to find haloes in a snapshot.
-def basic_halofinder(snapshot,delta=200,useminpot=False,verbose=True):
+def basic_halofinder(snapshot,delta=200,useminpot=False,verbose=False):
 
     """
     Basic halo finder for idealised/small hydro runs. Uses BH locations to find halo centres,
@@ -80,6 +82,37 @@ def basic_halofinder(snapshot,delta=200,useminpot=False,verbose=True):
     t0=time.time()
     cosmo=snapshot.cosmology
 
+    logging_folder=f'{os.getcwd()}/logs/'
+    if not os.path.exists(logging_folder):
+        os.mkdir(logging_folder)
+    logging_folder=f'{os.getcwd()}/logs/haloes/'
+    if not os.path.exists(logging_folder):
+        os.mkdir(logging_folder)
+    else:
+        for file in os.listdir(logging_folder):
+            os.remove(logging_folder+file)
+
+    logging_name=logging_folder+f'halofinder_{str(snapshot.snapshot_idx).zfill(3)}.log'
+    logging.basicConfig(filename=logging_name level=logging.INFO)
+
+
+    logging.info(f'')
+    logging.info(f'************{datetime.now()}************')
+    logging.info(f'')
+
+    logging.info(f'===========================================================================================')
+    logging.info(f'Finding haloes in snapshot {snapshot.snapshot_file}...')
+    logging.info(f'===========================================================================================')
+    logging.info()
+
+
+    if verbose:
+        print(f'===========================================================================================')
+        print(f'Finding haloes in snapshot {snapshot.snapshot_file}...')
+        print(f'===========================================================================================')
+        print()
+
+    t0=time.time()
     #create a pandas dataframe to store the halo properties
     columns=['Time','isnap','ID','x','y','z','BH_Mass','xminpot','yminpot','zminpot','vx','vy','vz',f'Halo_M_Crit{delta}',f'Halo_R_Crit{delta}']
     
@@ -87,7 +120,9 @@ def basic_halofinder(snapshot,delta=200,useminpot=False,verbose=True):
     try:
         bhlocs=snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','ParticleIDs'],types=5)
     except:
-        print(f'No BHs found in snapshot {snapshot.snapshot_file}.')
+        logging.info(f'No BHs found in snapshot {snapshot.snapshot_file}. Exiting...')
+        if verbose:
+            print(f'No BHs found in snapshot {snapshot.snapshot_file}. Exiting...')
         return pd.DataFrame(columns=columns)
     
     bhlocs.sort_values(by='ParticleIDs',ascending=True,inplace=True)
@@ -95,10 +130,16 @@ def basic_halofinder(snapshot,delta=200,useminpot=False,verbose=True):
     numbh=bhlocs.shape[0]
     halo_output={column:np.zeros(bhlocs['Masses'].shape[0])+np.nan for column in columns}
 
+    logging.info(f'There are **{numbh}** BHs to use for finding haloes in snapshot {snapshot.snapshot_file}.')
+    logging.info(f'')
+
     #for each "galaxy"
     for ibh in range(numbh):
+        logging.info(f'Considering BH {ibh+1}/{numbh} [{(ibh+1)/numbh*100:.1f}% done with snap] (ID={bhlocs["ParticleIDs"].values[ibh]})...')
+
         if verbose:
-            print(f'Considering BH {ibh+1}/{numbh} (ID={bhlocs["ParticleIDs"].values[ibh]})...')
+            print(f'Considering BH {ibh+1}/{numbh} [{(ibh+1)/numbh*100:.1f}% done with snap] (ID={bhlocs["ParticleIDs"].values[ibh]})...')
+
 
         ibh_row=bhlocs.iloc[ibh]
         #save the snapshot number and time
@@ -131,12 +172,11 @@ def basic_halofinder(snapshot,delta=200,useminpot=False,verbose=True):
             #find the average velocity of these particles weighted by their mass
             velcop = np.average(centralstar.loc[:,['Velocities_x','Velocities_y','Velocities_z']].values,weights=centralstar['Masses'].values,axis=0)
         else:
-            # print('No potential data found for star particles. Using BH location as halo minpot.')
             poscop = np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])
             
             #select DM particles within 2 kpc of the BH
             centraldm = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses'],types=1,center=poscop*apy_units.kpc,radius=2*apy_units.kpc)
-            if centraldm.shape[0]==0:
+            if centraldm.shape[0]==0 and verbose:
                 print('No DM particles found within 2 kpc of the BH. Using BH velocity as halo vel.')
                 velcop = np.array([ibh_row['Velocities_x'],ibh_row['Velocities_y'],ibh_row['Velocities_z']])
             else:
@@ -158,9 +198,6 @@ def basic_halofinder(snapshot,delta=200,useminpot=False,verbose=True):
             center=apy_units.Quantity([halo_output[f'{x}minpot'][ibh] for x in 'xyz'],unit='kpc')
         else:
             center=apy_units.Quantity([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']],unit='kpc')
-        
-        if verbose:
-            print('Finding virial quantities...')
 
         #get particle data within 1000 kpc of the center and sort by radius
         pdata_m200=snapshot.get_particle_data(keys=['Coordinates','Masses'],types=[0,1,4,5],center=center,radius=500*apy_units.kpc)
@@ -177,10 +214,21 @@ def basic_halofinder(snapshot,delta=200,useminpot=False,verbose=True):
         halo_output[f'Halo_M_Crit{delta}'][ibh]=sorted_cummass[iradius]
         halo_output[f'Halo_R_Crit{delta}'][ibh]=sorted_radius[iradius]
 
-        print(f'Halo {bhlocs["ParticleIDs"].values[ibh]} found at snap {snapshot.snapshot_idx} with mass = {halo_output[f"Halo_M_Crit{delta}"][ibh]:.2e} Msun and radius = {halo_output[f"Halo_R_Crit{delta}"][ibh]:.2f} kpc.')
+        #logging
+        logging.info(f'--> Halo {bhlocs["ParticleIDs"].values[ibh]} analysed at snap {snapshot.snapshot_idx} -- mass = {halo_output[f"Halo_M_Crit{delta}"][ibh]:.2e} Msun and radius = {halo_output[f"Halo_R_Crit{delta}"][ibh]:.2f} kpc.')
+        logging.info(f"--> Runtime: {time.time()-t0:.2f} seconds.")
+        logging.info(f'')
 
-    print(f'----> Halo finding complete for {snapshot.snapshot_file.split("/")[-1]} in {time.time()-t0:.2f} seconds.')
+        if verbose:
+            print(f'--> Halo {bhlocs["ParticleIDs"].values[ibh]} analysed at snap {snapshot.snapshot_idx} -- mass = {halo_output[f"Halo_M_Crit{delta}"][ibh]:.2e} Msun and radius = {halo_output[f"Halo_R_Crit{delta}"][ibh]:.2f} kpc.')
+            print(f"--> Runtime: {time.time()-t0:.2f} seconds.")
+            print()
+
+    logging.info(f'----> Halo finding complete for {snapshot.snapshot_file.split("/")[-1]} in {time.time()-t0:.2f} seconds.')
+    logging.info(f'')
+
     if verbose:
+        print(f'----> Halo finding complete for {snapshot.snapshot_file.split("/")[-1]} in {time.time()-t0:.2f} seconds.')
         print()
     
     #return the dataframe
@@ -213,17 +261,20 @@ def stack_haloes_worker(snaplist,iproc,delta=200,useminpot=False,verbose=False):
     None (writes the output to a file).
 
     """
+
     #initialize the output
     isnap_outputs=[]
 
     #for each snapshot in the list, find the haloes
-    for snapshot in snaplist:
+    print(f'Finding haloes in snaps {snaplist} snapshots for process {iproc}...')
+    for isnap,snapshot in enumerate(snaplist):
+        print(f'Finding haloes in snapshot {snapshot.snapshot_file} for process {iproc}... [snap {isnap+1}/{len(snaplist)} for iproc {iproc}]')
         isnap_haloes=basic_halofinder(snapshot=snapshot,delta=delta,useminpot=useminpot,verbose=verbose)
         isnap_outputs.append(isnap_haloes)
 
     #concatenate the outputs
     isnap_haloes=pd.concat(isnap_outputs)
-    fname=os.getcwd()+f'/tmphalo/chunk_{str(iproc).zfill(3)}.hdf5'
+    fname=os.getcwd()+f'/outputs/haloes/chunk_{str(iproc).zfill(3)}.hdf5'
 
     #write the output to a file
     if os.path.exists(fname):

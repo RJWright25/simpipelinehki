@@ -224,12 +224,15 @@ class gadget_simulation:
         t0stack=time.time()
 
         #make a temporary directory for the outputs
-        if not os.path.exists(os.getcwd()+'/tmphalo/'):
-            os.mkdir(os.getcwd()+'/tmphalo/')
+        if not os.path.exists(os.getcwd()+'/outputs/'):
+            os.mkdir(os.getcwd()+'/outputs/')
+        
+        if not os.path.exists(os.getcwd()+'/outputs/haloes/'):
+            os.mkdir(os.getcwd()+'/outputs/haloes/')
         else:
-            for fname in os.listdir(os.getcwd()+'/tmphalo/'):
-                if os.path.exists(os.getcwd()+'/tmphalo/'+fname):
-                    os.remove(os.getcwd()+'/tmphalo/'+fname)
+            for fname in os.listdir(os.getcwd()+'/outputs/haloes/'):
+                if os.path.exists(os.getcwd()+'/outputs/haloes/'+fname):
+                    os.remove(os.getcwd()+'/outputs/haloes/'+fname)
 
         #split the snapshots into chunks for multiprocessing
         snapshot_list=self.snapshots
@@ -238,9 +241,6 @@ class gadget_simulation:
         procs=[]
         for iproc in range(numproc):
             snapshots_ichunk=snapshot_chunks[iproc]
-            if verbose:
-                print(f'Process {iproc} getting snaps: ', [snapshot.snapshot_idx for snapshot in snapshots_ichunk])
-            # instantiating process with arguments
             proc = multiprocessing.Process(target=stack_haloes_worker, args=(snapshots_ichunk,iproc,delta,useminpot,verbose))
             procs.append(proc)
             proc.start()
@@ -301,12 +301,16 @@ class gadget_simulation:
         t0stack=time.time()
 
         #make a temporary directory for the outputs
-        if not os.path.exists(os.getcwd()+'/tmpgalx/'):
-            os.mkdir(os.getcwd()+'/tmpgalx/')
+        if not os.path.exists(os.getcwd()+'/outputs/'):
+            os.mkdir(os.getcwd()+'/outputs/')
+        
+        if not os.path.exists(os.getcwd()+'/outputs/galaxies/'):
+            os.mkdir(os.getcwd()+'/outputs/galaxies/')
         else:
-            for fname in os.listdir(os.getcwd()+'/tmpgalx/'):
-                if os.path.exists(os.getcwd()+'/tmpgalx/'+fname):
-                    os.remove(os.getcwd()+'/tmpgalx/'+fname)
+            for fname in os.listdir(os.getcwd()+'/outputs/galaxies/'):
+                if os.path.exists(os.getcwd()+'/outputs/galaxies/'+fname):
+                    os.remove(os.getcwd()+'/outputs/galaxies/'+fname)
+
         
         #split the snapshots into chunks for multiprocessing
         snapshot_list=self.snapshots
@@ -318,8 +322,6 @@ class gadget_simulation:
         for iproc in range(numproc):
             time.sleep(0.1)
             snapshots_ichunk=snapshot_chunks[iproc]
-            if verbose:
-                print(f'Process {iproc} getting snaps: ', [snapshot.snapshot_idx for snapshot in snapshots_ichunk])
             proc = multiprocessing.Process(target=stack_galaxies_worker, args=(snapshots_ichunk,haloes,iproc,shells_kpc,useminpot,rfac_offset,verbose))
             procs.append(proc)
             proc.start()
@@ -332,7 +334,7 @@ class gadget_simulation:
         #load in outputs and save
         print()
         print('Consolidating galaxy outputs...')
-        chunk_fnames=[os.getcwd()+'/tmpgalx/'+file for file in os.listdir(os.getcwd()+'/tmpgalx/')]
+        chunk_fnames=[os.getcwd()+'/outputs/galaxies/'+file for file in os.listdir(os.getcwd()+'/outputs/galaxies/')]
         chunk_dfs=[pd.read_hdf(fname,key='chunk') for fname in chunk_fnames]
         galaxies=pd.concat(chunk_dfs)
         galaxies.sort_values(by=['Time','ID'],ascending=[True,True],inplace=True)
