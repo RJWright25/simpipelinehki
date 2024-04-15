@@ -181,7 +181,7 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
     logging.info(f'')
     if verbose:
         
-        print(f'There are **{numhaloes]}** haloes to use for analysing galaxies in snapshot {snapshot.snapshot_file}.')
+        print(f'There are **{numhaloes}** haloes to use for analysing galaxies in snapshot {snapshot.snapshot_file}.')
         print(f'')
 
     #loop over the haloes
