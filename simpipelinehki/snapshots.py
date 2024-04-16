@@ -692,7 +692,10 @@ def stack_kdtrees_worker(snaplist,iproc,ptypes='all',verbose=False):
     
     #log file
     logfile=f'logs/kdtree_iproc{str(iproc).zfill(3)}.log'
-    snaplist_idxs=[snapshot.snapshot_idx for snapshot in snaplist]
+    if not os.path.exists('logs'):
+        os.makedirs('logs')
+    if os.path.exists(logfile):
+        os.remove(logfile)
 
     logging.basicConfig(filename=logfile, level=logging.INFO)
 
@@ -701,14 +704,14 @@ def stack_kdtrees_worker(snaplist,iproc,ptypes='all',verbose=False):
     logging.info(f'')
 
     logging.info(f'===================================================================================================================')
-    logging.info(f'Making KDtrees for snapshots {snaplist_idxs}... (iproc {iproc}) ...')
+    logging.info(f'Making KDtrees for snapshots {[snapshot.snapshot_idx for snapshot in snaplist]}... (iproc {iproc}) ...')
     logging.info(f'===================================================================================================================')
     logging.info(f'')
 
 
     if verbose:
         print(f'===================================================================================================================')
-        print(f'Making KDtrees for snapshots {snapshot.snaplist_idxs} (iproc {iproc}) ...')
+        print(f'Making KDtrees for snapshots {[snapshot.snapshot_idx for snapshot in snaplist]} (iproc {iproc}) ...')
         print(f'===================================================================================================================')
         print()
 
