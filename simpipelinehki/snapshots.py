@@ -672,7 +672,7 @@ def make_particle_kdtree(snapshot,ptypes='all'):
 
 
 
-def stack_kdtrees_worker(snaplist,ptypes='all',iproc,verbose=False):
+def stack_kdtrees_worker(snaplist,iproc,ptypes='all',verbose=False):
     """
     Function to stack the KDTree for particle data.
 
@@ -718,7 +718,13 @@ def stack_kdtrees_worker(snaplist,ptypes='all',iproc,verbose=False):
         logging.info(f'Processing snapshot {snapshot.snapshot_idx}... [runtime {time.time()-t0:.2f} s]')
         kdtree=make_particle_kdtree(snapshot,ptypes=ptypes)
 
-        with open(f'kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl', 'wb') as kdfile:
+        if not os.path.exists('outputs'):
+            os.makedirs('outputs')
+
+        if not os.path.exists('outputs/kdtrees'):
+            os.makedirs('outputs/kdtrees')
+
+        with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl', 'wb') as kdfile:
             pickle.dump(kdtree, kdfile)
         kdfile.close()
 

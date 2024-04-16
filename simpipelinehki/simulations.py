@@ -164,7 +164,7 @@ class gadget_simulation:
         procs=[]
         for iproc in range(numproc):
             snapshots_ichunk=snapshot_chunks[iproc]
-            proc = multiprocessing.Process(target=stack_kdtrees_worker, args=(snapshots_ichunk,ptypes,iproc,verbose))
+            proc = multiprocessing.Process(target=stack_kdtrees_worker, args=(snapshots_ichunk,iproc,ptypes,verbose))
             procs.append(proc)
             proc.start()
 
