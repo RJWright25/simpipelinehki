@@ -732,7 +732,7 @@ def stack_kdtrees_worker(snaplist,iproc,ptypes='all',verbose=False):
         kdfile.close()
 
     
-    logging.info(f'Finished making KDtrees for snapshots {snaplist_idxs} [runtime {time.time()-t0:.2f} s]')
+    logging.info(f'Finished making KDtrees for snapshots {[snapshot.snapshot_idx for snapshot in snaplist]} [runtime {time.time()-t0:.2f} s]')
 
 
 
