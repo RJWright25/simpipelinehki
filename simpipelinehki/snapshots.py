@@ -14,12 +14,14 @@
 import os
 import time
 import h5py
+import pickle
 import numpy as np
 import pandas as pd
 import astropy.units as apy_units
 import astropy.constants as apy_const
 import astropy.cosmology as apy_cosmo
 import multiprocessing
+from scipy.spatial import cKDTree
 
 # Import relevant functions from other files
 from .tools import *
@@ -95,14 +97,14 @@ class gadget_idealised_snapshot_hki:
             self.Om0=snapshot['Header'].attrs['Omega0']
             self.hubble=snapshot['Header'].attrs['HubbleParam']
             self.cosmology = apy_cosmo.FlatLambdaCDM(H0=self.hubble*100, Om0=self.Om0)
+        
             self.mass_dm=None#only for cosmological sims
             self.cosmorun=False
             self.XH=0.76
             self.XHe=0.24
         snapshot.close()
 
-        self.haloes=[]
-        self.galaxies=[]
+ 
 
         #these conversions take the GADGET outputs and give them in physical units (as defined below)
         self.conversions={'ParticleIDs': 1,
@@ -135,7 +137,10 @@ class gadget_idealised_snapshot_hki:
         self.derived_fields_available = ['Temperature', 'nH']
         self.derived_fields_ptype={'Temperature': 0,'nH':0}
 
-
+       #initialize the haloes and galaxies lists
+        self.haloes=[]
+        self.galaxies=[]
+        self.particle_kdtree=None
     
     #simple method to list the available particle fields
     def list_particle_fields(self, ptype=0):
@@ -459,18 +464,16 @@ class gadget_cosmo_snapshot_hki:
     def sphere_mask(self, center, radius, ptype=0):
         center = center.to(self.units["Coordinates"]).value
 
-        with h5py.File(self.snapshot_file, 'r') as pfile:
-            rrel = pfile[f'PartType{ptype}']['Coordinates'][:]*self.conversions['Coordinates']-center
-            pfile.close()
+
+        if self.kdtree is None:
+            self.kdtree=make_particle_kdtree(self)
         
-        rrel=np.sqrt(np.sum(rrel**2, axis=1))
-        rargsorted=np.argsort(rrel)
-        rsorted=rrel[rargsorted]
-        lastidx=np.searchsorted(rsorted, radius)
-        mask=np.zeros(rrel.shape[0], dtype=bool)
-        mask[rargsorted[:lastidx]]=True
+        rrel, ridx = self.kdtree.query(center, k=1)
+        mask = rrel < radius
+
         return mask
-    
+
+
     #method to get requested field of particle data (and type) in physical units. return pandas dataframs with the requested field(s) in physical units with a field for the particle type. dynamically allocate memory for the dataframes to avoid memory issues. 
     def get_particle_data(self, keys=None, types=None, center=None, radius=None,subsample=1,verbose=False):
 
@@ -648,3 +651,90 @@ class gadget_cosmo_snapshot_hki:
         fig, ax=render_snap(self,type=type,frame=frame,galaxies=galaxies,useminpot=useminpot,subsample=subsample,verbose=verbose)
         return fig, ax
         
+
+
+
+#KDTrees for particle data
+def make_particle_kdtree(snapshot,verbose):
+    """
+    Function to make a KDTree for the particle data.
+
+    Parameters:
+    -----------
+    snapshot: gadget_cosmo_snapshot_hki
+        The snapshot object to make the KDTree for.
+    verbose: bool
+        If True, print out the time taken to make the KDTree.
+
+    Returns:
+    -----------
+    cKDTree
+        The KDTree for the particle data.
+
+    """
+
+    
+    #initialize the KDTree
+    coordinates=snapshot.get_particle_data(keys=['Coordinates'], types=[0,1,4,5])
+    coordinates=coordinates.loc[:['Coordinates_x','Coordinates_y','Coordinates_z']].values
+
+    kdtree=cKDTree(coordinates)
+
+    return kdtree
+
+
+
+def stack_kdtrees_worker(snaplist,iproc,verbose=False):
+    """
+    Function to stack the KDTree for particle data.
+
+    Parameters:
+    -----------
+    snaplist: list
+        The list of snapshots to stack.
+    ptype: int
+        The particle type to stack.
+
+    Returns:
+    -----------
+    cKDTree
+        The stacked KDTree for the particle data.
+
+    """
+    
+    #log file
+    logfile=f'logs/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.log'
+    snaplist_idxs=[snapshot.snapshot_idx for snapshot in snaplist]
+
+    logging.basicConfig(filename=logfile, level=logging.INFO)
+
+    logging.info(f'')
+    logging.info(f'************{datetime.now()}************')
+    logging.info(f'')
+
+    logging.info(f'===================================================================================================================')
+    logging.info(f'Making KDtrees for snapshots {snaplist_idxs}... (iproc {iproc}) ...')
+    logging.info(f'===================================================================================================================')
+    logging.info(f'')
+
+
+    if verbose:
+        print(f'===================================================================================================================')
+        print(f'Making KDtrees for snapshots {snapshot.snaplist_idxs} (iproc {iproc}) ...')
+        print(f'===================================================================================================================')
+        print()
+
+    t0=time.time()
+
+    for snapshot in snaplist:
+        logging.info(f'Processing snapshot {snapshot.snapshot_idx}... [runtime {time.time()-t0:.2f} s]')
+        kdtree=make_particle_kdtree(snapshot,verbose)
+
+        with open(f'kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl', 'wb') as kdfile:
+            pickle.dump(kdtree, kdfile)
+        kdfile.close()
+
+    
+    logging.info(f'===================================================================================================================')
+    logging.info(f'Finished making KDtrees for snapshots {snaplist_idxs} [runtime {time.time()-t0:.2f} s]')
+

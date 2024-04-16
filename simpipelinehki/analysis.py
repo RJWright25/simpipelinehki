@@ -435,7 +435,6 @@ def stack_galaxies_worker(snaplist,haloes,iproc,shells_kpc=None,useminpot=False,
     #initialise the output
     isnap_outputs=[]
     #for each snapshot in the list, find the haloes
-    print(f'Analysing galaxies in {len(snaplist)} snapshots for process {iproc}...')
     for isnap,snapshot in enumerate(snaplist):
         print(f'Analysing galaxies in snapshot {snapshot.snapshot_file} for process {iproc}... [snap {isnap+1}/{len(snaplist)} for iproc {iproc}]')
         isnap_gals=galaxy_analysis(snapshot=snapshot,haloes=haloes,shells_kpc=shells_kpc,useminpot=useminpot,rfac_offset=rfac_offset,verbose=verbose)

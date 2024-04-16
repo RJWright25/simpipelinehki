@@ -20,6 +20,8 @@ import astropy.units as apy_units
 import astropy.constants as apy_const
 import astropy.cosmology as apy_cosmo
 import multiprocessing
+import logging
+from datetime import datetime
 
 # Import relevant functions from other files
 from .tools import *
@@ -125,6 +127,62 @@ class gadget_simulation:
             return None
         return self.snapshots[idx]
     
+    # Method to generate KD trees for all snapshots
+    def generate_kdtrees(self, numproc=1, verbose=False):
+            
+        """
+        Generate KD trees for all snapshots using multiprocessing.
+
+        Parameters:
+        -----------
+        numproc: int
+            The number of processes to use.
+        verbose: bool
+            If True, print the progress of the KD tree generation.
+
+        """
+
+        print()
+        print(f'===========================================================================================')
+        print(f'Generating KD trees for {len(self.snapshots)} snapshots using {numproc} processes...')
+        print(f'===========================================================================================')
+        print()
+
+        t0stack=time.time()
+
+        #make a directory for the outputs
+        if not os.path.exists(os.getcwd()+'/kdtrees/'):
+            os.mkdir(os.getcwd()+'/kdtrees/')
+        else:
+            for fname in os.listdir(os.getcwd()+'/kdtrees/'):
+                if os.path.exists(os.getcwd()+'/kdtrees/'+fname):
+                    os.remove(os.getcwd()+'/kdtrees/'+fname)
+
+        #split the snapshots into chunks for multiprocessing
+        snapshot_list=self.snapshots
+        snapshot_chunks=split_list(snapshot_list,numproc)
+
+        procs=[]
+        for iproc in range(numproc):
+            snapshots_ichunk=snapshot_chunks[iproc]
+            proc = multiprocessing.Process(target=stack_kdtrees_worker, args=(snapshots_ichunk,iproc,verbose))
+            procs.append(proc)
+            proc.start()
+
+        #complete the processes
+        for proc in procs:
+            proc.join()
+        time.sleep(1)
+
+        print()
+        print(f'----> KD tree generation for {len(self.snapshots)} snaps complete in {time.time()-t0stack:.2f} seconds.')
+
+        kdtree_list=[]
+        for snapshot in self.snapshots:
+            with open(os.getcwd()+'/kdtrees/kdtree_'+str(snapshot.snapshot_idx).zfill(3)+'.pkl','rb') as kdfile:
+                kdtree_list.append(pickle.load(kdfile))
+
+        self.kdtrees=kdtree_list
     
     # Method to load the black hole details from a directory
     def load_bhdata(self,path=None,bhids=None,subsample=1):
@@ -372,6 +430,9 @@ class gadget_simulation:
         f.close()
 
         print(f'Simulation object saved as {fname}.')
+
+
+    
     
 
     ######################################################################################################

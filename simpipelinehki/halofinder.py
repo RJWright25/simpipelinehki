@@ -259,7 +259,6 @@ def stack_haloes_worker(snaplist,iproc,delta=200,useminpot=False,verbose=False):
     isnap_outputs=[]
 
     #for each snapshot in the list, find the haloes
-    print(f'Finding haloes for {len(snaplist)} snapshots for process {iproc}...')
     for isnap,snapshot in enumerate(snaplist):
         print(f'Finding haloes in snapshot {snapshot.snapshot_file} for process {iproc}... [snap {isnap+1}/{len(snaplist)} for iproc {iproc}]')
         isnap_haloes=basic_halofinder(snapshot=snapshot,delta=delta,useminpot=useminpot,verbose=verbose)
