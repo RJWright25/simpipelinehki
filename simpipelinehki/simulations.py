@@ -148,12 +148,14 @@ class gadget_simulation:
         t0stack=time.time()
 
         #make a directory for the outputs
-        if not os.path.exists(os.getcwd()+'/kdtrees/'):
-            os.mkdir(os.getcwd()+'/kdtrees/')
+        if not os.path.exists(os.getcwd()+'/outputs/'):
+            os.mkdir(os.getcwd()+'/outputs/')
+        if not os.path.exists(os.getcwd()+'/outputs/kdtrees/'):
+            os.mkdir(os.getcwd()+'/outputs/kdtrees/')
         else:
-            for fname in os.listdir(os.getcwd()+'/kdtrees/'):
-                if os.path.exists(os.getcwd()+'/kdtrees/'+fname):
-                    os.remove(os.getcwd()+'/kdtrees/'+fname)
+            for fname in os.listdir(os.getcwd()+'/outputs/kdtrees/'):
+                if os.path.exists(os.getcwd()+'/outputs/kdtrees/'+fname):
+                    os.remove(os.getcwd()+'/outputs/kdtrees/'+fname)
 
         #split the snapshots into chunks for multiprocessing
         snapshot_list=self.snapshots
@@ -173,7 +175,7 @@ class gadget_simulation:
 
         print()
         print(f'----> KD tree generation for {len(self.snapshots)} snaps complete in {time.time()-t0stack:.2f} seconds.')
-        
+
         # kdtree_list=[]
         # for snapshot in self.snapshots:
         #     with open(os.getcwd()+'/kdtrees/kdtree_'+str(snapshot.snapshot_idx).zfill(3)+'.pkl','rb') as kdfile:

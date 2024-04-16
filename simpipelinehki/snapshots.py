@@ -512,9 +512,13 @@ class gadget_cosmo_snapshot_hki:
                 #apply any spatial cuts
                 mask=np.ones(part['ParticleIDs'].shape[0], dtype=bool)
                 if center is not None and radius is not None:
-                    mask=sphere_mask(center, radius, ptype, return_rrel=return_rrel)
+                    mask,rrel=sphere_mask(center, radius, ptype, return_rrel=return_rrel)
+                    particle_data[ptype][key]['R']=rrel
+                else:
+                    return_rrel=False#no need to return rrel if no center and radius
+
                 num_particles = np.sum(mask)
-        
+
                 #iterate over the requested keys
                 for key in keys:
                     #if the key is available directly from file, get the data and apply the conversion
@@ -763,7 +767,7 @@ def sphere_mask(snapshot, center, radius, ptype=0, return_rrel=False):
         rrel = rrel-center
         rrel=np.sqrt(np.sum(rrel**2, axis=1))
 
-    return mask
+    return mask,rrel
 
 
 # #method to return a mask for particles within a sphere of a given radius and center
