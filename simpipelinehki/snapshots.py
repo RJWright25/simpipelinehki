@@ -664,7 +664,7 @@ def make_particle_kdtree(snapshot,ptypes='all'):
 
     for ptype in ptypes:
         coordinates=snapshot.get_particle_data(keys=['Coordinates'], types=ptype)
-        coordinates=coordinates.loc[:['Coordinates_x','Coordinates_y','Coordinates_z']].values
+        coordinates=coordinates.loc[:,['Coordinates_x','Coordinates_y','Coordinates_z']].values
 
         kdtree[ptype]=cKDTree(coordinates)
 
