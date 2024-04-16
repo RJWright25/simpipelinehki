@@ -141,6 +141,11 @@ class gadget_idealised_snapshot_hki:
         self.haloes=[]
         self.galaxies=[]
         self.particle_kdtree=None
+        if os.path.exists(f'kdtrees/kdtree_{str(self.snapshot_idx).zfill(3)}.pkl'):
+            print(f'Retrieving pre-generated KDTree for snapshot {self.snapshot_idx}...')
+            with open(f'kdtrees/kdtree_{str(self.snapshot_idx).zfill(3)}.pkl', 'rb') as kdfile:
+                self.particle_kdtree=pickle.load(kdfile)
+            kdfile.close()
     
     #simple method to list the available particle fields
     def list_particle_fields(self, ptype=0):
@@ -149,21 +154,7 @@ class gadget_idealised_snapshot_hki:
             pfile.close()
         return keys
     
-    #method to return a mask for particles within a sphere of a given radius and center
-    def sphere_mask(self, center, radius, ptype=0):
-        center = center.to(self.units["Coordinates"]).value
 
-        with h5py.File(self.snapshot_file, 'r') as pfile:
-            rrel = pfile[f'PartType{ptype}']['Coordinates'][:]*self.conversions['Coordinates']-center
-            pfile.close()
-        
-        rrel=np.sqrt(np.sum(rrel**2, axis=1))
-        rargsorted=np.argsort(rrel)
-        rsorted=rrel[rargsorted]
-        lastidx=np.searchsorted(rsorted, radius)
-        mask=np.zeros(rrel.shape[0], dtype=bool)
-        mask[rargsorted[:lastidx]]=True
-        return mask
     
     #method to get requested field of particle data (and type) in physical units. return pandas dataframs with the requested field(s) in physical units with a field for the particle type. dynamically allocate memory for the dataframes to avoid memory issues. 
     def get_particle_data(self, keys=None, types=None, center=None, radius=None,subsample=1):
@@ -342,10 +333,6 @@ class gadget_idealised_snapshot_hki:
         return fig, ax
         
 
-
-
-
-
 # Define the Snapshot class FOR COSMO RUNS FROM HELSINKI
 class gadget_cosmo_snapshot_hki:
 
@@ -418,8 +405,7 @@ class gadget_cosmo_snapshot_hki:
 
         snapshot.close()
 
-        self.haloes=[]
-        self.galaxies=[]
+
 
         #these conversions take the GADGET outputs and give them in physical units (as defined below)
         self.conversions={'ParticleIDs': 1,
@@ -452,6 +438,17 @@ class gadget_cosmo_snapshot_hki:
         self.derived_fields_available = ['Temperature', 'nH']
         self.derived_fields_ptype={'Temperature': 0,'nH':0}
 
+
+        self.haloes=[]
+        self.galaxies=[]
+        self.particle_kdtree=None
+
+        if os.path.exists(f'kdtrees/kdtree_{str(self.snapshot_idx).zfill(3)}.pkl'):
+            print(f'Retrieving pre-generated KDTree for snapshot {self.snapshot_idx}...')
+            with open(f'kdtrees/kdtree_{str(self.snapshot_idx).zfill(3)}.pkl', 'rb') as kdfile:
+                self.particle_kdtree=pickle.load(kdfile)
+            kdfile.close()
+    
     
     #simple method to list the available particle fields
     def list_particle_fields(self, ptype=0):
@@ -460,22 +457,10 @@ class gadget_cosmo_snapshot_hki:
             pfile.close()
         return keys
     
-    #method to return a mask for particles within a sphere of a given radius and center
-    def sphere_mask(self, center, radius, ptype=0):
-        center = center.to(self.units["Coordinates"]).value
-
-
-        if self.kdtree is None:
-            self.kdtree=make_particle_kdtree(self)
-        
-        rrel, ridx = self.kdtree.query(center, k=1)
-        mask = rrel < radius
-
-        return mask
 
 
     #method to get requested field of particle data (and type) in physical units. return pandas dataframs with the requested field(s) in physical units with a field for the particle type. dynamically allocate memory for the dataframes to avoid memory issues. 
-    def get_particle_data(self, keys=None, types=None, center=None, radius=None,subsample=1,verbose=False):
+    def get_particle_data(self, keys=None, types=None, center=None, radius=None, return_rrel=False, subsample=1,verbose=False):
 
         """
         Returns the requested particle data in physical units.
@@ -527,7 +512,7 @@ class gadget_cosmo_snapshot_hki:
                 #apply any spatial cuts
                 mask=np.ones(part['ParticleIDs'].shape[0], dtype=bool)
                 if center is not None and radius is not None:
-                    mask=self.sphere_mask(center, radius, ptype)
+                    mask=sphere_mask(center, radius, ptype, return_rrel=return_rrel)
                 num_particles = np.sum(mask)
         
                 #iterate over the requested keys
@@ -567,11 +552,6 @@ class gadget_cosmo_snapshot_hki:
         #stack the data into a pandas dataframe 
         particle_data = pd.concat([particle_data[ptype] for ptype in types])
         particle_data.reset_index(drop=True, inplace=True)
-
-        #add R column if center is provided (NB: coordinates not recentered)
-        if center is not None:
-            center = center.to(self.units["Coordinates"]).value
-            particle_data['R'] = np.sqrt((particle_data['Coordinates_x'].values-center[0])**2 + (particle_data['Coordinates_y'].values-center[1])**2 + (particle_data['Coordinates_z'].values-center[2])**2)
 
         return particle_data
 
@@ -655,7 +635,7 @@ class gadget_cosmo_snapshot_hki:
 
 
 #KDTrees for particle data
-def make_particle_kdtree(snapshot,verbose):
+def make_particle_kdtree(snapshot,ptypes='all'):
     """
     Function to make a KDTree for the particle data.
 
@@ -673,18 +653,22 @@ def make_particle_kdtree(snapshot,verbose):
 
     """
 
-    
+    kdtree={}
     #initialize the KDTree
-    coordinates=snapshot.get_particle_data(keys=['Coordinates'], types=[0,1,4,5])
-    coordinates=coordinates.loc[:['Coordinates_x','Coordinates_y','Coordinates_z']].values
+    if ptypes=='all':
+        ptypes=[0,1,4,5]
 
-    kdtree=cKDTree(coordinates)
+    for ptype in ptypes:
+        coordinates=snapshot.get_particle_data(keys=['Coordinates'], types=ptype)
+        coordinates=coordinates.loc[:['Coordinates_x','Coordinates_y','Coordinates_z']].values
+
+        kdtree[ptype]=cKDTree(coordinates)
 
     return kdtree
 
 
 
-def stack_kdtrees_worker(snaplist,iproc,verbose=False):
+def stack_kdtrees_worker(snaplist,ptypes='all',iproc,verbose=False):
     """
     Function to stack the KDTree for particle data.
 
@@ -728,13 +712,72 @@ def stack_kdtrees_worker(snaplist,iproc,verbose=False):
 
     for snapshot in snaplist:
         logging.info(f'Processing snapshot {snapshot.snapshot_idx}... [runtime {time.time()-t0:.2f} s]')
-        kdtree=make_particle_kdtree(snapshot,verbose)
+        kdtree=make_particle_kdtree(snapshot,ptypes=ptypes)
 
         with open(f'kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl', 'wb') as kdfile:
             pickle.dump(kdtree, kdfile)
         kdfile.close()
 
     
-    logging.info(f'===================================================================================================================')
     logging.info(f'Finished making KDtrees for snapshots {snaplist_idxs} [runtime {time.time()-t0:.2f} s]')
 
+
+
+
+#mask for particles within a sphere of a given radius and center
+def sphere_mask(snapshot, center, radius, ptype=0, return_rrel=False):
+    
+    #convert the center and radius to physical units
+    if isinstance(center, apy_units.Quantity):
+        center = center.to(snapshot.units["Coordinates"]).value
+    else:
+        center = center*snapshot.units["Coordinates"].to(apy_units.Unit('kpc')).value
+    if isinstance(radius, apy_units.Quantity):
+        radius = radius.to(snapshot.units["Coordinates"]).value
+    else:
+        radius = radius*snapshot.units["Coordinates"].to(apy_units.Unit('kpc')).value
+
+    #load the KDTree for the particle type
+    kdtree_path=f'kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
+    if not os.path.exists(kdtree_path):
+        print('Error: KDTree not found for snapshot')
+        return None
+    with open(kdtree_path, 'rb') as kdfile:
+        kdtree_ptype=pickle.load(kdfile)
+    kdfile.close()
+
+    #initialize the mask
+    mask=np.zeros(snapshot.npart[ptype], dtype=bool)
+
+    #find the particles within the radius
+    ridxs=kdtree_ptype.query_ball_point(center, radius)
+
+    #populate the mask
+    mask[ridxs]=True
+
+    #find rrel for particles in the mask
+    rrel=None
+    if return_rrel:
+        rrel = snapshot.get_particle_data(keys=['Coordinates'], types=ptype)
+        rrel = rrel.loc[mask,['Coordinates_x','Coordinates_y','Coordinates_z']].values
+        rrel = rrel-center
+        rrel=np.sqrt(np.sum(rrel**2, axis=1))
+
+    return mask
+
+
+# #method to return a mask for particles within a sphere of a given radius and center
+# def sphere_mask(self, center, radius, ptype=0):
+#     center = center.to(self.units["Coordinates"]).value
+
+#     with h5py.File(self.snapshot_file, 'r') as pfile:
+#         rrel = pfile[f'PartType{ptype}']['Coordinates'][:]*self.conversions['Coordinates']-center
+#         pfile.close()
+    
+#     rrel=np.sqrt(np.sum(rrel**2, axis=1))
+#     rargsorted=np.argsort(rrel)
+#     rsorted=rrel[rargsorted]
+#     lastidx=np.searchsorted(rsorted, radius)
+#     mask=np.zeros(rrel.shape[0], dtype=bool)
+#     mask[rargsorted[:lastidx]]=True
+#     return mask

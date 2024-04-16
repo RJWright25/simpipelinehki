@@ -74,17 +74,14 @@ class gadget_simulation:
     # Initialize the simulation object, take a list of snapshot files and create a list of snapshot objects
     def __init__(self, snapshot_file_list, snapshot_type=None):
         
-        if snapshot_type is None:
-            snapshot_type = gadget_idealised_snapshot_hki
-            self.snapshot_type = 'idealised'
-        elif snapshot_type=='gadget_idealised_snapshot_hki':
+        if snapshot_type=='gadget_idealised_snapshot_hki':
             snapshot_type = gadget_idealised_snapshot_hki
             self.snapshot_type = 'idealised'
         elif snapshot_type=='gadget_cosmo_snapshot_hki':
             snapshot_type = gadget_cosmo_snapshot_hki
             self.snapshot_type = 'cosmo'
         else:
-            print('Error: snapshot type not recognized.')
+            print('Error: snapshot type not recognized. Available types are "gadget_idealised_snapshot_hki" and "gadget_cosmo_snapshot_hki".')
             return None
 
 
@@ -128,7 +125,7 @@ class gadget_simulation:
         return self.snapshots[idx]
     
     # Method to generate KD trees for all snapshots
-    def generate_kdtrees(self, numproc=1, verbose=False):
+    def generate_kdtrees(self, ptypes='all',numproc=1, verbose=False):
             
         """
         Generate KD trees for all snapshots using multiprocessing.
@@ -165,7 +162,7 @@ class gadget_simulation:
         procs=[]
         for iproc in range(numproc):
             snapshots_ichunk=snapshot_chunks[iproc]
-            proc = multiprocessing.Process(target=stack_kdtrees_worker, args=(snapshots_ichunk,iproc,verbose))
+            proc = multiprocessing.Process(target=stack_kdtrees_worker, args=(snapshots_ichunk,ptypes,iproc,verbose))
             procs.append(proc)
             proc.start()
 
@@ -176,13 +173,12 @@ class gadget_simulation:
 
         print()
         print(f'----> KD tree generation for {len(self.snapshots)} snaps complete in {time.time()-t0stack:.2f} seconds.')
+        
+        # kdtree_list=[]
+        # for snapshot in self.snapshots:
+        #     with open(os.getcwd()+'/kdtrees/kdtree_'+str(snapshot.snapshot_idx).zfill(3)+'.pkl','rb') as kdfile:
+        #         kdtree_list.append(pickle.load(kdfile))
 
-        kdtree_list=[]
-        for snapshot in self.snapshots:
-            with open(os.getcwd()+'/kdtrees/kdtree_'+str(snapshot.snapshot_idx).zfill(3)+'.pkl','rb') as kdfile:
-                kdtree_list.append(pickle.load(kdfile))
-
-        self.kdtrees=kdtree_list
     
     # Method to load the black hole details from a directory
     def load_bhdata(self,path=None,bhids=None,subsample=1):

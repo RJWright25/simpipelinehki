@@ -32,5 +32,3 @@ def split_list(lst,nproc):
     
     """
     return [lst[i::nproc] for i in range(nproc)]
-
-

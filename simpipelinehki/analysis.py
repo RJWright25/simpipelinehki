@@ -212,7 +212,7 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
             center=np.array([halo['x'],halo['y'],halo['z']])*snapshot.units["Coordinates"]
 
         #get the particle data and sort by radius
-        galaxy=snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential','StarFormationRate','Temperature','Metallicity','nH'],types=[0,4],center=center,radius=(1+rfac_offset*1.5)*halo['Halo_R_Crit200']*apy_units.kpc)
+        galaxy=snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential','StarFormationRate','Temperature','Metallicity','nH'],types=[0,4],center=center,radius=(1+rfac_offset*1.5)*halo['Halo_R_Crit200']*apy_units.kpc,return_rrel=True)
         galaxy.sort_values(by='R',ascending=True,inplace=True)
         galaxy.reset_index(inplace=True,drop=True)
         

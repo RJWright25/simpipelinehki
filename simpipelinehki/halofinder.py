@@ -18,7 +18,7 @@ import pandas as pd
 import astropy.units as apy_units
 
 # This function is used to find haloes in a snapshot.
-def basic_halofinder(snapshot,delta=200,useminpot=False,verbose=False):
+def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
 
     """
     Basic halo finder for idealised/small hydro runs. Uses BH locations to find halo centres,
@@ -112,6 +112,7 @@ def basic_halofinder(snapshot,delta=200,useminpot=False,verbose=False):
     #initialize the dataframe with the number of BHs
     try:
         bhlocs=snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','ParticleIDs'],types=5)
+        bhlocs=bhlocs.loc[bhlocs['Masses']>10**mcut,:]
     except:
         logging.info(f'No BHs found in snapshot {snapshot.snapshot_file}. Exiting...')
         if verbose:
@@ -133,8 +134,8 @@ def basic_halofinder(snapshot,delta=200,useminpot=False,verbose=False):
         if verbose:
             print(f'Considering BH {ibh+1}/{numbh} [{(ibh+1)/numbh*100:.1f}% done with snap] (ID={bhlocs["ParticleIDs"].values[ibh]})...')
 
-
         ibh_row=bhlocs.iloc[ibh]
+
         #save the snapshot number and time
         halo_output['Time'][ibh]=snapshot.time
         halo_output['isnap'][ibh]=snapshot.snapshot_idx
@@ -168,7 +169,7 @@ def basic_halofinder(snapshot,delta=200,useminpot=False,verbose=False):
             poscop = np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])
             
             #select DM particles within 2 kpc of the BH
-            centraldm = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses'],types=1,center=poscop*apy_units.kpc,radius=2*apy_units.kpc)
+            centraldm = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses'],types=1,center=poscop*apy_units.kpc,radius=2*apy_units.kpc,return_rrel=False)
             if centraldm.shape[0]==0 and verbose:
                 print('No DM particles found within 2 kpc of the BH. Using BH velocity as halo vel.')
                 velcop = np.array([ibh_row['Velocities_x'],ibh_row['Velocities_y'],ibh_row['Velocities_z']])
@@ -193,7 +194,7 @@ def basic_halofinder(snapshot,delta=200,useminpot=False,verbose=False):
             center=apy_units.Quantity([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']],unit='kpc')
 
         #get particle data within 1000 kpc of the center and sort by radius
-        pdata_m200=snapshot.get_particle_data(keys=['Coordinates','Masses'],types=[0,1,4,5],center=center,radius=500*apy_units.kpc)
+        pdata_m200=snapshot.get_particle_data(keys=['Coordinates','Masses'],types=[0,1,4,5],center=center,radius=500*apy_units.kpc,return_rrel=True)
         radius=pdata_m200['R'].values
 
         sorted_radius=np.argsort(radius)
