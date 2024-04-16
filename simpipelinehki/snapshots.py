@@ -691,7 +691,7 @@ def stack_kdtrees_worker(snaplist,iproc,ptypes='all',verbose=False):
     """
     
     #log file
-    logfile=f'logs/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.log'
+    logfile=f'logs/kdtree_iproc{str(iproc).zfill(3)}.log'
     snaplist_idxs=[snapshot.snapshot_idx for snapshot in snaplist]
 
     logging.basicConfig(filename=logfile, level=logging.INFO)
