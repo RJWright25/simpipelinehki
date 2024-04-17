@@ -224,6 +224,16 @@ class gadget_simulation:
                 if os.path.exists(os.getcwd()+'/outputs/kdtrees/'+fname):
                     os.remove(os.getcwd()+'/outputs/kdtrees/'+fname)
 
+        #make a directory for the logs
+        if not os.path.exists(os.getcwd()+'/logs/'):
+            os.mkdir(os.getcwd()+'/logs/')
+        if not os.path.exists(os.getcwd()+'/logs/kdtrees/'):
+            os.mkdir(os.getcwd()+'/logs/kdtrees/')
+        else:
+            for fname in os.listdir(os.getcwd()+'/logs/kdtrees/'):
+                if os.path.exists(os.getcwd()+'/logs/kdtrees/'+fname):
+                    os.remove(os.getcwd()+'/logs/kdtrees/'+fname)
+
         #split the snapshots into chunks for multiprocessing
         snapshot_list=self.snapshots
         snapshot_chunks=split_list(snapshot_list,numproc)
@@ -289,6 +299,16 @@ class gadget_simulation:
             for fname in os.listdir(os.getcwd()+'/outputs/haloes/'):
                 if os.path.exists(os.getcwd()+'/outputs/haloes/'+fname):
                     os.remove(os.getcwd()+'/outputs/haloes/'+fname)
+
+        #make a directory for the logs
+        if not os.path.exists(os.getcwd()+'/logs/'):
+            os.mkdir(os.getcwd()+'/logs/')
+        if not os.path.exists(os.getcwd()+'/logs/haloes/'):
+            os.mkdir(os.getcwd()+'/logs/haloes/')
+        else:
+            for fname in os.listdir(os.getcwd()+'/logs/haloes/'):
+                if os.path.exists(os.getcwd()+'/logs/haloes/'+fname):
+                    os.remove(os.getcwd()+'/logs/haloes/'+fname)
 
         #split the snapshots into chunks for multiprocessing
         snapshot_list=self.snapshots
@@ -366,6 +386,16 @@ class gadget_simulation:
             for fname in os.listdir(os.getcwd()+'/outputs/galaxies/'):
                 if os.path.exists(os.getcwd()+'/outputs/galaxies/'+fname):
                     os.remove(os.getcwd()+'/outputs/galaxies/'+fname)
+
+        #make a directory for the logs
+        if not os.path.exists(os.getcwd()+'/logs/'):
+            os.mkdir(os.getcwd()+'/logs/')
+        if not os.path.exists(os.getcwd()+'/logs/galaxies/'):
+            os.mkdir(os.getcwd()+'/logs/galaxies/')
+        else:
+            for fname in os.listdir(os.getcwd()+'/logs/galaxies/'):
+                if os.path.exists(os.getcwd()+'/logs/galaxies/'+fname):
+                    os.remove(os.getcwd()+'/logs/galaxies/'+fname)
 
         
         #split the snapshots into chunks for multiprocessing
