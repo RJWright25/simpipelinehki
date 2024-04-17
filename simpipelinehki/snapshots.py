@@ -716,16 +716,15 @@ def stack_kdtrees_worker(snaplist,iproc,ptypes='all',verbose=False):
         print()
 
     t0=time.time()
+    if not os.path.exists('outputs'):
+        os.makedirs('outputs')
 
+    if not os.path.exists('outputs/kdtrees'):
+        os.makedirs('outputs/kdtrees')
+        
     for snapshot in snaplist:
         logging.info(f'Processing snapshot {snapshot.snapshot_idx}... [runtime {time.time()-t0:.2f} s]')
         kdtree=make_particle_kdtree(snapshot,ptypes=ptypes)
-
-        if not os.path.exists('outputs'):
-            os.makedirs('outputs')
-
-        if not os.path.exists('outputs/kdtrees'):
-            os.makedirs('outputs/kdtrees')
 
         with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl', 'wb') as kdfile:
             pickle.dump(kdtree, kdfile)
