@@ -183,11 +183,11 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
 
     # get the KDTree
     logging.info(f'Checking for KDTree in snapshot {snapshot.snapshot_file}...')
-    if os.path.exists(f'kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'):
+    if os.path.exists(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'):
         logging.info(f'KDTree found for snapshot {snapshot.snapshot_file}.')
         if verbose:
             print(f'KDTree found for snapshot {snapshot.snapshot_file}.')
-        with open(f'kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
+        with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
             kdtree_snap=pickle.load(kdfile)
     else:
         logging.info(f'KDTree not found for snapshot {snapshot.snapshot_file}. Creating KDTree...')
