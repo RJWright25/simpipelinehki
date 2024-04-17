@@ -199,6 +199,12 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
             else:
                 velcop = np.average(centralstar.loc[:,['Velocities_x','Velocities_y','Velocities_z']].values,weights=centralstar['Masses'].values,axis=0)
 
+        #use the mass of the 2 kpc star particles to generate an estimate of the halo virial radius
+        mstar_2kpc=np.nansum(centralstar['Masses'].values)
+        mhalo_est=mstar_2kpc*1e3
+        rhalo_est=2*(mhalo_est/(delta*cosmo.critical_density(z=snapshot.redshift).to(apy_units.Msun/apy_units.kpc**3).value*4/3*np.pi))**(1/3)
+
+        logging.info(f'Estimated halo mass = {mhalo_est:.2e} Msun and radius = {rhalo_est:.2f} kpc.')
 
         if verbose:
             print(f"Took {time.time()-t0_stars:.2f} seconds to find the minimum potential star particles.")
@@ -247,12 +253,12 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
         halo_output[f'Halo_R_Crit{delta}'][ibh]=sorted_radius[iradius]
 
         #logging
-        logging.info(f'--> Halo {bhlocs["ParticleIDs"].values[ibh]} analysed at snap {snapshot.snapshot_idx} -- mass = {halo_output[f"Halo_M_Crit{delta}"][ibh]:.2e} Msun and radius = {halo_output[f"Halo_R_Crit{delta}"][ibh]:.2f} kpc.')
+        logging.info(f'--> Halo {bhlocs["ParticleIDs"].values[ibh]} analysed at snap {snapshot.snapshot_idx} -- actual mass = {halo_output[f"Halo_M_Crit{delta}"][ibh]:.2e} Msun and radius = {halo_output[f"Halo_R_Crit{delta}"][ibh]:.2f} kpc.')
         logging.info(f"--> Runtime: {time.time()-t0:.2f} seconds.")
         logging.info(f'')
 
         if verbose:
-            print(f'--> Halo {bhlocs["ParticleIDs"].values[ibh]} analysed at snap {snapshot.snapshot_idx} -- mass = {halo_output[f"Halo_M_Crit{delta}"][ibh]:.2e} Msun and radius = {halo_output[f"Halo_R_Crit{delta}"][ibh]:.2f} kpc.')
+            print(f'--> Halo {bhlocs["ParticleIDs"].values[ibh]} analysed at snap {snapshot.snapshot_idx} -- actual mass = {halo_output[f"Halo_M_Crit{delta}"][ibh]:.2e} Msun and radius = {halo_output[f"Halo_R_Crit{delta}"][ibh]:.2f} kpc.')
             print(f"--> Runtime: {time.time()-t0:.2f} seconds.")
             print()
 
