@@ -147,7 +147,7 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
         
 
         #find star particles within 2 kpc of the bh
-        centralstar = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential'],types=4,center=np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])*snapshot.units["Coordinates"],radius=2*apy_units.kpc)
+        centralstar = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential'],types=4,center=np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])*snapshot.units["Coordinates"],radius=2*apy_units.kpc,return_rrel=False)
         #if no potential data, use the bh location
         potential=centralstar['Potential'].values
         starspresent=potential.shape[0]
@@ -196,10 +196,10 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
         #get particle data within 1000 kpc of the center and sort by radius
         pdata_m200=snapshot.get_particle_data(keys=['Coordinates','Masses'],types=[0,1,4,5],center=center,radius=500*apy_units.kpc,return_rrel=True)
         radius=pdata_m200['R'].values
-
         sorted_radius=np.argsort(radius)
         sorted_cummass=np.cumsum(pdata_m200['Masses'].values[sorted_radius])
-        sorted_radius=radius[sorted_radius];sorted_volume=4/3*np.pi*(sorted_radius)**3
+        sorted_radius=radius[sorted_radius]
+        sorted_volume=4/3*np.pi*(sorted_radius)**3
         sorted_cumdens=sorted_cummass/(sorted_volume)
 
         iradius=len(sorted_cumdens)-np.searchsorted(sorted_cumdens[::-1],critdens)
