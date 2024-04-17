@@ -84,7 +84,10 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
         os.mkdir(logging_folder)
     else:
         for file in os.listdir(logging_folder):
-            os.remove(logging_folder+file)
+            try:
+                os.remove(logging_folder+file)
+            except:
+                pass
 
     logging_name=logging_folder+f'halofinder_{str(snapshot.snapshot_idx).zfill(3)}.log'
     logging.basicConfig(filename=logging_name, level=logging.INFO)
