@@ -735,6 +735,7 @@ def sphere_mask(snapshot, center, radius, kdtree, ptype=0, return_rrel=False):
     kdtree_ptype=kdtree[ptype]
 
     #initialize the mask
+    print(kdtree_ptype.size)
     mask=np.zeros(kdtree_ptype.size)
 
     #find the particles within the radius
