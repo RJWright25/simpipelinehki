@@ -162,7 +162,8 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
         
 
         #find star particles within 2 kpc of the bh
-        centralstar = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential'],types=4,center=np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])*apy_units.kpc,radius=2*apy_units.kpc,kdtree=kdtree_snap,return_rrel=False)
+        centralstar = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential'],types=4,center=np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])*apy_units.kpc,radius=2*apy_units.kpc,return_rrel=False, kdtree=None, subsample=1,verbose=False)
+        #self, keys=None, types=None, center=None, radius=None, return_rrel=False, kdtree=None, subsample=1,verbose=False)
         #if no potential data, use the bh location
         potential=centralstar['Potential'].values
         starspresent=potential.shape[0]
