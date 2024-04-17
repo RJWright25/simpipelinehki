@@ -201,8 +201,8 @@ def basic_halofinder(snapshot,delta=200,mcut=5,useminpot=False,verbose=False):
 
         #use the mass of the 2 kpc star particles to generate an estimate of the halo virial radius
         mstar_2kpc=np.nansum(centralstar['Masses'].values)
-        mhalo_est=mstar_2kpc*5e2
-        rhalo_est=(mhalo_est/(delta*cosmo.critical_density(z=snapshot.redshift).to(apy_units.Msun/apy_units.kpc**3).value*4/3*np.pi))**(1/3)
+        mhalo_est=mstar_2kpc*1e3
+        rhalo_est=(mhalo_est/(delta*cosmo.critical_density(z=snapshot.redshift).to(apy_units.Msun/apy_units.kpc**3).value*4/3*np.pi))**(1/3)*1.25
 
         logging.info(f'Estimated halo mass = {mhalo_est:.2e} Msun and radius = {rhalo_est:.2f} kpc.')
 
@@ -244,6 +244,8 @@ def basic_halofinder(snapshot,delta=200,mcut=5,useminpot=False,verbose=False):
 
 
         iradius=len(sorted_cumdens)-np.searchsorted(sorted_cumdens[::-1],critdens)
+        if not iradius<len(sorted_cumdens):
+            iradius=len(sorted_cumdens)-1
     
         #save the mass and radius
         halo_output[f'Halo_M_Crit{delta}'][ibh]=sorted_cummass[iradius]
