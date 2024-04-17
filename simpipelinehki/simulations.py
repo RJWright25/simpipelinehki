@@ -124,57 +124,6 @@ class gadget_simulation:
             return None
         return self.snapshots[idx]
     
-    # Method to generate KD trees for all snapshots
-    def generate_kdtrees(self, ptypes='all',numproc=1, verbose=False):
-            
-        """
-        Generate KD trees for all snapshots using multiprocessing.
-
-        Parameters:
-        -----------
-        numproc: int
-            The number of processes to use.
-        verbose: bool
-            If True, print the progress of the KD tree generation.
-
-        """
-
-        print()
-        print(f'===========================================================================================')
-        print(f'Generating KD trees for {len(self.snapshots)} snapshots using {numproc} processes...')
-        print(f'===========================================================================================')
-        print()
-
-        t0stack=time.time()
-
-        #make a directory for the outputs
-        if not os.path.exists(os.getcwd()+'/outputs/'):
-            os.mkdir(os.getcwd()+'/outputs/')
-        if not os.path.exists(os.getcwd()+'/outputs/kdtrees/'):
-            os.mkdir(os.getcwd()+'/outputs/kdtrees/')
-        else:
-            for fname in os.listdir(os.getcwd()+'/outputs/kdtrees/'):
-                if os.path.exists(os.getcwd()+'/outputs/kdtrees/'+fname):
-                    os.remove(os.getcwd()+'/outputs/kdtrees/'+fname)
-
-        #split the snapshots into chunks for multiprocessing
-        snapshot_list=self.snapshots
-        snapshot_chunks=split_list(snapshot_list,numproc)
-
-        procs=[]
-        for iproc in range(numproc):
-            snapshots_ichunk=snapshot_chunks[iproc]
-            proc = multiprocessing.Process(target=stack_kdtrees_worker, args=(snapshots_ichunk,iproc,ptypes,verbose))
-            procs.append(proc)
-            proc.start()
-
-        #complete the processes
-        for proc in procs:
-            proc.join()
-        time.sleep(1)
-
-        print()
-        print(f'----> KD tree generation for {len(self.snapshots)} snaps complete in {time.time()-t0stack:.2f} seconds.')
 
     
     # Method to load the black hole details from a directory
@@ -240,6 +189,62 @@ class gadget_simulation:
         self.ketjubinaries=ketjubinaries
 
         return ketjubhs,ketjubinaries
+
+
+    # Method to generate KD trees for all snapshots
+    def generate_kdtrees(self,numproc=1, verbose=False):
+            
+        """
+        Generate KD trees for all snapshots using multiprocessing.
+
+        Parameters:
+        -----------
+        numproc: int
+            The number of processes to use.
+        verbose: bool
+            If True, print the progress of the KD tree generation.
+
+        """
+
+        print()
+        print(f'===========================================================================================')
+        print(f'Generating KD trees for {len(self.snapshots)} snapshots using {numproc} processes...')
+        print(f'===========================================================================================')
+        print()
+
+        t0stack=time.time()
+
+        #make a directory for the outputs
+        if not os.path.exists(os.getcwd()+'/outputs/'):
+            os.mkdir(os.getcwd()+'/outputs/')
+        if not os.path.exists(os.getcwd()+'/outputs/kdtrees/'):
+            os.mkdir(os.getcwd()+'/outputs/kdtrees/')
+        else:
+            for fname in os.listdir(os.getcwd()+'/outputs/kdtrees/'):
+                if os.path.exists(os.getcwd()+'/outputs/kdtrees/'+fname):
+                    os.remove(os.getcwd()+'/outputs/kdtrees/'+fname)
+
+        #split the snapshots into chunks for multiprocessing
+        snapshot_list=self.snapshots
+        snapshot_chunks=split_list(snapshot_list,numproc)
+
+        procs=[]
+        for iproc in range(numproc):
+            snapshots_ichunk=snapshot_chunks[iproc]
+            proc = multiprocessing.Process(target=stack_kdtrees_worker, args=(snapshots_ichunk,iproc,verbose))
+            procs.append(proc)
+            proc.start()
+
+        #complete the processes
+        for proc in procs:
+            proc.join()
+        time.sleep(1)
+
+        print()
+        print(f'----> KD tree generation for {len(self.snapshots)} snaps complete in {time.time()-t0stack:.2f} seconds.')
+
+
+
 
 
     # Method to find haloes in all snapshots using multiprocessing

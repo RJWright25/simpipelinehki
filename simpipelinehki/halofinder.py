@@ -133,6 +133,7 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
 
         with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
             kdtree_snap=pickle.load(kdfile)
+        
         logging.info(f'KDTree found for snapshot {snapshot.snapshot_file}.')
 
         if verbose:

@@ -625,7 +625,7 @@ class gadget_cosmo_snapshot_hki:
 
 
 #KDTrees for particle data
-def make_particle_kdtree(snapshot,ptypes='all'):
+def make_particle_kdtree(snapshot):
     """
     Function to make a KDTree for the particle data.
 
@@ -642,23 +642,27 @@ def make_particle_kdtree(snapshot,ptypes='all'):
         The KDTree for the particle data.
 
     """
-
-    kdtree={}
     #initialize the KDTree
-    if ptypes=='all':
-        ptypes=[0,1,4,5]
+    kdtree={}
+    
+    #get the particle types
+    ptypes=[0,1,4,5]
 
+    #file
+    pdatafile=h5py.File(snapshot.snapshot_file, 'r')
+
+    #get the particle data
     for ptype in ptypes:
-        coordinates=snapshot.get_particle_data(keys=['Coordinates'], types=ptype)
-        coordinates=coordinates.loc[:,['Coordinates_x','Coordinates_y','Coordinates_z']].values
-
+        coordinates=pdatafile["PartType"+str(ptype)+"/Coordinates"][:]*snapshot.conversions['Coordinates']
         kdtree[ptype]=cKDTree(coordinates)
+
+    #close the file
+    pdatafile.close()
 
     return kdtree
 
 
-
-def stack_kdtrees_worker(snaplist,iproc,ptypes='all',verbose=False):
+def stack_kdtrees_worker(snaplist,iproc,verbose=False):
     """
     Function to stack the KDTree for particle data.
 
@@ -710,7 +714,7 @@ def stack_kdtrees_worker(snaplist,iproc,ptypes='all',verbose=False):
 
     for snapshot in snaplist:
         logging.info(f'Processing snapshot {snapshot.snapshot_idx}... [runtime {time.time()-t0:.2f} s]')
-        kdtree=make_particle_kdtree(snapshot,ptypes=ptypes)
+        kdtree=make_particle_kdtree(snapshot)
 
         with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl', 'wb') as kdfile:
             pickle.dump(kdtree, kdfile)
