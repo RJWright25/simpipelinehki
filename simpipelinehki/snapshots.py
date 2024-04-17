@@ -735,13 +735,12 @@ def sphere_mask(snapshot, center, radius, kdtree, ptype=0, return_rrel=False):
     kdtree_ptype=kdtree[ptype]
 
     #initialize the mask
-    expected_shape=h5py.File(snapshot.snapshot_file, 'r')[f'PartType{ptype}']['ParticleIDs'].shape[0]
-    mask=np.zeros_like(expected_shape, dtype=bool)
+    mask=np.zeros_like(kdtree_ptype.size, dtype=bool)
 
     #find the particles within the radius
-    ridxs=kdtree_ptype.query_ball_point(x=center, r=radius)
+    ridxs=(np.array(kdtree_ptype.query_ball_point(x=center, r=radius)),)
     #populate the mask
-    mask[ridxs]=True
+    mask[ridxs]=np.ones_like(len(ridxs[0]), dtype=bool)
 
     #calculate the relative position
     if return_rrel:
