@@ -210,7 +210,7 @@ class gadget_idealised_snapshot_hki:
                 mask=np.ones(part['ParticleIDs'].shape[0], dtype=bool)
                 if center is not None and radius is not None:
                     mask,rrel=sphere_mask(snapshot=self,ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
-                    particle_data[ptype][key]['R']=rrel
+                    particle_data[ptype]['R']=rrel
                 else:
                     return_rrel=False#no need to return rrel if no center and radius
 
@@ -219,8 +219,6 @@ class gadget_idealised_snapshot_hki:
                 for key in keys:
                     #if the key is available directly from file, get the data and apply the conversion
                     raw=part[key][:][mask]
-                    print(f'key: {key}, shape: {raw.shape}')
-                    print(raw)
                     
                     if key in part.keys():
                         particle_data[ptype][key] = part[key][:][mask]*self.conversions[key]
@@ -758,7 +756,7 @@ def sphere_mask(snapshot, center, radius, kdtree=None, ptype=0, return_rrel=Fals
             print("Loading KDTree (not provided) for snapshot", snapshot.snapshot_idx, "...")  
             kdtree=pickle.load(kdfile)
         kdfile.close()
-        
+
     kdtree_ptype=kdtree[ptype]
 
     #initialize the mask
