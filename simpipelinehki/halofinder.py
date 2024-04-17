@@ -166,6 +166,7 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
         halo_output['BH_Mass'][ibh]=ibh_row['Masses']
         
 
+        t0_stars=time.time()
         #find star particles within 2 kpc of the bh
         centralstar = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential'],types=4,center=np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])*apy_units.kpc,radius=2*apy_units.kpc,return_rrel=False, kdtree=kdtree_snap, subsample=1)
         #self, keys=None, types=None, center=None, radius=None, return_rrel=False, kdtree=None, subsample=1,verbose=False)
@@ -177,6 +178,9 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
             potentialpresent=np.isfinite(potential[0])
         else:
             potentialpresent=False
+
+        if verbose:
+            print(f"Took {time.time()-t0_stars:.2f} seconds to load star particles within 2 kpc of the BH.")
             
         if starspresent and potentialpresent:
             #find the 1000 star particles with the lowest potential energy using a boolean mask
@@ -186,16 +190,18 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
             poscop = np.average(centralstar.loc[:,['Coordinates_x','Coordinates_y','Coordinates_z']].values,weights=centralstar['Masses'].values,axis=0)
             #find the average velocity of these particles weighted by their mass
             velcop = np.average(centralstar.loc[:,['Velocities_x','Velocities_y','Velocities_z']].values,weights=centralstar['Masses'].values,axis=0)
+
         else:
             poscop = np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])
-            
-            #select DM particles within 2 kpc of the BH
-            centraldm = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses'],types=1,kdtree=kdtree_snap,center=poscop*apy_units.kpc,radius=2*apy_units.kpc,return_rrel=False)
-            if centraldm.shape[0]==0 and verbose:
-                print('No DM particles found within 2 kpc of the BH. Using BH velocity as halo vel.')
+            if centralstar.shape[0]==0 and verbose:
+                print('No star particles found within 2 kpc of the BH. Using BH velocity as halo vel.')
                 velcop = np.array([ibh_row['Velocities_x'],ibh_row['Velocities_y'],ibh_row['Velocities_z']])
             else:
-                velcop = np.average(centraldm.loc[:,['Velocities_x','Velocities_y','Velocities_z']].values,weights=centraldm['Masses'].values,axis=0)
+                velcop = np.average(centralstar.loc[:,['Velocities_x','Velocities_y','Velocities_z']].values,weights=centralstar['Masses'].values,axis=0)
+
+
+        if verbose:
+            print(f"Took {time.time()-t0_stars:.2f} seconds to find the minimum potential star particles.")
 
         #save the positions and velocities
         halo_output['xminpot'][ibh]=(poscop[0])
@@ -215,13 +221,24 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
             center=apy_units.Quantity([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']],unit='kpc')
 
         #get particle data within 1000 kpc of the center and sort by radius
+
+        t0_counter=time.time()
         pdata_m200=snapshot.get_particle_data(keys=['Coordinates','Masses'],types=[0,1,4,5],center=center,radius=500*apy_units.kpc,return_rrel=True,kdtree=kdtree_snap)
+
+        if verbose:
+            print(f"Took {time.time()-t0_counter:.2f} seconds to load particle data within 500 kpc of the BH.")
+
+        t0_counter=time.time()
         radius=pdata_m200['R'].values
         sorted_radius=np.argsort(radius)
         sorted_cummass=np.cumsum(pdata_m200['Masses'].values[sorted_radius])
         sorted_radius=radius[sorted_radius]
         sorted_volume=4/3*np.pi*(sorted_radius)**3
         sorted_cumdens=sorted_cummass/(sorted_volume)
+
+        if verbose:
+            print(f"Took {time.time()-t0_counter:.2f} seconds to sort the particle data for virial quantities.")
+
 
         iradius=len(sorted_cumdens)-np.searchsorted(sorted_cumdens[::-1],critdens)
     
