@@ -202,11 +202,12 @@ class gadget_idealised_snapshot_hki:
 
                 #apply any spatial cuts
                 mask=np.ones(part['ParticleIDs'].shape[0], dtype=bool)
+                xyz=part['Coordinates'][:]
                 if center is not None and radius is not None:
-                    mask,rrel=sphere_mask(snapshot=self,ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
-                    particle_data[ptype]['R']=rrel
-                else:
-                    return_rrel=False#no need to return rrel if no center and radius
+                    mask,rrel=sphere_mask(snapshot=self, xyz=xyz, ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
+                    if return_rrel:
+                        particle_data[ptype]['R']=rrel
+
 
                 num_particles = np.sum(mask)
                 #iterate over the requested keys
@@ -499,11 +500,11 @@ class gadget_cosmo_snapshot_hki:
 
                 #apply any spatial cuts
                 mask=np.ones(part['ParticleIDs'].shape[0], dtype=bool)
+                xyz=part['Coordinates'][:]
                 if center is not None and radius is not None:
-                    mask,rrel=sphere_mask(snapshot=self,ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
-                    particle_data[ptype]['R']=rrel
-                else:
-                    return_rrel=False#no need to return rrel if no center and radius
+                    mask,rrel=sphere_mask(snapshot=self, xyz=xyz, ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
+                    if return_rrel:
+                        particle_data[ptype]['R']=rrel
 
                 num_particles = np.sum(mask)
 
@@ -725,7 +726,7 @@ def stack_kdtrees_worker(snaplist,iproc,ptypes='all',verbose=False):
 
 
 #mask for particles within a sphere of a given radius and center
-def sphere_mask(snapshot, center, radius, kdtree, ptype=0, return_rrel=False):
+def sphere_mask(snapshot, xyz, center, radius, kdtree, ptype=0, return_rrel=False):
     
     #convert the center and radius to physical units
     if isinstance(center, apy_units.Quantity):
@@ -736,20 +737,18 @@ def sphere_mask(snapshot, center, radius, kdtree, ptype=0, return_rrel=False):
     kdtree_ptype=kdtree[ptype]
 
     #initialize the mask
-    mask=np.zeros(snapshot.npart[ptype], dtype=bool)
+    mask=np.zeros_like(xyz.shape[0], dtype=bool)
 
     #find the particles within the radius
     ridxs=kdtree_ptype.query_ball_point(center, radius)
 
-    #populate the mask
+    #populate the masks
     mask[ridxs]=True
 
     #find rrel for particles in the mask
     rrel=None
     if return_rrel:
-        rrel = snapshot.get_particle_data(keys=['Coordinates'], types=ptype)
-        rrel = rrel.loc[mask,['Coordinates_x','Coordinates_y','Coordinates_z']].values
-        rrel = rrel-center
-        rrel=np.sqrt(np.sum(rrel**2, axis=1))
+        xyz = xyz[mask]-center
+        rrel=np.sqrt(np.sum(xyz**2, axis=1))
 
     return mask,rrel
