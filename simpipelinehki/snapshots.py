@@ -157,7 +157,7 @@ class gadget_idealised_snapshot_hki:
 
     
     #method to get requested field of particle data (and type) in physical units. return pandas dataframs with the requested field(s) in physical units with a field for the particle type. dynamically allocate memory for the dataframes to avoid memory issues. 
-    def get_particle_data(self, keys=None, types=None, center=None, radius=None,subsample=1):
+    def get_particle_data(self, keys=None, types=None, center=None, radius=None, kdtree=None, subsample=1):
 
         """
         Returns the requested particle data in physical units.
@@ -209,9 +209,12 @@ class gadget_idealised_snapshot_hki:
                 #apply any spatial cuts
                 mask=np.ones(part['ParticleIDs'].shape[0], dtype=bool)
                 if center is not None and radius is not None:
-                    mask=self.sphere_mask(center, radius, ptype)
+                    mask,rrel=sphere_mask(center, radius, ptype, kdtree=kdtree, return_rrel=return_rrel)
+                    particle_data[ptype][key]['R']=rrel
+                else:
+                    return_rrel=False#no need to return rrel if no center and radius
+
                 num_particles = np.sum(mask)
-        
                 #iterate over the requested keys
                 for key in keys:
                     #if the key is available directly from file, get the data and apply the conversion

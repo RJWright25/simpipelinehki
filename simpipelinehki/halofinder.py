@@ -136,7 +136,7 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
     else:
         logging.info(f'KDTree not found for snapshot {snapshot.snapshot_file}. Creating KDTree...')
         kdtree_snap=None
-
+    
     logging.info(f'There are **{numbh}** BHs to use for finding haloes in snapshot {snapshot.snapshot_file}.')
     logging.info(f'')
 

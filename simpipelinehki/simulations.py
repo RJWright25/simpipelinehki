@@ -176,11 +176,6 @@ class gadget_simulation:
         print()
         print(f'----> KD tree generation for {len(self.snapshots)} snaps complete in {time.time()-t0stack:.2f} seconds.')
 
-        # kdtree_list=[]
-        # for snapshot in self.snapshots:
-        #     with open(os.getcwd()+'/kdtrees/kdtree_'+str(snapshot.snapshot_idx).zfill(3)+'.pkl','rb') as kdfile:
-        #         kdtree_list.append(pickle.load(kdfile))
-
     
     # Method to load the black hole details from a directory
     def load_bhdata(self,path=None,bhids=None,subsample=1):
