@@ -151,7 +151,7 @@ class gadget_idealised_snapshot_hki:
 
     
     #method to get requested field of particle data (and type) in physical units. return pandas dataframs with the requested field(s) in physical units with a field for the particle type. dynamically allocate memory for the dataframes to avoid memory issues. 
-    def get_particle_data(self, keys=None, types=None, center=None, radius=None, kdtree=None, subsample=1):
+    def get_particle_data(self, keys=None, types=None, kdtree=None,center=None, radius=None, return_rrel=False, subsample=1):
 
         """
         Returns the requested particle data in physical units.
@@ -449,7 +449,7 @@ class gadget_cosmo_snapshot_hki:
 
 
     #method to get requested field of particle data (and type) in physical units. return pandas dataframs with the requested field(s) in physical units with a field for the particle type. dynamically allocate memory for the dataframes to avoid memory issues. 
-    def get_particle_data(self, keys=None, types=None, kdtree=None,center=None, radius=None, return_rrel=False, subsample=1,verbose=False):
+    def get_particle_data(self, keys=None, types=None, kdtree=None,center=None, radius=None, return_rrel=False, subsample=1):
 
         """
         Returns the requested particle data in physical units.
@@ -500,9 +500,8 @@ class gadget_cosmo_snapshot_hki:
 
                 #apply any spatial cuts
                 mask=np.ones(part['ParticleIDs'].shape[0], dtype=bool)
-                xyz=part['Coordinates'][:]
                 if center is not None and radius is not None:
-                    mask,rrel=sphere_mask(snapshot=self, xyz=xyz, ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
+                    mask,rrel=sphere_mask(snapshot=self, ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
                     if return_rrel:
                         particle_data[ptype]['R']=rrel
 
@@ -532,8 +531,6 @@ class gadget_cosmo_snapshot_hki:
 
                     #if the key is not available for this type, fill with NaNs
                     else:
-                        if verbose:
-                            print(f'Error: key {key} not found for particle type', ptype)
                         particle_data[ptype][key]=np.zeros(num_particles)[::subsample]+np.nan
                 
                 #add a column for the particle type
@@ -726,29 +723,31 @@ def stack_kdtrees_worker(snaplist,iproc,ptypes='all',verbose=False):
 
 
 #mask for particles within a sphere of a given radius and center
-def sphere_mask(snapshot, xyz, center, radius, kdtree, ptype=0, return_rrel=False):
+def sphere_mask(snapshot, center, radius, kdtree, ptype=0, return_rrel=False):
     
     #convert the center and radius to physical units
     if isinstance(center, apy_units.Quantity):
         center = center.to(snapshot.units["Coordinates"]).value
     if isinstance(radius, apy_units.Quantity):
         radius = radius.to(snapshot.units["Coordinates"]).value
-
+    
+    #get the KDTree for the particle data
     kdtree_ptype=kdtree[ptype]
 
     #initialize the mask
-    mask=np.zeros_like(xyz.shape[0], dtype=bool)
+    expected_shape=h5py.File(snapshot.snapshot_file, 'r')[f'PartType{ptype}']['ParticleIDs'].shape[0]
+    mask=np.zeros_like(expected_shape, dtype=bool)
 
     #find the particles within the radius
-    ridxs=kdtree_ptype.query_ball_point(center, radius)
-
-    #populate the masks
+    ridxs=kdtree_ptype.query_ball_point(x=center, r=radius)
+    #populate the mask
     mask[ridxs]=True
 
-    #find rrel for particles in the mask
-    rrel=None
+    #calculate the relative position
     if return_rrel:
-        xyz = xyz[mask]-center
-        rrel=np.sqrt(np.sum(xyz**2, axis=1))
+        rrel=kdtree_ptype.data[ridxs]-center
+        rrel=np.linalg.norm(rrel, axis=1)
+    else:
+        rrel=np.zeros_like(ridxs)+np.nan
 
     return mask,rrel
