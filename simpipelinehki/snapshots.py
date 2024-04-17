@@ -140,12 +140,6 @@ class gadget_idealised_snapshot_hki:
        #initialize the haloes and galaxies lists
         self.haloes=[]
         self.galaxies=[]
-        self.particle_kdtree=None
-        if os.path.exists(f'kdtrees/kdtree_{str(self.snapshot_idx).zfill(3)}.pkl'):
-            print(f'Retrieving pre-generated KDTree for snapshot {self.snapshot_idx}...')
-            with open(f'kdtrees/kdtree_{str(self.snapshot_idx).zfill(3)}.pkl', 'rb') as kdfile:
-                self.particle_kdtree=pickle.load(kdfile)
-            kdfile.close()
     
     #simple method to list the available particle fields
     def list_particle_fields(self, ptype=0):
@@ -442,13 +436,6 @@ class gadget_cosmo_snapshot_hki:
 
         self.haloes=[]
         self.galaxies=[]
-        self.particle_kdtree=None
-
-        if os.path.exists(f'kdtrees/kdtree_{str(self.snapshot_idx).zfill(3)}.pkl'):
-            print(f'Retrieving pre-generated KDTree for snapshot {self.snapshot_idx}...')
-            with open(f'kdtrees/kdtree_{str(self.snapshot_idx).zfill(3)}.pkl', 'rb') as kdfile:
-                self.particle_kdtree=pickle.load(kdfile)
-            kdfile.close()
     
     
     #simple method to list the available particle fields
@@ -461,7 +448,7 @@ class gadget_cosmo_snapshot_hki:
 
 
     #method to get requested field of particle data (and type) in physical units. return pandas dataframs with the requested field(s) in physical units with a field for the particle type. dynamically allocate memory for the dataframes to avoid memory issues. 
-    def get_particle_data(self, keys=None, types=None, center=None, radius=None, return_rrel=False, kdtree=None, subsample=1,verbose=False):
+    def get_particle_data(self, keys=None, types=None, kdtree=None,center=None, radius=None, return_rrel=False, subsample=1,verbose=False):
 
         """
         Returns the requested particle data in physical units.

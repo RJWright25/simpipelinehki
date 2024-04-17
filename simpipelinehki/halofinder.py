@@ -162,7 +162,7 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
         
 
         #find star particles within 2 kpc of the bh
-        centralstar = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential'],types=4,center=np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])*apy_units.kpc,radius=2*apy_units.kpc,return_rrel=False, kdtree=None, subsample=1,verbose=False)
+        centralstar = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential'],types=4,center=np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])*apy_units.kpc,radius=2*apy_units.kpc,return_rrel=False, kdtree=kdtree_snap, subsample=1,verbose=False)
         #self, keys=None, types=None, center=None, radius=None, return_rrel=False, kdtree=None, subsample=1,verbose=False)
         #if no potential data, use the bh location
         potential=centralstar['Potential'].values
@@ -185,7 +185,7 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
             poscop = np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])
             
             #select DM particles within 2 kpc of the BH
-            centraldm = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses'],types=1,center=poscop*apy_units.kpc,radius=2*apy_units.kpc,return_rrel=False)
+            centraldm = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses'],types=1,kdtree=kdtree_snap,center=poscop*apy_units.kpc,radius=2*apy_units.kpc,return_rrel=False)
             if centraldm.shape[0]==0 and verbose:
                 print('No DM particles found within 2 kpc of the BH. Using BH velocity as halo vel.')
                 velcop = np.array([ibh_row['Velocities_x'],ibh_row['Velocities_y'],ibh_row['Velocities_z']])
