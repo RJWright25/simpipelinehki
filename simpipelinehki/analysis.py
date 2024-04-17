@@ -130,14 +130,14 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
     logging_folder=f'{os.getcwd()}/logs/galaxies/'
     if not os.path.exists(logging_folder):
         os.mkdir(logging_folder)
-    else:
-        for file in os.listdir(logging_folder):
-            try:
-                os.remove(logging_folder+file)
-            except:
-                pass
 
     logging_name=logging_folder+f'galaxies_{str(snapshot.snapshot_idx).zfill(3)}.log'
+    if os.path.exists(logging_name):
+        try:
+            os.remove(logging_name)
+        except:
+            pass
+
     logging.basicConfig(filename=logging_name, level=logging.INFO)
 
     logging.info(f'')
