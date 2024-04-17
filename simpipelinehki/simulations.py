@@ -192,7 +192,7 @@ class gadget_simulation:
 
 
     # Method to generate KD trees for all snapshots
-    def generate_kdtrees(self,numproc=1, verbose=False):
+    def gen_kdtrees(self,numproc=1, verbose=False):
             
         """
         Generate KD trees for all snapshots using multiprocessing.
