@@ -738,7 +738,7 @@ def stack_kdtrees_worker(snaplist,iproc,ptypes='all',verbose=False):
 
 
 #mask for particles within a sphere of a given radius and center
-def sphere_mask(snapshot, center, radius, kdtree=None, ptype=0, return_rrel=False):
+def sphere_mask(snapshot, center, radius, kdtree, ptype=0, return_rrel=False):
     
     #convert the center and radius to physical units
     if isinstance(center, apy_units.Quantity):
