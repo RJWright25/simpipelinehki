@@ -206,9 +206,6 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
 
         logging.info(f'Estimated halo mass = {mhalo_est:.2e} Msun and radius = {rhalo_est:.2f} kpc.')
 
-        if verbose:
-            print(f"Took {time.time()-t0_stars:.2f} seconds to find the minimum potential star particles.")
-
         #save the positions and velocities
         halo_output['xminpot'][ibh]=(poscop[0])
         halo_output['yminpot'][ibh]=(poscop[1])
@@ -232,7 +229,7 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
         pdata_m200=snapshot.get_particle_data(keys=['Coordinates','Masses'],types=[0,1,4,5],center=center,radius=rhalo_est*apy_units.kpc,return_rrel=True,kdtree=kdtree_snap)
 
         if verbose:
-            print(f"Took {time.time()-t0_counter:.2f} seconds to load particle data within 500 kpc of the BH.")
+            print(f"Took {time.time()-t0_counter:.2f} seconds to load particle data within {rhalo_est:.2f} kpc of the BH.")
 
         t0_counter=time.time()
         radius=pdata_m200['R'].values
