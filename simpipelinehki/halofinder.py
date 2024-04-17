@@ -130,11 +130,15 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
     # get the KDTree
     logging.info(f'Checking for KDTree in snapshot {snapshot.snapshot_file}...')
     if os.path.exists(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'):
-        logging.info(f'KDTree found for snapshot {snapshot.snapshot_file}.')
-        if verbose:
-            print(f'KDTree found for snapshot {snapshot.snapshot_file}.')
+
         with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
             kdtree_snap=pickle.load(kdfile)
+        logging.info(f'KDTree found for snapshot {snapshot.snapshot_file}.')
+
+        if verbose:
+            print(f'KDTree found for snapshot {snapshot.snapshot_file}.')
+            print(f'Num particles in tree = {[kdtree_snap[ptype].data.shape[0] for ptype in kdtree_snap.keys()]}')
+            
     else:
         logging.info(f'KDTree not found for snapshot {snapshot.snapshot_file}.')
         kdtree_snap=None
