@@ -736,16 +736,13 @@ def sphere_mask(snapshot, center, radius, kdtree, ptype, return_rrel=False):
         radius = radius.to(snapshot.units["Coordinates"]).value
     
     #get the KDTree for the particle data
-    print(ptype)
     kdtree_ptype=kdtree[ptype]
 
     #initialize the mask
-    print(kdtree_ptype.size)
-    mask=np.zeros(kdtree_ptype.size)
+    mask=np.zeros(kdtree_ptype.data.shape[0])
 
     #find the particles within the radius
     ridxs=(np.array(kdtree_ptype.query_ball_point(x=center, r=radius)),)
-    print(np.nanmean(ridxs[0]>kdtree_ptype.size))
     #populate the mask
     mask[ridxs]=np.ones(len(ridxs[0]))
     mask=mask.astype(bool)
