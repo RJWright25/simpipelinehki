@@ -19,7 +19,7 @@ import pandas as pd
 import astropy.units as apy_units
 
 # This function is used to find haloes in a snapshot.
-def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
+def basic_halofinder(snapshot,delta=200,mcut=5,useminpot=False,verbose=False):
 
     """
     Basic halo finder for idealised/small hydro runs. Uses BH locations to find halo centres,
