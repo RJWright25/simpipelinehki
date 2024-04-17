@@ -749,16 +749,7 @@ def sphere_mask(snapshot, center, radius, kdtree=None, ptype=0, return_rrel=Fals
         radius = radius.to(snapshot.units["Coordinates"]).value
         
     #load the KDTree for the particle type
-    if kdtree is None:
-        kdtree_path=f'kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
-        if not os.path.exists(kdtree_path):
-            print('Error: KDTree not found for snapshot')
-            return None
-        with open(kdtree_path, 'rb') as kdfile:
-            kdtree_ptype=pickle.load(kdfile)[ptype]
-        kdfile.close()
-    else:
-        kdtree_ptype=kdtree[ptype]
+    kdtree_ptype=kdtree[ptype]
 
     #initialize the mask
     mask=np.zeros(snapshot.npart[ptype], dtype=bool)
