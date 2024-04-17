@@ -516,7 +516,7 @@ class gadget_cosmo_snapshot_hki:
                 mask=np.ones(part['ParticleIDs'].shape[0], dtype=bool)
                 if center is not None and radius is not None:
                     mask,rrel=sphere_mask(snapshot=self,ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
-                    particle_data[ptype][key]['R']=rrel
+                    particle_data[ptype]['R']=rrel
                 else:
                     return_rrel=False#no need to return rrel if no center and radius
 
@@ -749,6 +749,16 @@ def sphere_mask(snapshot, center, radius, kdtree=None, ptype=0, return_rrel=Fals
         radius = radius.to(snapshot.units["Coordinates"]).value
         
     #load the KDTree for the particle type
+    if kdtree is None:
+        fpath=f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
+        if not os.path.exists(fpath):
+            print(f'Error: KDTree for snapshot {snapshot.snapshot_idx} not found')
+            return None
+        with open(fpath, 'rb') as kdfile:
+            print("Loading KDTree (not provided) for snapshot", snapshot.snapshot_idx, "...")  
+            kdtree=pickle.load(kdfile)
+        kdfile.close()
+        
     kdtree_ptype=kdtree[ptype]
 
     #initialize the mask
