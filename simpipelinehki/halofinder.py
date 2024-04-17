@@ -120,7 +120,7 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
             print(f'No BHs found in snapshot {snapshot.snapshot_file}. Exiting...')
         return pd.DataFrame(columns=columns)
     
-    bhlocs.sort_values(by='Mass',ascending=False,inplace=True)
+    bhlocs.sort_values(by='Masses',ascending=False,inplace=True)
     bhlocs.reset_index(drop=True,inplace=True)
     numbh=bhlocs.shape[0]
     halo_output={column:np.zeros(bhlocs['Masses'].shape[0])+np.nan for column in columns}

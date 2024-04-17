@@ -782,20 +782,3 @@ def sphere_mask(snapshot, center, radius, kdtree=None, ptype=0, return_rrel=Fals
         rrel=np.sqrt(np.sum(rrel**2, axis=1))
 
     return mask,rrel
-
-
-# #method to return a mask for particles within a sphere of a given radius and center
-# def sphere_mask(self, center, radius, ptype=0):
-#     center = center.to(self.units["Coordinates"]).value
-
-#     with h5py.File(self.snapshot_file, 'r') as pfile:
-#         rrel = pfile[f'PartType{ptype}']['Coordinates'][:]*self.conversions['Coordinates']-center
-#         pfile.close()
-    
-#     rrel=np.sqrt(np.sum(rrel**2, axis=1))
-#     rargsorted=np.argsort(rrel)
-#     rsorted=rrel[rargsorted]
-#     lastidx=np.searchsorted(rsorted, radius)
-#     mask=np.zeros(rrel.shape[0], dtype=bool)
-#     mask[rargsorted[:lastidx]]=True
-#     return mask
