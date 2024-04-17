@@ -10,6 +10,7 @@
 
 import os
 import time
+import pickle
 import logging
 from datetime import datetime
 import numpy as np
@@ -177,6 +178,19 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
         else:shells_kpc_str.append(f'0p{str(int(ishellkpc*100)).zfill(2)}kpc')
     shells_kpc={shell_kpc_str:shell_kpc for shell_kpc_str,shell_kpc in zip(shells_kpc_str,shells_kpc)}
 
+    # get the KDTree
+    logging.info(f'Checking for KDTree in snapshot {snapshot.snapshot_file}...')
+    if os.path.exists(f'kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'):
+        logging.info(f'KDTree found for snapshot {snapshot.snapshot_file}.')
+        if verbose:
+            print(f'KDTree found for snapshot {snapshot.snapshot_file}.')
+        with open(f'kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
+            kdtree_snap=pickle.load(kdfile)
+    else:
+        logging.info(f'KDTree not found for snapshot {snapshot.snapshot_file}. Creating KDTree...')
+        kdtree_snap=None
+
+
     logging.info(f'There are **{numhaloes}** haloes to use for analysing galaxies in snapshot {snapshot.snapshot_file}.')
     logging.info(f'')
     if verbose:
@@ -212,7 +226,7 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
             center=np.array([halo['x'],halo['y'],halo['z']])*snapshot.units["Coordinates"]
 
         #get the particle data and sort by radius
-        galaxy=snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential','StarFormationRate','Temperature','Metallicity','nH'],types=[0,4],center=center,radius=(1+rfac_offset*1.5)*halo['Halo_R_Crit200']*apy_units.kpc,return_rrel=True)
+        galaxy=snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential','StarFormationRate','Temperature','Metallicity','nH'],types=[0,4],center=center,radius=(1+rfac_offset*1.5)*halo['Halo_R_Crit200']*apy_units.kpc,return_rrel=True,kdtree=kdtree_snap)
         galaxy.sort_values(by='R',ascending=True,inplace=True)
         galaxy.reset_index(inplace=True,drop=True)
         

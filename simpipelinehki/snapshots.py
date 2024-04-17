@@ -460,7 +460,7 @@ class gadget_cosmo_snapshot_hki:
 
 
     #method to get requested field of particle data (and type) in physical units. return pandas dataframs with the requested field(s) in physical units with a field for the particle type. dynamically allocate memory for the dataframes to avoid memory issues. 
-    def get_particle_data(self, keys=None, types=None, center=None, radius=None, return_rrel=False, subsample=1,verbose=False):
+    def get_particle_data(self, keys=None, types=None, center=None, radius=None, return_rrel=False, kdtree=None, subsample=1,verbose=False):
 
         """
         Returns the requested particle data in physical units.
@@ -512,7 +512,7 @@ class gadget_cosmo_snapshot_hki:
                 #apply any spatial cuts
                 mask=np.ones(part['ParticleIDs'].shape[0], dtype=bool)
                 if center is not None and radius is not None:
-                    mask,rrel=sphere_mask(center, radius, ptype, return_rrel=return_rrel)
+                    mask,rrel=sphere_mask(center, radius, ptype, kdtree=kdtree, return_rrel=return_rrel)
                     particle_data[ptype][key]['R']=rrel
                 else:
                     return_rrel=False#no need to return rrel if no center and radius
@@ -721,7 +721,7 @@ def stack_kdtrees_worker(snaplist,iproc,ptypes='all',verbose=False):
 
     if not os.path.exists('outputs/kdtrees'):
         os.makedirs('outputs/kdtrees')
-        
+
     for snapshot in snaplist:
         logging.info(f'Processing snapshot {snapshot.snapshot_idx}... [runtime {time.time()-t0:.2f} s]')
         kdtree=make_particle_kdtree(snapshot,ptypes=ptypes)
@@ -737,7 +737,7 @@ def stack_kdtrees_worker(snaplist,iproc,ptypes='all',verbose=False):
 
 
 #mask for particles within a sphere of a given radius and center
-def sphere_mask(snapshot, center, radius, ptype=0, return_rrel=False):
+def sphere_mask(snapshot, center, radius, kdtree=None, ptype=0, return_rrel=False):
     
     #convert the center and radius to physical units
     if isinstance(center, apy_units.Quantity):
@@ -748,15 +748,18 @@ def sphere_mask(snapshot, center, radius, ptype=0, return_rrel=False):
         radius = radius.to(snapshot.units["Coordinates"]).value
     else:
         radius = radius*snapshot.units["Coordinates"].to(apy_units.Unit('kpc')).value
-
+        
     #load the KDTree for the particle type
-    kdtree_path=f'kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
-    if not os.path.exists(kdtree_path):
-        print('Error: KDTree not found for snapshot')
-        return None
-    with open(kdtree_path, 'rb') as kdfile:
-        kdtree_ptype=pickle.load(kdfile)
-    kdfile.close()
+    if kdtree is None:
+        kdtree_path=f'kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
+        if not os.path.exists(kdtree_path):
+            print('Error: KDTree not found for snapshot')
+            return None
+        with open(kdtree_path, 'rb') as kdfile:
+            kdtree_ptype=pickle.load(kdfile)[ptype]
+        kdfile.close()
+    else:
+        kdtree_ptype=kdtree[ptype]
 
     #initialize the mask
     mask=np.zeros(snapshot.npart[ptype], dtype=bool)

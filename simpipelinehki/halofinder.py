@@ -12,6 +12,7 @@
 import os
 import time
 import logging
+import pickle
 from datetime import datetime
 import numpy as np
 import pandas as pd
@@ -124,6 +125,18 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
     numbh=bhlocs.shape[0]
     halo_output={column:np.zeros(bhlocs['Masses'].shape[0])+np.nan for column in columns}
 
+    # get the KDTree
+    logging.info(f'Checking for KDTree in snapshot {snapshot.snapshot_file}...')
+    if os.path.exists(f'kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'):
+        logging.info(f'KDTree found for snapshot {snapshot.snapshot_file}.')
+        if verbose:
+            print(f'KDTree found for snapshot {snapshot.snapshot_file}.')
+        with open(f'kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
+            kdtree_snap=pickle.load(kdfile)
+    else:
+        logging.info(f'KDTree not found for snapshot {snapshot.snapshot_file}. Creating KDTree...')
+        kdtree_snap=None
+
     logging.info(f'There are **{numbh}** BHs to use for finding haloes in snapshot {snapshot.snapshot_file}.')
     logging.info(f'')
 
@@ -194,7 +207,7 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
             center=apy_units.Quantity([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']],unit='kpc')
 
         #get particle data within 1000 kpc of the center and sort by radius
-        pdata_m200=snapshot.get_particle_data(keys=['Coordinates','Masses'],types=[0,1,4,5],center=center,radius=500*apy_units.kpc,return_rrel=True)
+        pdata_m200=snapshot.get_particle_data(keys=['Coordinates','Masses'],types=[0,1,4,5],center=center,radius=500*apy_units.kpc,return_rrel=True,kdtree=kdtree_snap)
         radius=pdata_m200['R'].values
         sorted_radius=np.argsort(radius)
         sorted_cummass=np.cumsum(pdata_m200['Masses'].values[sorted_radius])
