@@ -209,7 +209,7 @@ class gadget_idealised_snapshot_hki:
                 #apply any spatial cuts
                 mask=np.ones(part['ParticleIDs'].shape[0], dtype=bool)
                 if center is not None and radius is not None:
-                    mask,rrel=sphere_mask(center, radius, ptype, kdtree=kdtree, return_rrel=return_rrel)
+                    mask,rrel=sphere_mask(self,center, radius, ptype, kdtree=kdtree, return_rrel=return_rrel)
                     particle_data[ptype][key]['R']=rrel
                 else:
                     return_rrel=False#no need to return rrel if no center and radius
@@ -515,7 +515,7 @@ class gadget_cosmo_snapshot_hki:
                 #apply any spatial cuts
                 mask=np.ones(part['ParticleIDs'].shape[0], dtype=bool)
                 if center is not None and radius is not None:
-                    mask,rrel=sphere_mask(center, radius, ptype, kdtree=kdtree, return_rrel=return_rrel)
+                    mask,rrel=sphere_mask(self,center, radius, ptype, kdtree=kdtree, return_rrel=return_rrel)
                     particle_data[ptype][key]['R']=rrel
                 else:
                     return_rrel=False#no need to return rrel if no center and radius
@@ -745,12 +745,8 @@ def sphere_mask(snapshot, center, radius, kdtree=None, ptype=0, return_rrel=Fals
     #convert the center and radius to physical units
     if isinstance(center, apy_units.Quantity):
         center = center.to(snapshot.units["Coordinates"]).value
-    else:
-        center = center*snapshot.units["Coordinates"].to(apy_units.Unit('kpc')).value
     if isinstance(radius, apy_units.Quantity):
         radius = radius.to(snapshot.units["Coordinates"]).value
-    else:
-        radius = radius*snapshot.units["Coordinates"].to(apy_units.Unit('kpc')).value
         
     #load the KDTree for the particle type
     if kdtree is None:
