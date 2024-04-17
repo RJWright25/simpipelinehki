@@ -209,7 +209,7 @@ class gadget_idealised_snapshot_hki:
                 #apply any spatial cuts
                 mask=np.ones(part['ParticleIDs'].shape[0], dtype=bool)
                 if center is not None and radius is not None:
-                    mask,rrel=sphere_mask(self,center, radius, ptype, kdtree=kdtree, return_rrel=return_rrel)
+                    mask,rrel=sphere_mask(snapshot=self,ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
                     particle_data[ptype][key]['R']=rrel
                 else:
                     return_rrel=False#no need to return rrel if no center and radius
@@ -515,7 +515,7 @@ class gadget_cosmo_snapshot_hki:
                 #apply any spatial cuts
                 mask=np.ones(part['ParticleIDs'].shape[0], dtype=bool)
                 if center is not None and radius is not None:
-                    mask,rrel=sphere_mask(self,center, radius, ptype, kdtree=kdtree, return_rrel=return_rrel)
+                    mask,rrel=sphere_mask(snapshot=self,ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
                     particle_data[ptype][key]['R']=rrel
                 else:
                     return_rrel=False#no need to return rrel if no center and radius
