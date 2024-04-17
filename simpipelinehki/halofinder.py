@@ -201,8 +201,8 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
 
         #use the mass of the 2 kpc star particles to generate an estimate of the halo virial radius
         mstar_2kpc=np.nansum(centralstar['Masses'].values)
-        mhalo_est=mstar_2kpc*1e3
-        rhalo_est=2*(mhalo_est/(delta*cosmo.critical_density(z=snapshot.redshift).to(apy_units.Msun/apy_units.kpc**3).value*4/3*np.pi))**(1/3)
+        mhalo_est=mstar_2kpc*5e2
+        rhalo_est=(mhalo_est/(delta*cosmo.critical_density(z=snapshot.redshift).to(apy_units.Msun/apy_units.kpc**3).value*4/3*np.pi))**(1/3)
 
         logging.info(f'Estimated halo mass = {mhalo_est:.2e} Msun and radius = {rhalo_est:.2f} kpc.')
 
@@ -229,7 +229,7 @@ def basic_halofinder(snapshot,delta=200,mcut=5.5,useminpot=False,verbose=False):
         #get particle data within 1000 kpc of the center and sort by radius
 
         t0_counter=time.time()
-        pdata_m200=snapshot.get_particle_data(keys=['Coordinates','Masses'],types=[0,1,4,5],center=center,radius=500*apy_units.kpc,return_rrel=True,kdtree=kdtree_snap)
+        pdata_m200=snapshot.get_particle_data(keys=['Coordinates','Masses'],types=[0,1,4,5],center=center,radius=rhalo_est*apy_units.kpc,return_rrel=True,kdtree=kdtree_snap)
 
         if verbose:
             print(f"Took {time.time()-t0_counter:.2f} seconds to load particle data within 500 kpc of the BH.")
