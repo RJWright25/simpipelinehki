@@ -20,7 +20,6 @@ import pandas as pd
 import astropy.units as apy_units
 import astropy.constants as apy_const
 import astropy.cosmology as apy_cosmo
-import multiprocessing
 from scipy.spatial import cKDTree
 
 # Import relevant functions from other files
@@ -501,7 +500,7 @@ class gadget_cosmo_snapshot_hki:
                     if return_rrel:
                         particle_data[ptype]['R']=rrel
                 else:
-                    mask=np.where(np.ones(part['ParticleIDs'].shape[0], dtype=bool))
+                    mask=np.where(np.ones(part['ParticleIDs'].shape[0]))
 
                 print(f'Masked particles in {time.time()-t0_mask:.2f} s')
                 num_particles = len(mask[0])
