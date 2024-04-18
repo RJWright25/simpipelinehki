@@ -503,44 +503,43 @@ class gadget_cosmo_snapshot_hki:
                     mask=np.where(np.ones(part['ParticleIDs'].shape[0]))
 
 
-                print(mask)
-
-                print(f'Masked particles in {time.time()-t0_mask:.2f} s')
+                print(f'Masked {ptype} particles in {time.time()-t0_mask:.2f} s')
                 num_particles = len(mask[0])
 
                 t0_load=time.time()
 
-                #iterate over the requested keys
-                for key in keys:
-                    #if the key is available directly from file, get the data and apply the conversion
-                    if key in part.keys():
-                        particle_data[ptype][key] = part[key][:][mask]*self.conversions[key]
-                        if len(particle_data[ptype][key].shape)==2 and particle_data[ptype][key].shape[1] == 3:
-                            del particle_data[ptype][key]
-                            particle_data[ptype][key+'_x'] = part[key][:][mask][:,0][::subsample]*self.conversions[key]
-                            particle_data[ptype][key+'_y'] = part[key][:][mask][:,1][::subsample]*self.conversions[key]
-                            particle_data[ptype][key+'_z'] = part[key][:][mask][:,2][::subsample]*self.conversions[key]
-                        elif len(particle_data[ptype][key].shape)==2:
-                            del particle_data[ptype][key]
-                            particle_data[ptype][key+f'_{str(0).zfill(2)}'] = part[key][:][mask][:,0][::subsample]*self.conversions[key]
-                    
-                    #if the key is a derived field, get the data and apply the conversion
-                    elif key in self.derived_fields_available and ptype == self.derived_fields_ptype[key]:
-                        particle_data[ptype][key] = self.get_derived_field(key, ptype)[mask][::subsample]
+                if num_particles:
+                    #iterate over the requested keys
+                    for key in keys:
+                        #if the key is available directly from file, get the data and apply the conversion
+                        if key in part.keys():
+                            particle_data[ptype][key] = part[key][:][mask]*self.conversions[key]
+                            if len(particle_data[ptype][key].shape)==2 and particle_data[ptype][key].shape[1] == 3:
+                                del particle_data[ptype][key]
+                                particle_data[ptype][key+'_x'] = part[key][:][mask][:,0][::subsample]*self.conversions[key]
+                                particle_data[ptype][key+'_y'] = part[key][:][mask][:,1][::subsample]*self.conversions[key]
+                                particle_data[ptype][key+'_z'] = part[key][:][mask][:,2][::subsample]*self.conversions[key]
+                            elif len(particle_data[ptype][key].shape)==2:
+                                del particle_data[ptype][key]
+                                particle_data[ptype][key+f'_{str(0).zfill(2)}'] = part[key][:][mask][:,0][::subsample]*self.conversions[key]
+                        
+                        #if the key is a derived field, get the data and apply the conversion
+                        elif key in self.derived_fields_available and ptype == self.derived_fields_ptype[key]:
+                            particle_data[ptype][key] = self.get_derived_field(key, ptype)[mask][::subsample]
 
-                    #if key is Masses and ptype is 1, return the mass_dm
-                    elif key == 'Masses' and ptype == 1:
-                        particle_data[ptype][key] = np.ones(num_particles)[::subsample]*self.mass_dm
+                        #if key is Masses and ptype is 1, return the mass_dm
+                        elif key == 'Masses' and ptype == 1:
+                            particle_data[ptype][key] = np.ones(num_particles)[::subsample]*self.mass_dm
 
-                    #if the key is not available for this type, fill with NaNs
-                    else:
-                        particle_data[ptype][key]=np.zeros(num_particles)[::subsample]+np.nan
+                        #if the key is not available for this type, fill with NaNs
+                        else:
+                            particle_data[ptype][key]=np.zeros(num_particles)[::subsample]+np.nan
                 
                 #add a column for the particle type
                 particle_data[ptype] = pd.DataFrame(particle_data[ptype])
                 particle_data[ptype]['ParticleTypes']=np.ones(num_particles)[::subsample]*ptype
 
-                print(f'Loaded particles in {time.time()-t0_load:.2f} s')
+                print(f'Loaded type {ptype} particles in {time.time()-t0_load:.2f} s')
 
             pfile.close()
 
