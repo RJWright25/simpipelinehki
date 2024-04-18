@@ -178,7 +178,7 @@ def basic_halofinder(snapshot,delta=200,mcut=5,useminpot=False,verbose=False):
             potentialpresent=False
 
         if verbose:
-            print(f"Took {time.time()-t0_stars:.2f} seconds to load star particles within 2 kpc of the BH.")
+            print(f"Took {time.time()-t0_stars:.2f} seconds to load {starspresent} star particles within 2 kpc of the BH.")
             
         if starspresent and potentialpresent:
             #find the 1000 star particles with the lowest potential energy using a boolean mask

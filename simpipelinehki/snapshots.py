@@ -744,13 +744,11 @@ def sphere_mask(snapshot, center, radius, kdtree, ptype, return_rrel=False):
 
     #find the particles within the radius
     mask=(np.array(kdtree_ptype.query_ball_point(x=center, r=radius)),)
-    #populate the mask
+    npart_masked = len(mask[0])
 
     #calculate the relative position
     if return_rrel:
-        rrel=kdtree_ptype.data[mask]-center
-        rrel=np.linalg.norm(rrel, axis=1)
+        rrel=np.linalg.norm(kdtree_ptype.data[mask]-center, axis=1)
     else:
-        rrel=np.zeros_like(len(mask[0]))+np.nan
-
+        rrel=None
     return mask,rrel
