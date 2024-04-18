@@ -210,9 +210,7 @@ class gadget_idealised_snapshot_hki:
                 num_particles = np.sum(mask)
                 #iterate over the requested keys
                 for key in keys:
-                    #if the key is available directly from file, get the data and apply the conversion
-                    raw=part[key][:][mask]
-                    
+                    #if the key is available directly from file, get the data and apply the conversion                    
                     if key in part.keys():
                         particle_data[ptype][key] = part[key][:][mask]*self.conversions[key]
                         if len(particle_data[ptype][key].shape)==2 and particle_data[ptype][key].shape[1] == 3:
@@ -497,13 +495,18 @@ class gadget_cosmo_snapshot_hki:
                     continue
 
                 #apply any spatial cuts
+                t0_mask=time.time()
                 mask=np.ones(part['ParticleIDs'].shape[0], dtype=bool)
                 if center is not None and radius is not None:
                     mask,rrel=sphere_mask(snapshot=self, ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
                     if return_rrel:
                         particle_data[ptype]['R']=rrel
 
+                print(f'Masked particles in {time.time()-t0_mask:.2f} s')
+
                 num_particles = np.sum(mask)
+
+                t0_load=time.time()
 
                 #iterate over the requested keys
                 for key in keys:
@@ -534,6 +537,8 @@ class gadget_cosmo_snapshot_hki:
                 #add a column for the particle type
                 particle_data[ptype] = pd.DataFrame(particle_data[ptype])
                 particle_data[ptype]['ParticleTypes']=np.ones(num_particles)[::subsample]*ptype
+
+                print(f'Loaded particles in {time.time()-t0_load:.2f} s')
 
             pfile.close()
 
