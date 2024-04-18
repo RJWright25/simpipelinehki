@@ -496,15 +496,15 @@ class gadget_cosmo_snapshot_hki:
 
                 #apply any spatial cuts
                 t0_mask=time.time()
-                mask=np.ones(part['ParticleIDs'].shape[0], dtype=bool)
                 if center is not None and radius is not None:
                     mask,rrel=sphere_mask(snapshot=self, ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
                     if return_rrel:
                         particle_data[ptype]['R']=rrel
+                else:
+                    mask=np.where(np.ones(part['ParticleIDs'].shape[0], dtype=bool))
 
                 print(f'Masked particles in {time.time()-t0_mask:.2f} s')
-
-                num_particles = np.sum(mask)
+                num_particles = len(mask[0])
 
                 t0_load=time.time()
 
@@ -741,20 +741,15 @@ def sphere_mask(snapshot, center, radius, kdtree, ptype, return_rrel=False):
     #get the KDTree for the particle data
     kdtree_ptype=kdtree[ptype]
 
-    #initialize the mask
-    mask=np.zeros(kdtree_ptype.data.shape[0])
-
     #find the particles within the radius
-    ridxs=(np.array(kdtree_ptype.query_ball_point(x=center, r=radius)),)
+    mask=(np.array(kdtree_ptype.query_ball_point(x=center, r=radius)),)
     #populate the mask
-    mask[ridxs]=np.ones(len(ridxs[0]))
-    mask=mask.astype(bool)
 
     #calculate the relative position
     if return_rrel:
-        rrel=kdtree_ptype.data[ridxs]-center
+        rrel=kdtree_ptype.data[mask]-center
         rrel=np.linalg.norm(rrel, axis=1)
     else:
-        rrel=np.zeros_like(ridxs)+np.nan
+        rrel=np.zeros_like(len(mask[0]))+np.nan
 
     return mask,rrel
