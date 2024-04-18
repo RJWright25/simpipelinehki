@@ -502,6 +502,9 @@ class gadget_cosmo_snapshot_hki:
                 else:
                     mask=np.where(np.ones(part['ParticleIDs'].shape[0]))
 
+
+                print(mask)
+
                 print(f'Masked particles in {time.time()-t0_mask:.2f} s')
                 num_particles = len(mask[0])
 
