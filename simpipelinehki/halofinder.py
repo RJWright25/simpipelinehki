@@ -171,12 +171,10 @@ def basic_halofinder(snapshot,delta=200,mcut=5,useminpot=False,verbose=False):
         centralstar = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential'],types=4,center=np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])*apy_units.kpc,radius=2*apy_units.kpc,return_rrel=False, kdtree=kdtree_snap, subsample=1)
         #self, keys=None, types=None, center=None, radius=None, return_rrel=False, kdtree=None, subsample=1,verbose=False)
         #if no potential data, use the bh location
-        potential=centralstar['Potential'].values
-        starspresent=potential.shape[0]
-
-        if starspresent:
-            potentialpresent=np.isfinite(potential[0])
-        else:
+        starspresent=centralstar.shape[0]
+        try:
+            centralstar['Potential']
+        except:
             potentialpresent=False
 
         if verbose:
