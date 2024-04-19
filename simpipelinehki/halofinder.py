@@ -168,7 +168,7 @@ def basic_halofinder(snapshot,delta=200,mcut=5,useminpot=False,verbose=False):
 
         t0_stars=time.time()
         #find star particles within 2 kpc of the bh
-        centralstar = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential'],types=1,center=np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])*apy_units.kpc,radius=2*apy_units.kpc,return_rrel=False, kdtree=kdtree_snap, subsample=1)
+        centralstar = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential'],types=4,center=np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])*apy_units.kpc,radius=1*apy_units.kpc,return_rrel=False, kdtree=kdtree_snap, subsample=1)
         #self, keys=None, types=None, center=None, radius=None, return_rrel=False, kdtree=None, subsample=1,verbose=False)
         #if no potential data, use the bh location
         starspresent=centralstar.shape[0]
@@ -238,7 +238,7 @@ def basic_halofinder(snapshot,delta=200,mcut=5,useminpot=False,verbose=False):
             logging.info(f'No particles found within {rhalo_est:.2f} kpc of the BH. Skipping to next BH.')
             if verbose:
                 print(f'No particles found within {rhalo_est:.2f} kpc of the BH. Skipping to next BH.')
-                
+
             continue
         
         t0_counter=time.time()
