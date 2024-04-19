@@ -747,7 +747,7 @@ def sphere_mask(snapshot, center, radius, kdtree, ptype, return_rrel=False):
 
     print("Masked particles: ", len(mask[0]))
     #calculate the relative position
-    if return_rrel:
+    if return_rrel and len(mask[0]):
         rrel=np.linalg.norm(kdtree_ptype.data[mask]-center, axis=1)
     else:
         rrel=None
