@@ -537,7 +537,7 @@ class gadget_cosmo_snapshot_hki:
                     particle_data[ptype]['ParticleTypes']=np.ones(num_particles)[::subsample]*ptype
                 else:
                     particle_data[ptype] = pd.DataFrame()
-                    
+
             pfile.close()
 
         #stack the data into a pandas dataframe 
@@ -740,17 +740,9 @@ def sphere_mask(snapshot, center, radius, kdtree, ptype, return_rrel=False):
     #get the KDTree for the particle data
     kdtree_ptype=kdtree[ptype]
 
-    print("Center: ", center)   
-    print("Radius: ", radius)
-
-    print(f"KDtree min x: {kdtree_ptype.data[:,0].min()} max x: {kdtree_ptype.data[:,0].max()}")
-    print(f"KDtree min y: {kdtree_ptype.data[:,1].min()} max y: {kdtree_ptype.data[:,1].max()}")
-    print(f"KDtree min z: {kdtree_ptype.data[:,2].min()} max z: {kdtree_ptype.data[:,2].max()}")
-
     #find the particles within the radius
     mask=(np.array(kdtree_ptype.query_ball_point(x=center, r=radius)),)
 
-    print("Masked particles: ", len(mask[0]))
     #calculate the relative position
     if return_rrel and len(mask[0]):
         rrel=np.linalg.norm(kdtree_ptype.data[mask]-center, axis=1)
