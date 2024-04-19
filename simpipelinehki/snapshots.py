@@ -535,9 +535,11 @@ class gadget_cosmo_snapshot_hki:
                         else:
                             particle_data[ptype][key]=np.zeros(num_particles)[::subsample]+np.nan
                 
-                #add a column for the particle type
-                particle_data[ptype] = pd.DataFrame(particle_data[ptype])
-                particle_data[ptype]['ParticleTypes']=np.ones(num_particles)[::subsample]*ptype
+                    #add a column for the particle type
+                    particle_data[ptype] = pd.DataFrame(particle_data[ptype])
+                    particle_data[ptype]['ParticleTypes']=np.ones(num_particles)[::subsample]*ptype
+                else:
+                    particle_data[ptype] = pd.DataFrame()
 
                 print(f'Loaded type {ptype} particles in {time.time()-t0_load:.2f} s')
 
