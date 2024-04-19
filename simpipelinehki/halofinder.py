@@ -174,6 +174,7 @@ def basic_halofinder(snapshot,delta=200,mcut=5,useminpot=False,verbose=False):
         starspresent=centralstar.shape[0]
         try:
             centralstar['Potential']
+            potentialpresent=True
         except:
             potentialpresent=False
 
