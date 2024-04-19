@@ -744,7 +744,12 @@ def sphere_mask(snapshot, center, radius, kdtree, ptype, return_rrel=False):
     #get the KDTree for the particle data
     kdtree_ptype=kdtree[ptype]
 
-    print(kdtree_ptype.data.min(), kdtree_ptype.data.max())
+    print("Center: ", center)   
+    print("Radius: ", radius)
+
+    print(f"KDtree min x: {kdtree_ptype.data[:,0].min()} max x: {kdtree_ptype.data[:,0].max()}")
+    print(f"KDtree min y: {kdtree_ptype.data[:,1].min()} max y: {kdtree_ptype.data[:,1].max()}")
+    print(f"KDtree min z: {kdtree_ptype.data[:,2].min()} max z: {kdtree_ptype.data[:,2].max()}")
 
     #find the particles within the radius
     mask=(np.array(kdtree_ptype.query_ball_point(x=center, r=radius)),)
