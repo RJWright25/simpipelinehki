@@ -494,7 +494,6 @@ class gadget_cosmo_snapshot_hki:
                     continue
 
                 #apply any spatial cuts
-                t0_mask=time.time()
                 if center is not None and radius is not None:
                     mask,rrel=sphere_mask(snapshot=self, ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
                     if return_rrel:
@@ -502,8 +501,6 @@ class gadget_cosmo_snapshot_hki:
                 else:
                     mask=np.where(np.ones(part['ParticleIDs'].shape[0]))
 
-
-                print(f'Masked {ptype} particles in {time.time()-t0_mask:.2f} s')
                 num_particles = len(mask[0])
 
                 t0_load=time.time()
@@ -540,9 +537,7 @@ class gadget_cosmo_snapshot_hki:
                     particle_data[ptype]['ParticleTypes']=np.ones(num_particles)[::subsample]*ptype
                 else:
                     particle_data[ptype] = pd.DataFrame()
-
-                print(f'Loaded type {ptype} particles in {time.time()-t0_load:.2f} s')
-
+                    
             pfile.close()
 
         #stack the data into a pandas dataframe 
