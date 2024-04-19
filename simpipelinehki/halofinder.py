@@ -168,7 +168,7 @@ def basic_halofinder(snapshot,delta=200,mcut=5,useminpot=False,verbose=False):
 
         t0_stars=time.time()
         #find star particles within 2 kpc of the bh
-        centralstar = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential'],types=4,center=np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])*apy_units.kpc,radius=2*apy_units.kpc,return_rrel=False, kdtree=kdtree_snap, subsample=1)
+        centralstar = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential'],types=1,center=np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])*apy_units.kpc,radius=2*apy_units.kpc,return_rrel=False, kdtree=kdtree_snap, subsample=1)
         #self, keys=None, types=None, center=None, radius=None, return_rrel=False, kdtree=None, subsample=1,verbose=False)
         #if no potential data, use the bh location
         starspresent=centralstar.shape[0]
@@ -198,10 +198,15 @@ def basic_halofinder(snapshot,delta=200,mcut=5,useminpot=False,verbose=False):
                 velcop = np.average(centralstar.loc[:,['Velocities_x','Velocities_y','Velocities_z']].values,weights=centralstar['Masses'].values,axis=0)
 
         #use the mass of the 2 kpc star particles to generate an estimate of the halo virial radius
-        mstar_2kpc=np.nansum(centralstar['Masses'].values)
-        mhalo_est=mstar_2kpc*1e3
-        rhalo_est=(mhalo_est/(delta*cosmo.critical_density(z=snapshot.redshift).to(apy_units.Msun/apy_units.kpc**3).value*4/3*np.pi))**(1/3)*1.25
 
+        if starspresent:
+            mstar_2kpc=np.nansum(centralstar['Masses'].values)
+            mhalo_est=mstar_2kpc*1e3
+            rhalo_est=(mhalo_est/(delta*cosmo.critical_density(z=snapshot.redshift).to(apy_units.Msun/apy_units.kpc**3).value*4/3*np.pi))**(1/3)*1.25
+        else:
+            mhalo_est=0
+            rhalo_est=0
+                    
         logging.info(f'Estimated halo mass = {mhalo_est:.2e} Msun and radius = {rhalo_est:.2f} kpc.')
 
         #save the positions and velocities
@@ -229,6 +234,13 @@ def basic_halofinder(snapshot,delta=200,mcut=5,useminpot=False,verbose=False):
         if verbose:
             print(f"Took {time.time()-t0_counter:.2f} seconds to load particle data within {rhalo_est:.2f} kpc of the BH.")
 
+        if pdata_m200.shape[0]==0:
+            logging.info(f'No particles found within {rhalo_est:.2f} kpc of the BH. Skipping to next BH.')
+            if verbose:
+                print(f'No particles found within {rhalo_est:.2f} kpc of the BH. Skipping to next BH.')
+                
+            continue
+        
         t0_counter=time.time()
         radius=pdata_m200['R'].values
         sorted_radius=np.argsort(radius)
