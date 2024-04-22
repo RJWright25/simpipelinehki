@@ -192,7 +192,7 @@ class gadget_simulation:
 
 
     # Method to generate KD trees for all snapshots
-    def gen_kdtrees(self,numproc=1, verbose=False):
+    def gen_kdtrees(self,snapshotidxs=None,numproc=1, verbose=False):
             
         """
         Generate KD trees for all snapshots using multiprocessing.
@@ -206,9 +206,14 @@ class gadget_simulation:
 
         """
 
+        if snapshotidxs is not None:
+            snapshot_list=[self.snapshots[i] for i in snapshotidxs]
+        else:
+            snapshot_list=self.snapshots
+
         print()
         print(f'===========================================================================================')
-        print(f'Generating KD trees for {len(self.snapshots)} snapshots using {numproc} processes...')
+        print(f'Generating KD trees for {len(snapshot_list)} snapshots using {numproc} processes...')
         print(f'===========================================================================================')
         print()
 
@@ -235,7 +240,6 @@ class gadget_simulation:
                     os.remove(os.getcwd()+'/logs/kdtrees/'+fname)
 
         #split the snapshots into chunks for multiprocessing
-        snapshot_list=self.snapshots
         snapshot_chunks=split_list(snapshot_list,numproc)
 
         procs=[]
