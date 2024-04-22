@@ -228,13 +228,12 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
             poscop = np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])
             if centralstar.shape[0]==0 and verbose:
                 print('No star particles found within 2 kpc of the BH. Using BH velocity as halo vel.')
+                velcop = np.array([ibh_row['Velocities_x'],ibh_row['Velocities_y'],ibh_row['Velocities_z']])
+            else:
                 try:
-                    velcop = np.array([ibh_row['Velocities_x'],ibh_row['Velocities_y'],ibh_row['Velocities_z']])
+                    velcop = np.average(centralstar.loc[:,['Velocities_x','Velocities_y','Velocities_z']].values,weights=centralstar['Masses'].values,axis=0)
                 except:
                     velcop = np.array([0,0,0])+np.nan
-            else:
-                velcop = np.average(centralstar.loc[:,['Velocities_x','Velocities_y','Velocities_z']].values,weights=centralstar['Masses'].values,axis=0)
-
         #use the mass of the 2 kpc star particles to generate an estimate of the halo virial radius
 
         if starspresent and np.nansum(np.isfinite(velcop)):
