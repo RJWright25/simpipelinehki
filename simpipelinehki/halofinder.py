@@ -87,7 +87,8 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
         try:
             os.mkdir(logging_folder)
         except:
-            pass
+            pass        
+
     logging_name=logging_folder+f'iproc_{str(iproc).zfill(3)}.log'
     if os.path.exists(logging_name):
         try:
@@ -239,7 +240,7 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
         if starspresent and np.nansum(np.isfinite(velcop)):
             mstar_2kpc=np.nansum(centralstar['Masses'].values)
             mhalo_est=mstar_2kpc*1e3
-            rhalo_est=(mhalo_est/(delta*cosmo.critical_density(z=snapshot.redshift).to(apy_units.Msun/apy_units.kpc**3).value*4/3*np.pi))**(1/3)*1.25
+            rhalo_est=(mhalo_est/(delta*cosmo.critical_density(z=snapshot.redshift).to(apy_units.Msun/apy_units.kpc**3).value*4/3*np.pi))**(1/3)*2
         else:
             mhalo_est=0
             rhalo_est=0
