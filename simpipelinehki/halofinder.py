@@ -19,7 +19,7 @@ import pandas as pd
 import astropy.units as apy_units
 
 # This function is used to find haloes in a snapshot.
-def basic_halofinder(snapshot,delta=200,mcut=5,useminpot=False,verbose=False):
+def basic_halofinder(snapshot,iproc=0,numproc=1,delta=200,mcut=5,useminpot=False,verbose=False):
 
     """
     Basic halo finder for idealised/small hydro runs. Uses BH locations to find halo centres,
@@ -76,20 +76,45 @@ def basic_halofinder(snapshot,delta=200,mcut=5,useminpot=False,verbose=False):
     t0=time.time()
     cosmo=snapshot.cosmology
 
+    #set up the logging
     logging_folder=f'{os.getcwd()}/logs/'
     if not os.path.exists(logging_folder):
         os.mkdir(logging_folder)
-    logging_folder=f'{os.getcwd()}/logs/haloes/'
+    if not os.path.exists(logging_folder+'haloes/'):
+        os.mkdir(logging_folder+'haloes/')
+    logging_folder=f'{os.getcwd()}/logs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/'
     if not os.path.exists(logging_folder):
-        os.mkdir(logging_folder)
-
-    logging_name=logging_folder+f'halofinder_{str(snapshot.snapshot_idx).zfill(3)}.log'
+        try:
+            os.mkdir(logging_folder)
+        except:
+            pass
+    logging_name=logging_folder+f'iproc_{str(snapshot.snapshot_idx).zfill(3)}.log'
     if os.path.exists(logging_name):
         try:
             os.remove(logging_name)
         except:
             pass
+        
     logging.basicConfig(filename=logging_name, level=logging.INFO)
+
+    # set up the output
+    output_folder=f'{os.getcwd()}/outputs/'
+    if not os.path.exists(output_folder):
+        os.mkdir(output_folder)
+    if not os.path.exists(output_folder+'haloes/'):
+        os.mkdir(output_folder+'haloes/')
+    output_folder=f'{os.getcwd()}/outputs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/'
+    if not os.path.exists(output_folder):
+        try:
+            os.mkdir(output_folder)
+        except:
+            pass
+    output_name=output_folder+f'iproc_{str(snapshot.snapshot_idx).zfill(3)}.hdf5'
+    if os.path.exists(output_name):
+        try:
+            os.remove(output_name)
+        except:
+            pass
 
 
     logging.info(f'')
@@ -97,14 +122,14 @@ def basic_halofinder(snapshot,delta=200,mcut=5,useminpot=False,verbose=False):
     logging.info(f'')
 
     logging.info(f'===================================================================================================================')
-    logging.info(f'Finding haloes in snapshot {snapshot.snapshot_file}...')
+    logging.info(f'Finding haloes in snapshot {snapshot.snapshot_file}, process {iproc}...')
     logging.info(f'===================================================================================================================')
     logging.info(f'')
 
 
     if verbose:
         print(f'===========================================================================================')
-        print(f'Finding haloes in snapshot {snapshot.snapshot_file}...')
+        print(f'Finding haloes in snapshot {snapshot.snapshot_file}, process {iproc} ...')
         print(f'===========================================================================================')
         print()
 
@@ -123,6 +148,11 @@ def basic_halofinder(snapshot,delta=200,mcut=5,useminpot=False,verbose=False):
         return pd.DataFrame(columns=columns)
     
     bhlocs.sort_values(by='Masses',ascending=False,inplace=True)
+    bhlocs.reset_index(drop=True,inplace=True)
+    bhlocs=bhlocs.loc[bhlocs['Masses']>10**mcut,:]
+
+    #subsample the BHs
+    bhlocs=bhlocs.iloc[iproc::numproc,:]
     bhlocs.reset_index(drop=True,inplace=True)
     numbh=bhlocs.shape[0]
     halo_output={column:np.zeros(bhlocs['Masses'].shape[0])+np.nan for column in columns}
@@ -281,49 +311,6 @@ def basic_halofinder(snapshot,delta=200,mcut=5,useminpot=False,verbose=False):
     
     #return the dataframe
     haloes=pd.DataFrame(halo_output)
+    haloes.to_hdf(output_name,key='chunk')
+
     return haloes
-
-
-# This function is used to find haloes in a snapshot using multiprocessing.
-def stack_haloes_worker(snaplist,iproc,delta=200,useminpot=False,verbose=False):
-
-    """
-    Find galaxies in several snapshots, for use with multiprocessing.
-    
-    Parameters
-    ----------
-    snaplist : list
-        List of snapshot objects (or similar) to find haloes in.
-    iproc : int
-        Index of the process (used for naming the output file).
-    delta : float
-        Overdensity criteria for the halo finder.  
-        Numeric value for overdensity.
-    useminpot : bool
-        If True, use the minimum potential of the star particles as the halo centre.
-    verbose : bool
-        If True, print the progress of the halo finding.
-    
-    Returns
-    ----------
-    None (writes the output to a file).
-
-    """
-
-    #initialize the output
-    isnap_outputs=[]
-
-    #for each snapshot in the list, find the haloes
-    for isnap,snapshot in enumerate(snaplist):
-        print(f'Finding haloes in snapshot {snapshot.snapshot_file} for process {iproc}... [snap {isnap+1}/{len(snaplist)} for iproc {iproc}]')
-        isnap_haloes=basic_halofinder(snapshot=snapshot,delta=delta,useminpot=useminpot,verbose=verbose)
-        isnap_outputs.append(isnap_haloes)
-
-    #concatenate the outputs
-    isnap_haloes=pd.concat(isnap_outputs)
-    fname=os.getcwd()+f'/outputs/haloes/chunk_{str(iproc).zfill(3)}.hdf5'
-
-    #write the output to a file
-    if os.path.exists(fname):
-        os.remove(fname)
-    isnap_haloes.to_hdf(fname,key='chunk')

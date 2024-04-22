@@ -19,7 +19,7 @@ import astropy.units as apy_units
 import astropy.constants as apy_const
 
 # This function is used to calculate the properties of a galaxy in a snapshot, given the properties of the halo.
-def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=0.1,verbose=True):
+def galaxy_analysis(snapshot,haloes,iproc=0,numproc=1,shells_kpc=None,useminpot=False,rfac_offset=0.1,verbose=True):
 
     """
     Calculate the properties of a galaxy in a snapshot, given the properties of the halo.
@@ -124,19 +124,39 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
 
     """ 
     
+    #set up the logging
     logging_folder=f'{os.getcwd()}/logs/'
     if not os.path.exists(logging_folder):
         os.mkdir(logging_folder)
-    logging_folder=f'{os.getcwd()}/logs/galaxies/'
+    if not os.path.exists(logging_folder+'galaxies/'):
+        os.mkdir(logging_folder+'haloes/')
+    logging_folder=f'{os.getcwd()}/logs/galaxies/snap_{str(snapshot.snapshot_idx).zfill(3)}/'
     if not os.path.exists(logging_folder):
         os.mkdir(logging_folder)
-
-    logging_name=logging_folder+f'galaxies_{str(snapshot.snapshot_idx).zfill(3)}.log'
+    logging_name=logging_folder+f'iproc_{str(snapshot.snapshot_idx).zfill(3)}.log'
     if os.path.exists(logging_name):
         try:
             os.remove(logging_name)
         except:
             pass
+    logging.basicConfig(filename=logging_name, level=logging.INFO)
+
+    # set up the output
+    output_folder=f'{os.getcwd()}/outputs/'
+    if not os.path.exists(output_folder):
+        os.mkdir(output_folder)
+    if not os.path.exists(output_folder+'galaxies/'):
+        os.mkdir(output_folder+'galaxies/')
+    output_folder=f'{os.getcwd()}/outputs/galaxies/snap_{str(snapshot.snapshot_idx).zfill(3)}/'
+    if not os.path.exists(output_folder):
+        os.mkdir(output_folder)
+    output_name=output_folder+f'iproc_{str(snapshot.snapshot_idx).zfill(3)}.hdf5'
+    if os.path.exists(output_name):
+        try:
+            os.remove(output_name)
+        except:
+            pass
+
 
     logging.basicConfig(filename=logging_name, level=logging.INFO)
 
@@ -165,12 +185,16 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
     isnap=snapshot.snapshot_idx
     haloes=haloes.loc[haloes['isnap'].values==isnap,:]
     haloes.reset_index(inplace=True,drop=True)
+
+    #subsample the haloes
+    haloes=haloes.iloc[iproc::numproc,:]
+    haloes.reset_index(drop=True,inplace=True)
     numhaloes=haloes.shape[0]
     
     if not haloes.shape[0]:
-        logging.info(f'----> No haloes tracked in snapshot {snapshot.snapshot_file.split("/")[-1]}.')
+        logging.info(f'----> No haloes tracked in snapshot {snapshot.snapshot_file.split("/")[-1]} iproc {iproc}.')
         if verbose:
-            print(f'----> No haloes tracked in snapshot {snapshot.snapshot_file.split("/")[-1]}.')
+            print(f'----> No haloes tracked in snapshot {snapshot.snapshot_file.split("/")[-1]} iproc {iproc}.')
     
     #deal with the shells
     if shells_kpc is None: 
@@ -204,10 +228,10 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
     #loop over the haloes
     for ihalo,halo in haloes.iterrows():
 
-        logging.info(f'Considering halo {ihalo+1}/{numhaloes} [{(ihalo+1)/numhaloes*100:.1f}% done with snap] ID={int(halo["ID"])})...')
+        logging.info(f'Considering halo {ihalo+1}/{numhaloes} [{(ihalo+1)/numhaloes*100:.1f}% done with snap/iproc] ID={int(halo["ID"])})...')
 
         if verbose:
-            print(f'Considering halo {ihalo+1}/{numhaloes} [{(ihalo+1)/numhaloes*100:.1f}% done with snap] ID={int(halo["ID"])})...')
+            print(f'Considering halo {ihalo+1}/{numhaloes} [{(ihalo+1)/numhaloes*100:.1f}% done with snap/iproc] ID={int(halo["ID"])})...')
 
         #calculate cap for rhalf if the halo is close to another halo
         r_to_closest_halo=1e5
@@ -419,49 +443,7 @@ def galaxy_analysis(snapshot,haloes,shells_kpc=None,useminpot=False,rfac_offset=
         print(f'----> Galaxy characterisation for {snapshot.snapshot_file.split("/")[-1]} complete in {time.time()-t0:.2f} seconds.')
         print()
 
-    return galaxies
-
-
-# This function is used to analyse several galaxies in a snapshot when using multiprocessing.
-def stack_galaxies_worker(snaplist,haloes,iproc,shells_kpc=None,useminpot=False,rfac_offset=0.1,verbose=False):
-    
-    """
-    Analyse galaxies in several snapshots, for use with multiprocessing.
-
-    Parameters
-    ----------
-    snaplist : list of snapshot objects
-        List of snapshot objects containing metadata and methods to get particle data.
-    haloes : pandas dataframe
-        Dataframe containing the properties of the halos found in the snapshot.
-    iproc : int
-        Index of the process (used for naming the output file).
-    shells_kpc : list of floats
-        List of radii in kpc to calculate the properties of the galaxies.
-    useminpot : bool
-        If True, use the minimum potential of the star particles as the halo centre.
-    rfac_offset : float
-        Fractional value of sphere/shell radius to identify relevant particles.
-
-    Returns
-    ----------
-    None (writes the output to a file).
-
-    """
-
-    #initialise the output
-    isnap_outputs=[]
-    #for each snapshot in the list, find the haloes
-    for isnap,snapshot in enumerate(snaplist):
-        print(f'Analysing galaxies in snapshot {snapshot.snapshot_file} for process {iproc}... [snap {isnap+1}/{len(snaplist)} for iproc {iproc}]')
-        isnap_gals=galaxy_analysis(snapshot=snapshot,haloes=haloes,shells_kpc=shells_kpc,useminpot=useminpot,rfac_offset=rfac_offset,verbose=verbose)
-        isnap_outputs.append(isnap_gals)
-    
-    #concatenate the outputs
-    isnap_gals=pd.concat(isnap_outputs)
-    fname=os.getcwd()+f'/outputs/galaxies/chunk_{str(iproc).zfill(3)}.hdf5'
-
     #write the output to a file
-    if os.path.exists(fname):
-        os.remove(fname)
-    isnap_gals.to_hdf(fname,key='chunk')
+    galaxies.to_hdf(output_name,key='chunk')
+    
+    return galaxies

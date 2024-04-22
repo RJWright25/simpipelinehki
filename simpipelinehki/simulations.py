@@ -200,7 +200,7 @@ class gadget_simulation:
         Parameters:
         -----------
         numproc: int
-            The number of processes to use.
+            The number of processes to use. This parallelizes the KD tree generation over the snapshots.
         verbose: bool
             If True, print the progress of the KD tree generation.
 
@@ -255,18 +255,18 @@ class gadget_simulation:
 
 
 
-
-
     # Method to find haloes in all snapshots using multiprocessing
-    def find_haloes(self,numproc=1,delta=200,useminpot=False,verbose=False):
+    def find_haloes(self,snapshotidxs=None,numproc=1,delta=200,useminpot=False,verbose=False):
         
         """
-        Find haloes in all snapshots using multiprocessing.
+        Find haloes in desired snapshots using multiprocessing.
 
         Parameters:
         -----------
+        snapshotidxs: list
+            The indices of the snapshots to analyse.
         numproc: int
-            The number of processes to use.
+            The number of processes to use. This parallelizes the halo finding in a given snapshot.
         delta: float
             The overdensity criteria for the halo finder.
         useminpot: bool
@@ -295,54 +295,52 @@ class gadget_simulation:
         
         if not os.path.exists(os.getcwd()+'/outputs/haloes/'):
             os.mkdir(os.getcwd()+'/outputs/haloes/')
-        else:
-            for fname in os.listdir(os.getcwd()+'/outputs/haloes/'):
-                if os.path.exists(os.getcwd()+'/outputs/haloes/'+fname):
-                    os.remove(os.getcwd()+'/outputs/haloes/'+fname)
 
         #make a directory for the logs
         if not os.path.exists(os.getcwd()+'/logs/'):
             os.mkdir(os.getcwd()+'/logs/')
         if not os.path.exists(os.getcwd()+'/logs/haloes/'):
             os.mkdir(os.getcwd()+'/logs/haloes/')
+
+        if snapshotidxs is not None:
+            snapshot_list=[self.snapshots[i] for i in snapshotidxs]
         else:
-            for fname in os.listdir(os.getcwd()+'/logs/haloes/'):
-                if os.path.exists(os.getcwd()+'/logs/haloes/'+fname):
-                    os.remove(os.getcwd()+'/logs/haloes/'+fname)
+            snapshot_list=self.snapshots
 
-        #split the snapshots into chunks for multiprocessing
-        snapshot_list=self.snapshots
-        snapshot_chunks=split_list(snapshot_list,numproc)
+        for snapshot in snapshot_list:
+            print("Analysing haloes in snapshot: ", snapshot.snapshot_idx, ' at time: ', snapshot.time, ' z: ', snapshot.redshift)
+            print("Time: ", datetime.now())
 
-        procs=[]
-        for iproc in range(numproc):
-            snapshots_ichunk=snapshot_chunks[iproc]
-            proc = multiprocessing.Process(target=stack_haloes_worker, args=(snapshots_ichunk,iproc,delta,useminpot,verbose))
-            procs.append(proc)
-            proc.start()
+            if not os.path.exists(os.getcwd()+f'/outputs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/'):
+                try:
+                    os.mkdir(os.getcwd()+f'/outputs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/')
+                except:
+                    pass
 
-        #complete the processes
-        for proc in procs:
-            proc.join()
-        time.sleep(1)
+            if not os.path.exists(os.getcwd()+f'/logs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/'):
+                try:
+                    os.mkdir(os.getcwd()+f'/logs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/')
+                except:
+                    pass
 
-        #load in outputs and save
-        print()
-        print('Consolidating halo outputs...')
-        chunk_fnames=[os.getcwd()+'/outputs/haloes/'+file for file in os.listdir(os.getcwd()+'/outputs/haloes/')]
-        chunk_dfs=[pd.read_hdf(fname,key='chunk') for fname in chunk_fnames]
-        haloes=pd.concat(chunk_dfs)
-        haloes.sort_values(by=['Time','ID'],ascending=[True,True],inplace=True)
-        haloes.reset_index(drop=True,inplace=True)
+            #split the snapshots into chunks for multiprocessing
+            procs=[]
+            for iproc in range(numproc):
+                proc = multiprocessing.Process(target=basic_halofinder, args=(snapshot,iproc,numproc,delta,useminpot,verbose))
+                procs.append(proc)
+                proc.start()
+
+            #complete the processes
+            for proc in procs:
+                proc.join()
+            time.sleep(1)
 
         print()
         print(f'----> Halo finding for {len(self.snapshots)} snaps complete in {time.time()-t0stack:.2f} seconds.')
 
-        self.haloes=haloes
-        return haloes
         
     # Method to analyse galaxies in all snapshots using multiprocessing
-    def analyse_galaxies(self,numproc=1,shells_kpc=None,useminpot=False,rfac_offset=0.1,groupfinder=True,verbose=False):
+    def analyse_galaxies(self,snapshotidxs=None,numproc=1,shells_kpc=None,useminpot=False,rfac_offset=0.1,groupfinder=True,verbose=False):
         """
         
         Analyse galaxies in all snapshots using multiprocessing.
@@ -350,7 +348,9 @@ class gadget_simulation:
         Parameters:
         -----------
         numproc: int
-            The number of processes to use.
+            The number of processes to use. This parallelizes the galaxy analysis in a given snapshot.
+        snapshotidxs: list
+            The indices of the snapshots to analyse.
         shells_kpc: list (of floats, in kpc)
             The radii of the shells to use for the galaxy analysis.
         useminpot: bool
@@ -398,48 +398,50 @@ class gadget_simulation:
                     os.remove(os.getcwd()+'/logs/galaxies/'+fname)
 
         
-        #split the snapshots into chunks for multiprocessing
-        snapshot_list=self.snapshots
-        snapshot_chunks=split_list(snapshot_list,numproc)
+        if snapshotidxs is not None:
+            snapshot_list=[self.snapshots[i] for i in snapshotidxs]
+        else:
+            snapshot_list=self.snapshots
+
         haloes=self.haloes
 
-        #start the processes
-        procs=[]
-        for iproc in range(numproc):
-            time.sleep(0.1)
-            snapshots_ichunk=snapshot_chunks[iproc]
-            proc = multiprocessing.Process(target=stack_galaxies_worker, args=(snapshots_ichunk,haloes,iproc,shells_kpc,useminpot,rfac_offset,verbose))
-            procs.append(proc)
-            proc.start()
+        for snapshot in snapshot_list:
+            procs=[]
+            snapshotidx=snapshot.snapshot_idx
+            print("Analysing galaxies in snapshot: ", snapshotidx)
+            print("Time: ", datetime.now())
 
-        # complete the processes
-        for proc in procs:
-            proc.join()
-        time.sleep(1)
+            if not os.path.exists(os.getcwd()+f'/outputs/galaxies/snap_{str(snapshotidx).zfill(3)}/'):
+                try:
+                    os.mkdir(os.getcwd()+f'/outputs/galaxies/snap_{str(snapshotidx).zfill(3)}/')
+                except:
+                    pass
+            
+            if not os.path.exists(os.getcwd()+f'/logs/galaxies/snap_{str(snapshotidx).zfill(3)}/'):
+                try:
+                    os.mkdir(os.getcwd()+f'/logs/galaxies/snap_{str(snapshotidx).zfill(3)}/')
+                except:
+                    pass
 
-        #load in outputs and save
-        print()
-        print('Consolidating galaxy outputs...')
-        chunk_fnames=[os.getcwd()+'/outputs/galaxies/'+file for file in os.listdir(os.getcwd()+'/outputs/galaxies/')]
-        chunk_dfs=[pd.read_hdf(fname,key='chunk') for fname in chunk_fnames]
-        galaxies=pd.concat(chunk_dfs)
-        galaxies.sort_values(by=['Time','ID'],ascending=[True,True],inplace=True)
-        galaxies.reset_index(drop=True,inplace=True)
+            
+            for iproc in range(numproc):
+                    time.sleep(0.1)
+                    proc = multiprocessing.Process(target=galaxy_analysis, args=(snapshot,haloes,iproc,numproc,shells_kpc,useminpot,rfac_offset,verbose))
+                    procs.append(proc)
+                    proc.start()
+                
+            #complete the processes
+            for proc in procs:
+                proc.join()
+            time.sleep(1)
 
-        if groupfinder:
+            #load in outputs and save
             print()
-            print('Grouping galaxies...')
-            try:
-                galaxies=basic_groupfinder(galaxies,verbose=verbose)
-            except:
-                print('Error: groupfinder failed.')
-                return None
+            print('Finished analysing galaxies in snapshot: ', snapshotidx)
 
         print()
         print(f'----> Galaxy analysis for {len(self.snapshots)} snaps complete in {time.time()-t0stack:.2f} seconds.')
 
-        self.galaxies=galaxies
-        return galaxies
     
     def save_as_pickle(self, fname):
         """
