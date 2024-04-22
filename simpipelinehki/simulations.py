@@ -316,6 +316,13 @@ class gadget_simulation:
                     os.mkdir(os.getcwd()+f'/outputs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/')
                 except:
                     pass
+            else:
+                for fname in os.listdir(os.getcwd()+f'/outputs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/'):
+                    if os.path.exists(os.getcwd()+f'/outputs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/'+fname):
+                        try:
+                            os.remove(os.getcwd()+f'/outputs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/'+fname)
+                        except:
+                            pass
 
             if not os.path.exists(os.getcwd()+f'/logs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/'):
                 try:
@@ -354,7 +361,7 @@ class gadget_simulation:
 
         
     # Method to analyse galaxies in all snapshots using multiprocessing
-    def analyse_galaxies(self,snapshotidxs=None,numproc=1,shells_kpc=None,useminpot=False,rfac_offset=0.1,groupfinder=True,verbose=False):
+    def analyse_galaxies(self,snapshotidxs=None,numproc=1,shells_kpc=None,useminpot=False,rfac_offset=0.1,verbose=False):
         """
         
         Analyse galaxies in all snapshots using multiprocessing.
