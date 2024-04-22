@@ -683,11 +683,17 @@ def stack_kdtrees_worker(snaplist,iproc,verbose=False):
     """
     
     #log file
-    logfile=f'logs/kdtree_iproc{str(iproc).zfill(3)}.log'
+    logfile=f'logs/kdtrees/iproc{str(iproc).zfill(3)}.log'
     if not os.path.exists('logs'):
-        os.makedirs('logs')
+        os.mkdir('logs')
+
+    if os.path.exists('logs/kdtrees'):
+        os.makedirs('logs/kdtrees')
+
+
     if os.path.exists(logfile):
         os.remove(logfile)
+
 
     logging.basicConfig(filename=logfile, level=logging.INFO)
 
