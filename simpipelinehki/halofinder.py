@@ -88,7 +88,7 @@ def basic_halofinder(snapshot,iproc=0,numproc=1,delta=200,mcut=5,useminpot=False
             os.mkdir(logging_folder)
         except:
             pass
-    logging_name=logging_folder+f'iproc_{str(snapshot.snapshot_idx).zfill(3)}.log'
+    logging_name=logging_folder+f'iproc_{str(iproc).zfill(3)}.log'
     if os.path.exists(logging_name):
         try:
             os.remove(logging_name)
@@ -109,7 +109,7 @@ def basic_halofinder(snapshot,iproc=0,numproc=1,delta=200,mcut=5,useminpot=False
             os.mkdir(output_folder)
         except:
             pass
-    output_name=output_folder+f'iproc_{str(snapshot.snapshot_idx).zfill(3)}.hdf5'
+    output_name=output_folder+f'iproc_{iproc}.hdf5'
     if os.path.exists(output_name):
         try:
             os.remove(output_name)

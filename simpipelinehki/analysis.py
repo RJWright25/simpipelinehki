@@ -133,7 +133,7 @@ def galaxy_analysis(snapshot,haloes,iproc=0,numproc=1,shells_kpc=None,useminpot=
     logging_folder=f'{os.getcwd()}/logs/galaxies/snap_{str(snapshot.snapshot_idx).zfill(3)}/'
     if not os.path.exists(logging_folder):
         os.mkdir(logging_folder)
-    logging_name=logging_folder+f'iproc_{str(snapshot.snapshot_idx).zfill(3)}.log'
+    logging_name=logging_folder+f'iproc_{str(iproc).zfill(3)}.log'
     if os.path.exists(logging_name):
         try:
             os.remove(logging_name)
@@ -150,7 +150,7 @@ def galaxy_analysis(snapshot,haloes,iproc=0,numproc=1,shells_kpc=None,useminpot=
     output_folder=f'{os.getcwd()}/outputs/galaxies/snap_{str(snapshot.snapshot_idx).zfill(3)}/'
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
-    output_name=output_folder+f'iproc_{str(snapshot.snapshot_idx).zfill(3)}.hdf5'
+    output_name=output_folder+f'iproc_{str(iproc).zfill(3)}.hdf5'
     if os.path.exists(output_name):
         try:
             os.remove(output_name)
