@@ -308,7 +308,7 @@ class gadget_simulation:
             snapshot_list=self.snapshots
 
         for snapshot in snapshot_list:
-            print("Analysing haloes in snapshot: ", snapshot.snapshot_idx, ' at time: ', snapshot.time, ' z: ', snapshot.redshift)
+            print("Analysing haloes in snapshot: ", snapshot.snapshot_idx, ' --  z = ', snapshot.redshift)
             print("Time: ", datetime.now())
 
             if not os.path.exists(os.getcwd()+f'/outputs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/'):
