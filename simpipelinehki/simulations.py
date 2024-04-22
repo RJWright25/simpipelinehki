@@ -322,11 +322,17 @@ class gadget_simulation:
                     os.mkdir(os.getcwd()+f'/logs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/')
                 except:
                     pass
-
+            #load in the KD tree
+            if os.path.exists(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'):
+                with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
+                    kdtree_snap=pickle.load(kdfile)
+                    
+                print(f'Loaded KD tree for all processes in snapshot {snapshot.snapshot_idx}')
+                
             #split the snapshots into chunks for multiprocessing
             procs=[]
             for iproc in range(numproc):
-                proc = multiprocessing.Process(target=basic_halofinder, args=(snapshot,iproc,numproc,delta,useminpot,verbose))
+                proc = multiprocessing.Process(target=basic_halofinder, args=(snapshot,kdtree_snap,iproc,numproc,delta,useminpot,verbose))
                 procs.append(proc)
                 proc.start()
 

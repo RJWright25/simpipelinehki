@@ -19,7 +19,7 @@ import pandas as pd
 import astropy.units as apy_units
 
 # This function is used to find haloes in a snapshot.
-def basic_halofinder(snapshot,iproc=0,numproc=1,delta=200,mcut=5,useminpot=False,verbose=False):
+def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,useminpot=False,verbose=False):
 
     """
     Basic halo finder for idealised/small hydro runs. Uses BH locations to find halo centres,
@@ -158,22 +158,23 @@ def basic_halofinder(snapshot,iproc=0,numproc=1,delta=200,mcut=5,useminpot=False
     halo_output={column:np.zeros(bhlocs['Masses'].shape[0])+np.nan for column in columns}
 
     # get the KDTree
-    logging.info(f'Checking for KDTree in snapshot {snapshot.snapshot_file}...')
-    if os.path.exists(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'):
+    if kdtree is None:
+        logging.info(f'Checking for KDTree in snapshot {snapshot.snapshot_file}...')
+        if os.path.exists(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'):
 
-        with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
-            kdtree_snap=pickle.load(kdfile)
-        
-        logging.info(f'KDTree found for snapshot {snapshot.snapshot_file}.')
-
-        if verbose:
-            print(f'KDTree found for snapshot {snapshot.snapshot_file}.')
-            print(f'Num particles in tree = {[kdtree_snap[ptype].data.shape[0] for ptype in kdtree_snap.keys()]}')
+            with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
+                kdtree_snap=pickle.load(kdfile)
             
-    else:
-        logging.info(f'KDTree not found for snapshot {snapshot.snapshot_file}.')
-        kdtree_snap=None
-    
+            logging.info(f'KDTree found for snapshot {snapshot.snapshot_file}.')
+
+            if verbose:
+                print(f'KDTree found for snapshot {snapshot.snapshot_file}.')
+                print(f'Num particles in tree = {[kdtree_snap[ptype].data.shape[0] for ptype in kdtree_snap.keys()]}')
+                
+        else:
+            logging.info(f'KDTree not found for snapshot {snapshot.snapshot_file}.')
+            kdtree_snap=None
+                
     logging.info(f'There are **{numbh}** BHs to use for finding haloes in snapshot {snapshot.snapshot_file}.')
     logging.info(f'')
 
