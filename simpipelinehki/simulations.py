@@ -412,9 +412,11 @@ class gadget_simulation:
         if not os.path.exists(os.getcwd()+'/outputs/galaxies/'):
             os.mkdir(os.getcwd()+'/outputs/galaxies/')
         else:
-            for fname in os.listdir(os.getcwd()+'/outputs/galaxies/'):
-                if os.path.exists(os.getcwd()+'/outputs/galaxies/'+fname):
-                    os.remove(os.getcwd()+'/outputs/galaxies/'+fname)
+            for snapdir in os.listdir(os.getcwd()+'/outputs/galaxies/'):
+                if os.path.exists(os.getcwd()+'/outputs/galaxies/'+snapdir):
+                    for fname in os.listdir(os.getcwd()+'/outputs/galaxies/'+snapdir):
+                        if os.path.exists(os.getcwd()+'/outputs/galaxies/'+snapdir+'/'+fname):
+                            os.remove(os.getcwd()+'/outputs/galaxies/'+snapdir+'/'+fname)
 
         #make a directory for the logs
         if not os.path.exists(os.getcwd()+'/logs/'):
@@ -422,9 +424,11 @@ class gadget_simulation:
         if not os.path.exists(os.getcwd()+'/logs/galaxies/'):
             os.mkdir(os.getcwd()+'/logs/galaxies/')
         else:
-            for fname in os.listdir(os.getcwd()+'/logs/galaxies/'):
-                if os.path.exists(os.getcwd()+'/logs/galaxies/'+fname):
-                    os.remove(os.getcwd()+'/logs/galaxies/'+fname)
+            for snapdir in os.listdir(os.getcwd()+'/logs/galaxies/'):
+                if os.path.exists(os.getcwd()+'/logs/galaxies/'+snapdir):
+                    for fname in os.listdir(os.getcwd()+'/logs/galaxies/'+snapdir):
+                        if os.path.exists(os.getcwd()+'/logs/galaxies/'+snapdir+'/'+fname):
+                            os.remove(os.getcwd()+'/logs/galaxies/'+snapdir+'/'+fname)
         haloes=self.haloes
 
         for snapshot in snapshot_list:
