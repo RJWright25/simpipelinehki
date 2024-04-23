@@ -156,7 +156,7 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
             os.remove(output_name)
         except:
             pass
-        
+
     # get the KDTree
     if kdtree is None:
         logging.info(f'Checking for KDTree in snapshot {snapshot.snapshot_file}...')
@@ -273,6 +273,14 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
 
         #get the particle data and sort by radius
         galaxy=snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential','StarFormationRate','Temperature','Metallicity','nH'],types=[0,4],center=center,radius=(1+rfac_offset*1.5)*halo['Halo_R_Crit200']*apy_units.kpc,return_rrel=True,kdtree=kdtree_snap)
+        
+        if galaxy.shape[0]==0:
+            logging.info(f'No baryonic particles to analyse in galaxy {int(halo["ID"])}.')
+            if verbose:
+                print(f'No baryonic particles to analyse in galaxy {int(halo["ID"])}.')
+            galaxy_output_all.append(pd.Series(halo).to_frame().T)
+            continue
+        
         galaxy.sort_values(by='R',ascending=True,inplace=True)
         galaxy.reset_index(inplace=True,drop=True)
         
