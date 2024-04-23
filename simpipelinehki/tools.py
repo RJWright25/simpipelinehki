@@ -58,7 +58,7 @@ def read_hdf_chunks(directory):
     fnames=[]
     for snapdir in snapdirs:
         for fname in os.listdir(f'{directory}/{snapdir}'):
-            if file.endswith('.hdf5'):
+            if fname.endswith('.hdf5'):
                 fnames.append(f'{directory}/{snapdir}/{fname}')
         
 
