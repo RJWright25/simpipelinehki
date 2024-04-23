@@ -284,10 +284,13 @@ class gadget_simulation:
             The halo data (see halofinder.py for details).
 
         """
-
+        if snapshotidxs is not None:
+            snapshot_list=[self.snapshots[i] for i in snapshotidxs]
+        else:
+            snapshot_list=self.snapshots
         print()
         print(f'===========================================================================================')
-        print(f'Finding haloes in {len(self.snapshots)} snapshots using {numproc} processes...')
+        print(f'Finding haloes in {len(snapshot_list)} snapshots using {numproc} processes...')
         print(f'===========================================================================================')
         print()
 
@@ -306,10 +309,7 @@ class gadget_simulation:
         if not os.path.exists(os.getcwd()+'/logs/haloes/'):
             os.mkdir(os.getcwd()+'/logs/haloes/')
 
-        if snapshotidxs is not None:
-            snapshot_list=[self.snapshots[i] for i in snapshotidxs]
-        else:
-            snapshot_list=self.snapshots
+
 
         for snapshot in snapshot_list:
             print("Analysing haloes in snapshot = ", snapshot.snapshot_idx, ' --  z = ', snapshot.redshift)
@@ -392,9 +392,13 @@ class gadget_simulation:
         
         """
 
+        if snapshotidxs is not None:
+            snapshot_list=[self.snapshots[i] for i in snapshotidxs]
+        else:
+            snapshot_list=self.snapshots
         print()
         print(f'===========================================================================================')
-        print(f'Analysing galaxies in {len(self.snapshots)} snapshots using {numproc} processes...')
+        print(f'Analysing galaxies in {len(snapshot_list)} snapshots using {numproc} processes...')
         print(f'===========================================================================================')
         print()
 
@@ -421,13 +425,6 @@ class gadget_simulation:
             for fname in os.listdir(os.getcwd()+'/logs/galaxies/'):
                 if os.path.exists(os.getcwd()+'/logs/galaxies/'+fname):
                     os.remove(os.getcwd()+'/logs/galaxies/'+fname)
-
-        
-        if snapshotidxs is not None:
-            snapshot_list=[self.snapshots[i] for i in snapshotidxs]
-        else:
-            snapshot_list=self.snapshots
-
         haloes=self.haloes
 
         for snapshot in snapshot_list:
