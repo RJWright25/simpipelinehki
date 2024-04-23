@@ -468,8 +468,8 @@ class gadget_simulation:
             time.sleep(1)
 
             #load in outputs and save
-            print()
             print('Finished analysing galaxies in snapshot: ', snapshotidx)
+            print()
 
         print()
         print(f'----> Galaxy analysis for {len(self.snapshots)} snaps complete in {time.time()-t0stack:.2f} seconds.')

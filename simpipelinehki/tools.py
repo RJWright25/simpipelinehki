@@ -32,3 +32,41 @@ def split_list(lst,nproc):
     
     """
     return [lst[i::nproc] for i in range(nproc)]
+
+def read_hdf_chunks(directory):
+    """
+    
+    Read the HDF5 files in the directory and concatenate them into a single DataFrame.
+
+    Parameters:
+    -----------
+    directory: str
+        The directory containing the HDF5 files.
+
+    Returns:
+    -----------
+    DataFrame
+        A DataFrame containing the concatenated data from the HDF5 files.
+
+    
+    """
+
+    # Get the list of snapshot directories.
+    snapdirs = [snapdir for snapdir in os.listdir(directory) if 'snap' in snapdir]
+
+    # Get the list of files in the first snapshot directory.
+    fnames=[]
+    for snapdir in snapdirs:
+        for fname in os.listdir(f'{directory}/{snapdir}'):
+            if file.endswith('.hdf5'):
+                fnames.append(f'{directory}/{snapdir}/{fname}')
+        
+
+    dfs=[pd.read_hdf(fname, key='chunk') for fname in fnames]
+    df=pd.concat(dfs)
+
+    #sort by time
+    df.sort_values('Time',inplace=True)
+    df.reset_index(drop=True,inplace=True)
+
+    return df
