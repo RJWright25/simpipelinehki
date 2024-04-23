@@ -445,10 +445,16 @@ class gadget_simulation:
                 except:
                     pass
 
+            #load in the KD tree
+            if os.path.exists(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'):
+                with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
+                    kdtree_snap=pickle.load(kdfile)
+                    
+                print(f'Loaded KD tree for all processes in snapshot {snapshot.snapshot_idx}')
             
             for iproc in range(numproc):
                     time.sleep(0.1)
-                    proc = multiprocessing.Process(target=galaxy_analysis, args=(snapshot,haloes,iproc,numproc,shells_kpc,useminpot,rfac_offset,verbose))
+                    proc = multiprocessing.Process(target=galaxy_analysis, args=(snapshot,haloes,kdtree_snap,iproc,numproc,shells_kpc,useminpot,rfac_offset,verbose))
                     procs.append(proc)
                     proc.start()
                 

@@ -19,7 +19,7 @@ import astropy.units as apy_units
 import astropy.constants as apy_const
 
 # This function is used to calculate the properties of a galaxy in a snapshot, given the properties of the halo.
-def galaxy_analysis(snapshot,haloes,iproc=0,numproc=1,shells_kpc=None,useminpot=False,rfac_offset=0.1,verbose=True):
+def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=None,useminpot=False,rfac_offset=0.1,verbose=True):
 
     """
     Calculate the properties of a galaxy in a snapshot, given the properties of the halo.
@@ -156,7 +156,26 @@ def galaxy_analysis(snapshot,haloes,iproc=0,numproc=1,shells_kpc=None,useminpot=
             os.remove(output_name)
         except:
             pass
+        
+    # get the KDTree
+    if kdtree is None:
+        logging.info(f'Checking for KDTree in snapshot {snapshot.snapshot_file}...')
+        if os.path.exists(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'):
 
+            with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
+                kdtree_snap=pickle.load(kdfile)
+            
+            logging.info(f'KDTree found for snapshot {snapshot.snapshot_file}.')
+
+            if verbose:
+                print(f'KDTree found for snapshot {snapshot.snapshot_file}.')
+                print(f'Num particles in tree = {[kdtree_snap[ptype].data.shape[0] for ptype in kdtree_snap.keys()]}')
+                
+        else:
+            logging.info(f'KDTree not found for snapshot {snapshot.snapshot_file}.')
+            kdtree_snap=None
+    else:
+        kdtree_snap=kdtree
 
     logging.basicConfig(filename=logging_name, level=logging.INFO)
 
