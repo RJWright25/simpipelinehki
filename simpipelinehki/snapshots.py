@@ -181,9 +181,9 @@ class gadget_idealised_snapshot_hki:
             return None
 
         #if no types are provided, return all types
-        if not types:
+        if types is None:
             types = [0,1,4,5]
-        if not isinstance(types, list):
+        elif isinstance(types, int):
             types = [types]
 
         #initialize the particle data dictionary
@@ -198,6 +198,7 @@ class gadget_idealised_snapshot_hki:
                     print(f'Note: Particle type {ptype} not found in snapshot')
                     particle_data[ptype] = pd.DataFrame()
                     continue
+
                 #apply any spatial cuts
                 if center is not None and radius is not None:
                     mask,rrel=sphere_mask(snapshot=self, ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
@@ -207,43 +208,47 @@ class gadget_idealised_snapshot_hki:
                     mask=np.where(np.ones(part['ParticleIDs'].shape[0]))
 
                 num_particles = len(mask[0])
-                #iterate over the requested keys
-                for key in keys:
-                    #if the key is available directly from file, get the data and apply the conversion                    
-                    if key in part.keys():
-                        particle_data[ptype][key] = part[key][:][mask]*self.conversions[key]
-                        if len(particle_data[ptype][key].shape)==2 and particle_data[ptype][key].shape[1] == 3:
-                            del particle_data[ptype][key]
-                            particle_data[ptype][key+'_x'] = part[key][:][mask][:,0][::subsample]*self.conversions[key]
-                            particle_data[ptype][key+'_y'] = part[key][:][mask][:,1][::subsample]*self.conversions[key]
-                            particle_data[ptype][key+'_z'] = part[key][:][mask][:,2][::subsample]*self.conversions[key]
-                        elif len(particle_data[ptype][key].shape)==2:
-                            del particle_data[ptype][key]
-                            particle_data[ptype][key+f'_{str(0).zfill(2)}'] = part[key][:][mask][:,0][::subsample]*self.conversions[key]
-                    
-                    #if the key is a derived field, get the data and apply the conversion
-                    elif key in self.derived_fields_available and ptype == self.derived_fields_ptype[key]:
-                        particle_data[ptype][key] = self.get_derived_field(key, ptype)[mask][::subsample]
 
-                    #if the key is not available for this type, fill with NaNs
-                    else:
-                        print(f'Error: key {key} not found for particle type', ptype)
-                        particle_data[ptype][key]=np.zeros(num_particles)[::subsample]+np.nan
+                t0_load=time.time()
+
+                if num_particles:
+                    #iterate over the requested keys
+                    for key in keys:
+                        #if the key is available directly from file, get the data and apply the conversion
+                        if key in part.keys():
+                            particle_data[ptype][key] = part[key][:][mask]*self.conversions[key]
+                            if len(particle_data[ptype][key].shape)==2 and particle_data[ptype][key].shape[1] == 3:
+                                del particle_data[ptype][key]
+                                particle_data[ptype][key+'_x'] = part[key][:][mask][:,0][::subsample]*self.conversions[key]
+                                particle_data[ptype][key+'_y'] = part[key][:][mask][:,1][::subsample]*self.conversions[key]
+                                particle_data[ptype][key+'_z'] = part[key][:][mask][:,2][::subsample]*self.conversions[key]
+                            elif len(particle_data[ptype][key].shape)==2:
+                                del particle_data[ptype][key]
+                                particle_data[ptype][key+f'_{str(0).zfill(2)}'] = part[key][:][mask][:,0][::subsample]*self.conversions[key]
+                        
+                        #if the key is a derived field, get the data and apply the conversion
+                        elif key in self.derived_fields_available and ptype == self.derived_fields_ptype[key]:
+                            particle_data[ptype][key] = self.get_derived_field(key, ptype)[mask][::subsample]
+
+                        #if key is Masses and ptype is 1, return the mass_dm
+                        elif key == 'Masses' and ptype == 1:
+                            particle_data[ptype][key] = np.ones(num_particles)[::subsample]*self.mass_dm
+
+                        #if the key is not available for this type, fill with NaNs
+                        else:
+                            particle_data[ptype][key]=np.zeros(num_particles)[::subsample]+np.nan
                 
-                #add a column for the particle type
-                particle_data[ptype] = pd.DataFrame(particle_data[ptype])
-                particle_data[ptype]['ParticleTypes']=np.ones(num_particles)[::subsample]*ptype
+                    #add a column for the particle type
+                    particle_data[ptype] = pd.DataFrame(particle_data[ptype])
+                    particle_data[ptype]['ParticleTypes']=np.ones(num_particles)[::subsample]*ptype
+                else:
+                    particle_data[ptype] = pd.DataFrame()
 
             pfile.close()
 
         #stack the data into a pandas dataframe 
         particle_data = pd.concat([particle_data[ptype] for ptype in types])
         particle_data.reset_index(drop=True, inplace=True)
-
-        #add R column if center is provided (NB: coordinates not recentered)
-        if center is not None:
-            center = center.to(self.units["Coordinates"]).value
-            particle_data['R'] = np.sqrt((particle_data['Coordinates_x'].values-center[0])**2 + (particle_data['Coordinates_y'].values-center[1])**2 + (particle_data['Coordinates_z'].values-center[2])**2)
 
         return particle_data
 
