@@ -198,15 +198,15 @@ class gadget_idealised_snapshot_hki:
                     print(f'Note: Particle type {ptype} not found in snapshot')
                     particle_data[ptype] = pd.DataFrame()
                     continue
-
                 #apply any spatial cuts
-                mask=np.ones(part['ParticleIDs'].shape[0], dtype=bool)
                 if center is not None and radius is not None:
                     mask,rrel=sphere_mask(snapshot=self, ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
                     if return_rrel:
                         particle_data[ptype]['R']=rrel
+                else:
+                    mask=np.where(np.ones(part['ParticleIDs'].shape[0]))
 
-                num_particles = np.sum(mask)
+                num_particles = len(mask[0])
                 #iterate over the requested keys
                 for key in keys:
                     #if the key is available directly from file, get the data and apply the conversion                    
