@@ -386,6 +386,10 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
                 shell_gas=galaxy.loc[shell_gas_mask,:];shell_gas_mask=np.where(shell_gas_mask)
                 shell_gas_mass=masses[shell_gas_mask]
 
+                if not minrad_idx<galaxy.shape[0]:
+                    logging.info(f'No particles in the shell at {shell_str} for galaxy {int(halo["ID"])}.')
+                    continue
+                
                 minrad=galaxy['R'].values[minrad_idx]
                 maxrad=galaxy['R'].values[maxrad_idx-1]
                 dA=4*np.pi*(maxrad**2-minrad**2)
