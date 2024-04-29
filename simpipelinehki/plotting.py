@@ -368,7 +368,12 @@ def render_snap(snapshot,type='baryons',frame=None,galaxies=None,center=None,use
         ax.scatter(stars.loc[:,'Coordinates_x'].values,stars.loc[:,'Coordinates_y'].values,c=cname_star,alpha=0.03,s=0.05,lw=0,zorder=2)
 
     #add galaxy positions
-    if galaxies.shape[0]:
+    try:
+        numgal=galaxies.shape[0]
+    except:
+        numgal=0
+
+    if numgal:
         isnap_galaxies=galaxies.loc[galaxies['isnap'].values==snapshot.snapshot_idx,:]
         if isnap_galaxies.shape[0]:
             mstar_mask=isnap_galaxies['1p00restar_sphere_star_tot'].values>=0
