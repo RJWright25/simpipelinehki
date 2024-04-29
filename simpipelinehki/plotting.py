@@ -408,7 +408,7 @@ def render_snap(snapshot,type='baryons',frame=None,galaxies=None,center=None,use
     return fig,ax
 
 
-def render_sim_worker(snaplist,type='baryons',frame=None,galaxies=None,useminpot=False,subsample=1,verbose=False):
+def render_sim_worker(snaplist,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,subsample=1,verbose=False):
     
     """
     Worker function to make an animation of the simulation for a given set of snaps.
