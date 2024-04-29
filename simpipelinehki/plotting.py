@@ -89,6 +89,7 @@ def plot_glxevol(simulation,id=None):
 
     #mass
     mass_star=np.convolve(galaxy_masked['2p00restar_sphere_star_tot'].values,snapkernel,mode='valid')
+    mass_gas=np.convolve(galaxy_masked['2p00restar_sphere_gas_tot'].values,snapkernel,mode='valid')
     mass_bh=np.convolve(bhdetails_masked['bh_M'].values,bhkernel,mode='valid')
 
     #sfr and outflow/inflow
@@ -105,6 +106,8 @@ def plot_glxevol(simulation,id=None):
     #mass
     axes[0].plot(snaptime,mass_star,c='k',lw=2.5,alpha=0.75)
     axes[0].plot(snaptime,mass_star,c='goldenrod',lw=1.5, label=r'$M_{\star}$ $(2\times R_{\rm eff})$')
+    axes[0].plot(snaptime,mass_gas,c='k',lw=2.5,alpha=0.75)
+    axes[0].plot(snaptime,mass_gas,c='C0',lw=1.5, label=r'$M_{\rm gas}$ $(2\times R_{\rm eff})$')
     axes[0].plot(bhtime,mass_bh,c='grey',lw=1,alpha=0.5, label=r'$M_{\rm BH}$'+f' ({int(id)})')
 
     axes[0].set_xlabel(r'$t\, {\rm [Gyr]}$')
