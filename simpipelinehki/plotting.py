@@ -284,7 +284,7 @@ def plot_glxsep(simulation,ids=None,bh_subsample=10):
 ############ RENDERING A SIMULATION ############
 
 
-def render_snap(snapshot,type='baryons',frame=None,galaxies=pd.DataFrame(),center=None,useminpot=False,subsample=1,verbose=False):
+def render_snap(snapshot,type='baryons',frame=None,galaxies=pd.DataFrame(),center=None,useminpot=False,staralpha=1,subsample=1,verbose=False):
     """
     Render a snapshot of the simulation.
 
@@ -318,12 +318,6 @@ def render_snap(snapshot,type='baryons',frame=None,galaxies=pd.DataFrame(),cente
     censtr=''
     if useminpot:censtr='minpot'
 
-    #get galaxies if not provided
-    if not np.any(galaxies):
-        try:
-            galaxies=snapshot.galaxies
-        except:
-            galaxies=pd.DataFrame()
 
     pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=ptypes, center=None, radius=None,subsample=subsample)
 
@@ -365,7 +359,7 @@ def render_snap(snapshot,type='baryons',frame=None,galaxies=pd.DataFrame(),cente
     #add stars if necessary
     if type=='baryons':
         stars=pdata.loc[pdata['ParticleTypes'].values==4,:]
-        ax.scatter(stars.loc[:,'Coordinates_x'].values,stars.loc[:,'Coordinates_y'].values,c=cname_star,alpha=0.03,s=0.05,lw=0,zorder=2)
+        ax.scatter(stars.loc[:,'Coordinates_x'].values,stars.loc[:,'Coordinates_y'].values,c=cname_star,alpha=0.03*staralpha,s=0.05,lw=0,zorder=2)
 
     #add galaxy positions
     try:
@@ -413,7 +407,7 @@ def render_snap(snapshot,type='baryons',frame=None,galaxies=pd.DataFrame(),cente
     return fig,ax
 
 
-def render_sim_worker(snaplist,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,subsample=1,verbose=False):
+def render_sim_worker(snaplist,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,staralpha=1,subsample=1,verbose=False):
     
     """
     Worker function to make an animation of the simulation for a given set of snaps.
@@ -438,12 +432,12 @@ def render_sim_worker(snaplist,type='baryons',frame=None,galaxies=pd.DataFrame()
     for snapshot in snaplist:
         if verbose:
             print(f"Rendering snap {snapshot.snapshot_idx}...")
-        fig,_=render_snap(snapshot,type=type,frame=frame,galaxies=galaxies,useminpot=useminpot,subsample=subsample,verbose=verbose)
+        fig,_=render_snap(snapshot,type=type,frame=frame,galaxies=galaxies,useminpot=useminpot,staralpha=staralpha,subsample=subsample,verbose=verbose)
         fig.savefig(f'plots/render_sim_{type}/snap_{str(snapshot.snapshot_idx).zfill(3)}.png',dpi=dpi)
         plt.close(fig)
 
 
-def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,subsample=1,verbose=False):
+def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,staralpha=1,subsample=1,verbose=False):
     """
     Render all simulation snapshots.
 
@@ -490,7 +484,7 @@ def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,gala
         snapshots_ichunk=snapshots_chunks[iproc]
         if verbose:
             print(f'Process {iproc} getting snaps: ', [snapshot.snapshot_idx for snapshot in snapshots_ichunk])
-        proc = multiprocessing.Process(target=render_sim_worker, args=(snapshots_ichunk,type,frame,galaxies,useminpot,subsample,verbose))
+        proc = multiprocessing.Process(target=render_sim_worker, args=(snapshots_ichunk,type,frame,galaxies,useminpot,staralpha,subsample,verbose))
         procs.append(proc)
         proc.start()
 
