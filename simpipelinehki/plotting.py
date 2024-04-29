@@ -108,7 +108,9 @@ def plot_glxevol(simulation,id=None):
     axes[0].plot(snaptime,mass_star,c='goldenrod',lw=1.5, label=r'$M_{\star}$ $(2\times R_{\rm eff})$')
     axes[0].plot(snaptime,mass_gas,c='k',lw=2.5,alpha=0.75)
     axes[0].plot(snaptime,mass_gas,c='C0',lw=1.5, label=r'$M_{\rm gas}$ $(2\times R_{\rm eff})$')
-    axes[0].plot(bhtime,mass_bh,c='grey',lw=1,alpha=0.5, label=r'$M_{\rm BH}$'+f' ({int(id)})')
+
+    axes[0].plot(bhtime,mass_bh,c='grey',lw=2.5,alpha=1)
+    axes[0].plot(bhtime,mass_bh,c='k',lw=1.5,alpha=1, label=r'$M_{\rm BH}$'+f' ({int(id)})')
 
     axes[0].set_xlabel(r'$t\, {\rm [Gyr]}$')
     axes[0].set_xlim(snaptime[0],snaptime[-1])
