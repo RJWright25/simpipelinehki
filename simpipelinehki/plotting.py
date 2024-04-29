@@ -438,7 +438,7 @@ def render_sim_worker(snaplist,type='baryons',frame=None,galaxies=None,useminpot
         plt.close(fig)
 
 
-def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,galaxies=None,useminpot=False,subsample=1,verbose=False):
+def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,subsample=1,verbose=False):
     """
     Render all simulation snapshots.
 
