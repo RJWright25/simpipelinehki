@@ -345,7 +345,7 @@ def render_snap(snapshot,type='baryons',frame=None,galaxies=pd.DataFrame(),cente
 
     sph_fluidmask=pdata['ParticleTypes'].values==ptypes[0]
     sph_particles=sphviewer.Particles(pdata.loc[sph_fluidmask,[f'Coordinates_{x}' for x in 'xyz']].values,
-                                      pdata.loc[sph_fluidmask,'Masses'].values,nb=32)
+                                      pdata.loc[sph_fluidmask,'Masses'].values,nb=8)
     
     sph_camera = sphviewer.Camera(r='infinity', t=0, p=0, roll=0, xsize=1500, ysize=1500,
                                                 x=0, y=0, z=0,
