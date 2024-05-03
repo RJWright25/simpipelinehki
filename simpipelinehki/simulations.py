@@ -363,6 +363,8 @@ class gadget_simulation:
         print()
         print(f'----> Halo finding for {len(self.snapshots)} snaps complete in {time.time()-t0stack:.2f} seconds.')
 
+    
+        self.haloes=read_hdf_chunks('outputs/kdtrees/haloes/')
         
     # Method to analyse galaxies in all snapshots using multiprocessing
     def analyse_galaxies(self,snapshotidxs=None,numproc=1,shells_kpc=None,useminpot=False,rfac_offset=0.1,verbose=False):
@@ -473,6 +475,9 @@ class gadget_simulation:
 
         print()
         print(f'----> Galaxy analysis for {len(self.snapshots)} snaps complete in {time.time()-t0stack:.2f} seconds.')
+
+        self.haloes=read_hdf_chunks('outputs/kdtrees/haloes/')
+        self.galaxies=read_hdf_chunks('outputs/galaxies/')
 
     
     def save_as_pickle(self, fname):
