@@ -536,7 +536,7 @@ class gadget_simulation:
         return fig,axes
     
     # Method to render all simulation snapshots
-    def gen_sim_animation(self,numproc=1,fps=10,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,staralpha=1,subsample=1,verbose=False):
+    def gen_sim_animation(self,numproc=1,fps=10,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,staralpha=1,subsample=1,clims=None):
         """
         Render all simulation snapshots.
 
@@ -561,7 +561,7 @@ class gadget_simulation:
 
         """
 
-        gen_sim_animation(self,numproc=numproc,fps=fps,type=type,frame=frame,galaxies=galaxies,useminpot=useminpot,staralpha=staralpha,subsample=subsample,verbose=verbose)
+        gen_sim_animation(self,numproc=numproc,fps=fps,type=type,frame=frame,galaxies=galaxies,useminpot=useminpot,staralpha=staralpha,subsample=subsample,clims=clims)
 
         
 
