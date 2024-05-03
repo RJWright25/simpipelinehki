@@ -491,8 +491,6 @@ def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,gala
     for iproc in range(numproc):
         time.sleep(0.1)
         snapshots_ichunk=snapshots_chunks[iproc]
-        if verbose:
-            print(f'Process {iproc} getting snaps: ', [snapshot.snapshot_idx for snapshot in snapshots_ichunk])
         proc = multiprocessing.Process(target=render_sim_worker, args=(snapshots_ichunk,type,frame,galaxies,useminpot,staralpha,subsample,clims))
         procs.append(proc)
         proc.start()
