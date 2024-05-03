@@ -476,7 +476,7 @@ class gadget_simulation:
         print()
         print(f'----> Galaxy analysis for {len(self.snapshots)} snaps complete in {time.time()-t0stack:.2f} seconds.')
 
-        self.haloes=read_hdf_chunks('outputs/kdtrees/haloes/')
+        self.haloes=read_hdf_chunks('outputs/haloes/')
         self.galaxies=read_hdf_chunks('outputs/galaxies/')
 
     
