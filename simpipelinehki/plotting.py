@@ -289,7 +289,7 @@ def plot_glxsep(simulation,ids=None,bh_subsample=10):
 ############ RENDERING A SIMULATION ############
 
 
-def render_snap(snapshot,type='baryons',frame=None,galaxies=pd.DataFrame(),center=None,useminpot=False,staralpha=1,subsample=1,verbose=False):
+def render_snap(snapshot,type='baryons',frame=None,galaxies=pd.DataFrame(),center=None,useminpot=False,staralpha=1,subsample=1,clims=None):
     """
     Render a snapshot of the simulation.
 
@@ -354,12 +354,17 @@ def render_snap(snapshot,type='baryons',frame=None,galaxies=pd.DataFrame(),cente
     sph_render = sphviewer.Render(sph_scene)
     sph_extent = sph_render.get_extent()
     sph_img=sph_render.get_image()
-    
+
+    if clims:
+        norm=matplotlib.colors.LogNorm(*clims)
+    else:
+        norm=matplotlib.colors.LogNorm()
+        
     #make figure and plot
     fig,ax=plt.subplots(1,1,figsize=(5,5),gridspec_kw={'left':0.1,'right':0.99,'bottom':0.1,'top':0.99})
     ax.set_facecolor('k')
     ax.grid(which='both',alpha=0)
-    ax.imshow(sph_img,extent=sph_extent,origin='lower',cmap=cmap,norm=matplotlib.colors.LogNorm(),zorder=1)
+    ax.imshow(sph_img,extent=sph_extent,origin='lower',cmap=cmap,norm=norm,zorder=1)
     
     #add stars if necessary
     if type=='baryons':
