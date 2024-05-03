@@ -654,8 +654,12 @@ def make_particle_kdtree(snapshot):
     #get the particle types
     ptypes=[0,1,4,5]
 
+
     #file
     pdatafile=h5py.File(snapshot.snapshot_file, 'r')
+
+    if 'PartType5' not in pdatafile.keys():
+        ptypes.remove(5)
 
     #get the particle data
     for ptype in ptypes:
