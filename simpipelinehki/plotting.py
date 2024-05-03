@@ -417,7 +417,7 @@ def render_snap(snapshot,type='baryons',frame=None,galaxies=pd.DataFrame(),cente
     return fig,ax
 
 
-def render_sim_worker(snaplist,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,staralpha=1,subsample=1,verbose=False):
+def render_sim_worker(snaplist,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,staralpha=1,subsample=1,clims=None):
     
     """
     Worker function to make an animation of the simulation for a given set of snaps.
@@ -440,14 +440,13 @@ def render_sim_worker(snaplist,type='baryons',frame=None,galaxies=pd.DataFrame()
     """
     
     for snapshot in snaplist:
-        if verbose:
-            print(f"Rendering snap {snapshot.snapshot_idx}...")
-        fig,_=render_snap(snapshot,type=type,frame=frame,galaxies=galaxies,useminpot=useminpot,staralpha=staralpha,subsample=subsample,verbose=verbose)
+        print(f"Rendering snap {snapshot.snapshot_idx}...")
+        fig,_=render_snap(snapshot,type=type,frame=frame,galaxies=galaxies,useminpot=useminpot,staralpha=staralpha,subsample=subsample,clims=clims)
         fig.savefig(f'plots/render_sim_{type}/snap_{str(snapshot.snapshot_idx).zfill(3)}.png',dpi=dpi)
         plt.close(fig)
 
 
-def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,staralpha=1,subsample=1,verbose=False):
+def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,staralpha=1,subsample=1,clims=None):
     """
     Render all simulation snapshots.
 
@@ -494,7 +493,7 @@ def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,gala
         snapshots_ichunk=snapshots_chunks[iproc]
         if verbose:
             print(f'Process {iproc} getting snaps: ', [snapshot.snapshot_idx for snapshot in snapshots_ichunk])
-        proc = multiprocessing.Process(target=render_sim_worker, args=(snapshots_ichunk,type,frame,galaxies,useminpot,staralpha,subsample,verbose))
+        proc = multiprocessing.Process(target=render_sim_worker, args=(snapshots_ichunk,type,frame,galaxies,useminpot,staralpha,subsample,clims))
         procs.append(proc)
         proc.start()
 
