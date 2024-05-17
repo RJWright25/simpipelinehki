@@ -113,6 +113,7 @@ class gadget_idealised_snapshot_hki:
                           'Potential': 1,
                           'Density': 1.989e43*1/(self.hubble)/((3.08568e21/self.hubble)**3),
                           'StarFormationRate': 1,
+                          'CS Temperature':1,
                           'Metallicity': 1,
                           'InternalEnergy':1,
                           'ElectronAbundance':1}
