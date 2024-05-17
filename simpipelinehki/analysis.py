@@ -374,7 +374,8 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
 
             #calculate the properties of the galaxy AT the shell radius
             for shell_str,shell_rad in shells_all.items():
-                minrad_idx=np.searchsorted(galaxy['R'].values,shell_rad*0.75)
+                minrad_idx=np.searchsorted(galaxy['R'].values,shell_rad*(1-rfac_offset))
+                maxrad_idx=np.searchsorted(galaxy['R'].values,shell_rad*(1+rfac_offset))
                 rad_mask=np.ones(galaxy.shape[0])
                 rad_mask[:minrad_idx]=0
                 rad_mask[maxrad_idx:]=0
@@ -391,7 +392,7 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
                     continue
                 
                 minrad=galaxy['R'].values[minrad_idx]
-                maxrad=galaxy['R'].values[maxrad_idx-1]
+                maxrad=galaxy['R'].values[maxrad_idx]
                 dA=4*np.pi*(maxrad**2-minrad**2)
 
                 if shell_stars.shape[0]:
@@ -420,7 +421,7 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
                 outflow_mask=vrad_mask[shell_gas_mask]>0
                 outflow_vesc_mask=vrad_mask[shell_gas_mask]>0.25*v200
                 vrad_converted=vrad_flow[shell_gas_mask]
-                dr=0.25*shell_rad
+                dr=maxrad-minrad
 
                 for mask, flow_str in zip([inflow_mask,outflow_mask,outflow_vesc_mask],['inflow_all','outflow_all','outflow_vesc']):
                     if 'inflow' in flow_str:sign=-1
