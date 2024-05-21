@@ -94,8 +94,8 @@ def plot_glxevol(simulation,id=None):
 
     #sfr and outflow/inflow
     sfr=np.convolve(galaxy_masked['2p00restar_sphere_gas_sfr'].values,snapkernel,mode='valid')
-    inflow=np.convolve(galaxy_masked['2p00restar_shell_gasinflow_all_mdot'].values,snapkernel,mode='valid')/1e9
-    outflow=np.convolve(galaxy_masked['2p00restar_shell_gasoutflow_all_mdot'].values,snapkernel,mode='valid')/1e9
+    inflow=np.convolve(galaxy_masked['2p00restar_shell_gasinflow_all_mdot'].values,snapkernel,mode='valid')
+    outflow=np.convolve(galaxy_masked['2p00restar_shell_gasoutflow_all_mdot'].values,snapkernel,mode='valid')
     
     #figure
     fig,axes=plt.subplots(nrows=1,ncols=2,figsize=(6,2.5),gridspec_kw={'left':0.15,'right':0.95,'bottom':0.1,'top':0.95,'hspace':0.2,'wspace':0.3})
