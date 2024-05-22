@@ -202,7 +202,6 @@ class gadget_idealised_snapshot_hki:
 
                 #apply any spatial cuts
                 if center is not None and radius is not None:
-                    return_rrel=True
                     if kdtree is None:
                         kdpath=f'{self.snapshot_file.split("outputs")[0]+"/analysis/"}/outputs/kdtrees/'
                         if os.path.exists(f'{kdpath}/kdtree_{str(self.snapshot_idx).zfill(3)}.pkl'):
@@ -770,8 +769,8 @@ def sphere_mask(snapshot, center, radius, kdtree, ptype, return_rrel=False):
     kdtree_ptype=kdtree[ptype]
 
     #find the particles within the radius
-    idxs=kdtree_ptype.query_ball_point(x=center, r=radius)
-    print(idxs)
+    idxs=kdtree_ptype.query_ball_point(x=center, r=radius)[0]
+    print('idxs are:',idxs)
     mask=(np.array(idxs),)
 
     #calculate the relative position
