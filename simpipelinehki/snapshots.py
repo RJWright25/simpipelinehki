@@ -203,7 +203,7 @@ class gadget_idealised_snapshot_hki:
                 #apply any spatial cuts
                 if center is not None and radius is not None:
                     if kdtree is None:
-                        kdpath=f'{self.snapshot_file.split('outputs')[0]+'/analysis/'}/outputs/kdtrees/'
+                        kdpath=f'{self.snapshot_file.split("outputs")[0]+"/analysis/"}/outputs/kdtrees/'
                         if os.path.exists(f'{kdpath}/kdtree_{str(self.snapshot_idx).zfill(3)}.pkl'):
                             with open(f'{kdpath}/kdtree_{str(self.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
                                 kdtree=pickle.load(kdfile)
