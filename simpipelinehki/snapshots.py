@@ -211,6 +211,7 @@ class gadget_idealised_snapshot_hki:
                         else:
                             print('Error: KDTree not found')
                             return None
+                    
                     mask,rrel=sphere_mask(snapshot=self, ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
                     if return_rrel:
                         particle_data[ptype]['R']=rrel
@@ -226,6 +227,7 @@ class gadget_idealised_snapshot_hki:
                     for key in keys:
                         #if the key is available directly from file, get the data and apply the conversion
                         if key in part.keys():
+                            print(mask)
                             particle_data[ptype][key] = part[key][:][mask]*self.conversions[key]
                             if len(particle_data[ptype][key].shape)==2 and particle_data[ptype][key].shape[1] == 3:
                                 del particle_data[ptype][key]
@@ -309,7 +311,6 @@ class gadget_idealised_snapshot_hki:
                 
             pfile.close()
             return None
-
 
     # Add method to render the snapshot
     def render_snap(self,type='baryons',frame=300,galaxies=None,useminpot=False,subsample=1,verbose=False):
