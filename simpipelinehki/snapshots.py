@@ -769,7 +769,7 @@ def sphere_mask(snapshot, center, radius, kdtree, ptype, return_rrel=False):
     kdtree_ptype=kdtree[ptype]
 
     #find the particles within the radius
-    idxs=kdtree_ptype.query_ball_point(x=center, r=radius)[0]
+    idxs=kdtree_ptype.query_ball_point(x=center, r=radius)
     mask=np.array(idxs)
 
     #calculate the relative position
