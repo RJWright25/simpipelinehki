@@ -228,7 +228,6 @@ class gadget_idealised_snapshot_hki:
                     for key in keys:
                         #if the key is available directly from file, get the data and apply the conversion
                         if key in part.keys():
-                            print(mask)
                             particle_data[ptype][key] = part[key][:][mask]*self.conversions[key]
                             if len(particle_data[ptype][key].shape)==2 and particle_data[ptype][key].shape[1] == 3:
                                 del particle_data[ptype][key]
