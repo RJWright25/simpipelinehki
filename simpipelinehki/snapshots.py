@@ -216,9 +216,9 @@ class gadget_idealised_snapshot_hki:
                     if return_rrel:
                         particle_data[ptype]['R']=rrel
                 else: 
-                    mask=np.where(np.ones(part['ParticleIDs'].shape[0]))[0]
+                    mask=(np.array(list(range(part['ParticleIDs'].shape[0]))),)
 
-                num_particles = len(mask)
+                num_particles = len(mask[0])
 
                 t0_load=time.time()
 
@@ -252,6 +252,7 @@ class gadget_idealised_snapshot_hki:
                     #add a column for the particle type
                     particle_data[ptype] = pd.DataFrame(particle_data[ptype])
                     particle_data[ptype]['ParticleTypes']=np.ones(num_particles)[::subsample]*ptype
+
                 else:
                     particle_data[ptype] = pd.DataFrame()
 
