@@ -215,10 +215,11 @@ class gadget_idealised_snapshot_hki:
                     mask,rrel=sphere_mask(snapshot=self, ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
                     if return_rrel:
                         particle_data[ptype]['R']=rrel
-                else:
+                else: 
                     mask=np.where(np.ones(part['ParticleIDs'].shape[0]))
+                    print(mask)
 
-                num_particles = len(mask[0])
+                num_particles = len(mask)
 
                 t0_load=time.time()
 
