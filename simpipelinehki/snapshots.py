@@ -216,12 +216,10 @@ class gadget_idealised_snapshot_hki:
                     if return_rrel:
                         particle_data[ptype]['R']=rrel
                 else: 
-                    mask=np.ones(list(range(part['ParticleIDs'].shape[0]))),)
+                    mask=np.array(list(range(part['ParticleIDs'].shape[0])))
 
-                if len(mask)==1:
-                    mask=(mask,)
-                
-                num_particles = mask[0].shape[0]
+                print('mask for ptype',ptype,mask)
+                num_particles = mask.shape[0]
 
                 t0_load=time.time()
 
