@@ -218,7 +218,6 @@ class gadget_idealised_snapshot_hki:
                 else: 
                     mask=np.array(list(range(part['ParticleIDs'].shape[0])))
 
-                print('mask for ptype',ptype,mask)
                 num_particles = mask.shape[0]
 
                 t0_load=time.time()
