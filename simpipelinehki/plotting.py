@@ -309,11 +309,11 @@ def render_snap(snapshot,type='baryons',frame=None,galaxies=pd.DataFrame(),cente
 
     #set up the rendering parameters based on type
     if type=='baryons':
-        ptypes=[0,4,1];radstr='Halo_R_Crit200';rfac=1
+        ptypes=[0,4,1,5];radstr='Halo_R_Crit200';rfac=1
         cmap=cmap_gas
         ls_sphere='--'
     elif type=='dm':
-        ptypes=[1,0,4];radstr='Halo_R_Crit200';rfac=1
+        ptypes=[1,0,4,5];radstr='Halo_R_Crit200';rfac=1
         cmap='viridis'
         ls_sphere='--'
     else:
@@ -370,6 +370,12 @@ def render_snap(snapshot,type='baryons',frame=None,galaxies=pd.DataFrame(),cente
     if type=='baryons':
         stars=pdata.loc[pdata['ParticleTypes'].values==4,:]
         ax.scatter(stars.loc[:,'Coordinates_x'].values,stars.loc[:,'Coordinates_y'].values,c=cname_star,alpha=0.03*staralpha,s=0.05,lw=0,zorder=2)
+
+    blackholes=pdata.loc[pdata['ParticleTypes'].values==5,:]
+    if type=='baryons' and blackholes.shape[0]:
+        for ibh,bh in blackholes.iterrows():
+            ax.add_artist(plt.Circle(radius=0.15,xy=[bh[f'Coordinates_x']-center[0],bh[f'Coordinates_y']-center[1]],color='w',lw=1,ls='-',fill=True,zorder=3))
+            ax.add_artist(plt.Circle(radius=0.10,xy=[bh[f'Coordinates_x']-center[0],bh[f'Coordinates_y']-center[1]],color='k',lw=0.5,ls='-',fill=True,zorder=3))
 
     #add galaxy positions
     try:
