@@ -216,9 +216,11 @@ class gadget_idealised_snapshot_hki:
                     if return_rrel:
                         particle_data[ptype]['R']=rrel
                 else: 
-                    mask=(np.array(list(range(part['ParticleIDs'].shape[0]))),)
+                    mask=np.ones(list(range(part['ParticleIDs'].shape[0]))),)
 
-                print(mask[0])
+                if len(mask)==1:
+                    mask=(mask,)
+                
                 num_particles = mask[0].shape[0]
 
                 t0_load=time.time()
@@ -516,10 +518,9 @@ class gadget_cosmo_snapshot_hki:
                     if return_rrel:
                         particle_data[ptype]['R']=rrel
                 else:
-                    mask=np.where(np.ones(part['ParticleIDs'].shape[0]))
+                    mask=np.where(np.ones(part['ParticleIDs'].shape[0]))[0]
 
-                num_particles = len(mask[0])
-
+                num_particles = len(mask)
                 t0_load=time.time()
 
                 if num_particles:
@@ -771,10 +772,10 @@ def sphere_mask(snapshot, center, radius, kdtree, ptype, return_rrel=False):
 
     #find the particles within the radius
     idxs=kdtree_ptype.query_ball_point(x=center, r=radius)[0]
-    mask=(np.array(idxs),)
+    mask=np.array(idxs)
 
     #calculate the relative position
-    if return_rrel and len(mask[0]):
+    if return_rrel and len(mask):
         rrel=np.linalg.norm(kdtree_ptype.data[mask]-center, axis=1)
     else:
         rrel=None
