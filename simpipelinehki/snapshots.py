@@ -218,7 +218,8 @@ class gadget_idealised_snapshot_hki:
                 else: 
                     mask=(np.array(list(range(part['ParticleIDs'].shape[0]))),)
 
-                num_particles = len(mask[0])
+                print(mask[0])
+                num_particles = mask[0].shape[0]
 
                 t0_load=time.time()
 
