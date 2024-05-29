@@ -170,9 +170,10 @@ def plot_glxsep(simulation,ids=None,bh_subsample=10):
 
     """
 
+
     galaxies=simulation.galaxies
     bhdetails=simulation.bhdetails
-    
+
     #make sure the dataframes are sorted
     galaxies.sort_values(by='Time',ascending=True,inplace=True)
     galaxies.reset_index(drop=True,inplace=True)
@@ -184,7 +185,7 @@ def plot_glxsep(simulation,ids=None,bh_subsample=10):
     else:
         id1=ids[0];id2=ids[1]
         haloids=ids
-    
+
     #mask galaxies and bhdetails
     galaxies_masked={id:galaxies.loc[galaxies['ID'].values==id,:] for id in haloids}
     bhdetails_masked={id:bhdetails[id].loc[::bh_subsample,:] for id in haloids}
@@ -215,22 +216,25 @@ def plot_glxsep(simulation,ids=None,bh_subsample=10):
     #which bh lives the longest
     bhids=[int(bh) for bh in bhdetails_masked.keys()]
     bhids_shape={bh:bhdetails_masked[bh].shape[0] for bh in bhids}
-    bhid_remnant=[bh for bh in bhids if bhids_shape[bh]==np.max(list(bhids_shape.values()))][0]
-    bhid_sec=[bh for bh in bhids if bh!=bhid_remnant][0]
+    bhid_prim=[bh for bh in bhids if bhids_shape[bh]==np.max(list(bhids_shape.values()))][0]
+    bhid_sec=[bh for bh in bhids if bh!=bhid_prim][0]
+
+    print(bhid_prim)
+    print(bhid_sec)
 
     #match time-step from secondary to primary
     time_sec=bhdetails_masked[bhid_sec]['Time'].values
-    time_rem=bhdetails_masked[bhid_remnant]['Time'].values
+    time_prim=bhdetails_masked[bhid_prim]['Time'].values
     sep_bh=np.zeros(time_sec.shape[0])
     vel_bh=np.zeros(time_sec.shape[0])
-    
+
     #for each time in the secondary, find the idx of the closest time in the primary and get sep/vel at that idx
     for itime,time in enumerate(time_sec):
-        idx_prim=np.argmin(np.abs(time_rem-time))
+        idx_prim=np.argmin(np.abs(time_prim-time))
         xyz_sec=bhdetails_masked[bhid_sec].loc[:,['Coordinates_x','Coordinates_y','Coordinates_z']].values[itime,:]
-        xyz_rem=bhdetails_masked[bhid_remnant].loc[:,['Coordinates_x','Coordinates_y','Coordinates_z']].values[idx_prim,:]
+        xyz_rem=bhdetails_masked[bhid_prim].loc[:,['Coordinates_x','Coordinates_y','Coordinates_z']].values[idx_prim,:]
         vel_sec=bhdetails_masked[bhid_sec].loc[:,['V_x','V_y','V_z']].values[itime,:]/bhdetails_masked[bhid_sec]['ScaleFactor'].values[itime]
-        vel_rem=bhdetails_masked[bhid_remnant].loc[:,['V_x','V_y','V_z']].values[idx_prim,:]/bhdetails_masked[bhid_remnant]['ScaleFactor'].values[idx_prim]
+        vel_rem=bhdetails_masked[bhid_prim].loc[:,['V_x','V_y','V_z']].values[idx_prim,:]/bhdetails_masked[bhid_prim]['ScaleFactor'].values[idx_prim]
         vel_bh[itime]=np.sqrt(np.sum((vel_sec-vel_rem)**2))
         sep_bh[itime]=np.sqrt(np.sum((xyz_sec-xyz_rem)**2))
 
@@ -250,7 +254,7 @@ def plot_glxsep(simulation,ids=None,bh_subsample=10):
     #separation
     axes[0].plot(snaptime,sep,c='k',lw=2.5)
     axes[0].plot(snaptime,sep,c='grey',lw=1.5, label=r'Halo separation')
-    
+
     axes[0].plot(time_sec,sep_bh,c='grey',lw=1,alpha=0.5,label=r'BH separation')
 
     axes[0].plot(snaptime,r200_0,c='k',lw=2.5)
@@ -281,6 +285,7 @@ def plot_glxsep(simulation,ids=None,bh_subsample=10):
 
     fig.set_dpi(dpi)
     plt.savefig(os.getcwd()+'/plots/'+f'glxsep_{int(id1)}_{int(id2)}.png',bbox_inches='tight',dpi=dpi)
+
 
     return fig,axes
 
