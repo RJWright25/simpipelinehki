@@ -40,7 +40,7 @@ cmap_gas = matplotlib.colors.ListedColormap(cmaplist_gas)
 ############ TIME SERIES DATA ############
 
 # This function is used to plot the evolution of the properties of a galaxy specified by its ID.
-def plot_glxevol(simulation,id=None):
+def plot_glxevol(simulation,radstr='2p00restar',id=None):
     """
     Plots the evolution of the properties of a galaxy specified by its ID.
 
@@ -88,14 +88,14 @@ def plot_glxevol(simulation,id=None):
     bhtime=np.convolve(bhdetails_masked['Time'].values,bhkernel,mode='valid')
 
     #mass
-    mass_star=np.convolve(galaxy_masked['2p00restar_sphere_star_tot'].values,snapkernel,mode='valid')
-    mass_gas=np.convolve(galaxy_masked['2p00restar_sphere_gas_tot'].values,snapkernel,mode='valid')
+    mass_star=np.convolve(galaxy_masked[f'{radstr}_sphere_star_tot'].values,snapkernel,mode='valid')
+    mass_gas=np.convolve(galaxy_masked[f'{radstr}_sphere_gas_tot'].values,snapkernel,mode='valid')
     mass_bh=np.convolve(bhdetails_masked['bh_M'].values,bhkernel,mode='valid')
 
     #sfr and outflow/inflow
-    sfr=np.convolve(galaxy_masked['2p00restar_sphere_gas_sfr'].values,snapkernel,mode='valid')
-    inflow=np.convolve(galaxy_masked['2p00restar_shell_gasinflow_all_mdot'].values,snapkernel,mode='valid')
-    outflow=np.convolve(galaxy_masked['2p00restar_shell_gasoutflow_all_mdot'].values,snapkernel,mode='valid')
+    sfr=np.convolve(galaxy_masked[f'{radstr}_sphere_gas_sfr'].values,snapkernel,mode='valid')
+    inflow=np.convolve(galaxy_masked[f'{radstr}_shell_gasinflow_all_mdot'].values,snapkernel,mode='valid')
+    outflow=np.convolve(galaxy_masked[f'{radstr}_shell_gasoutflow_all_mdot'].values,snapkernel,mode='valid')
     
     #figure
     fig,axes=plt.subplots(nrows=1,ncols=2,figsize=(6,2.5),gridspec_kw={'left':0.15,'right':0.95,'bottom':0.1,'top':0.95,'hspace':0.2,'wspace':0.3})
@@ -558,9 +558,6 @@ def render_merger_worker(snaplist,galaxies,ids=None,staralpha=10,clims=(1e3,3e8)
     remnantid=haloids_unique[np.nanargmax([galaxies.loc[galaxies['ID'].values==haloid,:].shape[0] for haloid in haloids_unique])]
     #pick the other id
     secondid=haloids_unique[1- np.nanargmax([galaxies.loc[galaxies['ID'].values==haloid,:].shape[0] for haloid in haloids_unique])]
-
-    print('Primary',remnantid)
-    print('Secondary',secondid)
 
     for snapshot in snaplist:
         isnap=snapshot.snapshot_idx

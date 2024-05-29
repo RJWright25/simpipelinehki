@@ -505,7 +505,7 @@ class gadget_simulation:
 
 
     # Method to plot the evolution of the galaxy properties
-    def plot_glxevol(self,id=None):
+    def plot_glxevol(self,radstr='2p00restar',id=None):
         
         """
         Plot the evolution of the galaxy properties.
@@ -518,7 +518,7 @@ class gadget_simulation:
             The ID of the galaxy to analse.
         
         """
-        fig,axes=plot_glxevol(self,id=id)
+        fig,axes=plot_glxevol(self,radstr=radstr,id=id)
         return fig,axes
 
     # Method to plot the evolution pair separation/velocity
