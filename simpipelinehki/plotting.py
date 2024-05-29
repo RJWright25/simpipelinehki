@@ -556,7 +556,8 @@ def render_merger_worker(snaplist,galaxies,ids=None,staralpha=10,clims=(1e3,3e8)
 
     #id remaining
     remnantid=haloids_unique[np.nanargmax([galaxies.loc[galaxies['ID'].values==haloid,:].shape[0] for haloid in haloids_unique])]
-    secondid=haloids_unique[1-np.where(haloids_unique==remnantid)[0][0]]
+    #pick the other id
+    secondid=haloids_unique[1- np.nanargmax([galaxies.loc[galaxies['ID'].values==haloid,:].shape[0] for haloid in haloids_unique])]
 
     print('Primary',remnantid)
     print('Secondary',secondid)
