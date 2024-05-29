@@ -719,7 +719,7 @@ def gen_merger_animation(simulation,numproc=1,ids=None,fps=10,staralpha=10,clims
         snapshots_ichunk=snapshots_chunks[iproc]
         if verbose:
             print(f'Process {iproc} getting snaps: ', [snapshot.snapshot_idx for snapshot in snapshots_ichunk])            
-        proc = multiprocessing.Process(target=render_merger_worker, args=(snapshots_ichunk,simulation.galaxies,ids,useminpot,verbose))
+        proc = multiprocessing.Process(target=render_merger_worker, args=(snapshots_ichunk,simulation.galaxies,ids,staralpha,clims,useminpot,verbose))
         procs.append(proc)
         proc.start()
 
