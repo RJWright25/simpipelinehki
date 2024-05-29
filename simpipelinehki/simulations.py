@@ -570,7 +570,7 @@ class gadget_simulation:
         
 
     # Method to render a merger 
-    def gen_merger_animation(self,numproc=1,fps=5,ids=None,useminpot=False,verbose=False):
+    def gen_merger_animation(self,numproc=1,ids=None,fps=10,staralpha=10,clims=(1e3,3e8),useminpot=False,verbose=False):
         """
         Render an animation of the interaction between two galaxies specified by their IDs.
 
