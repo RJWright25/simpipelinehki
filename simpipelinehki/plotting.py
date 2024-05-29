@@ -708,7 +708,11 @@ def gen_merger_animation(simulation,numproc=1,ids=None,fps=10,staralpha=10,clims
     #add 5 snapshots after
     isnap_last=common_snaps[-1]
     for i in range(1,5):
-        snapshot_list.append(simulation.snapshots[int(isnap_last+i)])
+        try:
+            snapshot_list.append(simulation.snapshots[int(isnap_last+i)])
+        except:
+            pass
+        
 
     #split for computation
     snapshots_chunks=split_list(snapshot_list,numproc)
