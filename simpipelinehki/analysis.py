@@ -217,11 +217,11 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
     
     #deal with the shells
     if shells_kpc is None: 
-        shells_kpc=[0.01,0.02,0.05,0.1,0.2,0.5,1,2,5,10] #default shells
+        shells_kpc=[0.001,0.002,0.005,0.01,0.02,0.05,0.1,0.2,0.5,1,2,5,10] #default shells
     shells_kpc_str=[]
     for ishellkpc in shells_kpc:
         if ishellkpc>=1: shells_kpc_str.append(f'{str(int(ishellkpc)).zfill(3)}kpc')
-        else:shells_kpc_str.append(f'0p{str(int(ishellkpc*100)).zfill(2)}kpc')
+        else:shells_kpc_str.append(f'0p{str(int(ishellkpc*1000)).zfill(3)}kpc')
     shells_kpc={shell_kpc_str:shell_kpc for shell_kpc_str,shell_kpc in zip(shells_kpc_str,shells_kpc)}
 
     # get the KDTree
