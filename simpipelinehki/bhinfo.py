@@ -176,7 +176,10 @@ def read_bhdata(simulation,path=None,bhids=None,subsample=1):
         #assign columns
         bhdata_ibh.columns=columns
         bhdata_ibh['BH_ID']=np.ones(bhdata_ibh.shape[0])*int(bhid)
-        bhdata_ibh['ScaleFactor']=bhdata_ibh['Time'].values
+        if 'cosmo' in simulation.snapshot_type:
+            bhdata_ibh['ScaleFactor']=bhdata_ibh['Time'].values
+        else:
+            bhdata_ibh['ScaleFactor']=np.ones(bhdata_ibh.shape[0])
 
         #convert to physical units
         bhdata_ibh['bh_M']=bhdata_ibh['bh_M']*1e10/simulation.hubble
