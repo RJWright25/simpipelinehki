@@ -524,7 +524,7 @@ def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,gala
 
 
 # This function is used to create an animation of the interaction between two galaxies specified by their IDs.
-def render_merger_worker(snaplist,galaxies,ids=None,useminpot=False,verbose=False):
+def render_merger_worker(snaplist,galaxies,ids=None,staralpha=10,clims=(1e3,3e8),useminpot=False,verbose=False):
     
     """
     Worker function to make an animation of the interaction between two galaxies specified by their IDs.
@@ -598,7 +598,7 @@ def render_merger_worker(snaplist,galaxies,ids=None,useminpot=False,verbose=Fals
 
         frame=np.nanmax([xysep*1,25])
 
-        pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=[0,4], center=None, radius=None,subsample=1)
+        pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=[0,4,5], center=None, radius=None,subsample=1)
         stars=pdata.loc[pdata['ParticleTypes'].values==4,:]
         gas=pdata.loc[pdata['ParticleTypes'].values==0,:]
 
@@ -614,8 +614,12 @@ def render_merger_worker(snaplist,galaxies,ids=None,useminpot=False,verbose=Fals
         sph_img[sph_img==0]
 
         # ax.fill_between([-200,200],[-200,-200],[200,200],color='k',alpha=1,zorder=0)
-        ax.imshow(sph_img,extent=sph_extent,origin='lower',cmap=cmap_gas,norm=matplotlib.colors.LogNorm(1e4,1e9),zorder=1)
-        ax.scatter(stars.loc[:,'Coordinates_x'].values-center[0],stars.loc[:,'Coordinates_y'].values-center[1],c=cname_star,alpha=0.03,s=0.05,lw=0,zorder=2)
+        if clims:
+            norm=matplotlib.colors.LogNorm(*clims)
+        else:
+            norm=matplotlib.colors.LogNorm()
+        ax.imshow(sph_img,extent=sph_extent,origin='lower',cmap=cmap_gas,norm=norm,zorder=1)
+        ax.scatter(stars.loc[:,'Coordinates_x'].values-center[0],stars.loc[:,'Coordinates_y'].values-center[1],c=cname_star,alpha=0.03*staralpha,s=0.05,lw=0,zorder=2)
 
         #plot the galaxies
         ax.scatter(x1-center[0],y1-center[1],s=2,c=f'w',zorder=2)
@@ -642,7 +646,7 @@ def render_merger_worker(snaplist,galaxies,ids=None,useminpot=False,verbose=Fals
 
 
 # Method to render a merger 
-def gen_merger_animation(simulation,numproc=1,fps=10,ids=None,useminpot=False,verbose=False):
+def gen_merger_animation(simulation,numproc=1,ids=None,fps=10,staralpha=10,clims=(1e3,3e8),useminpot=False,verbose=False):
 
     """
     Render an animation of the interaction between two galaxies specified by their IDs.
