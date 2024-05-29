@@ -558,6 +558,9 @@ def render_merger_worker(snaplist,galaxies,ids=None,staralpha=10,clims=(1e3,3e8)
     remnantid=haloids_unique[np.nanargmax([galaxies.loc[galaxies['ID'].values==haloid,:].shape[0] for haloid in haloids_unique])]
     secondid=haloids_unique[np.nanargmin([galaxies.loc[galaxies['ID'].values==haloid,:].shape[0] for haloid in haloids_unique])]
 
+    print('Primary',remnantid)
+    print('Secondary',secondid)
+
     for snapshot in snaplist:
         isnap=snapshot.snapshot_idx
         isnap_gals=galaxies.loc[galaxies['isnap'].values==isnap,:]
@@ -712,7 +715,7 @@ def gen_merger_animation(simulation,numproc=1,ids=None,fps=10,staralpha=10,clims
             snapshot_list.append(simulation.snapshots[int(isnap_last+i)])
         except:
             pass
-        
+
 
     #split for computation
     snapshots_chunks=split_list(snapshot_list,numproc)
