@@ -105,9 +105,10 @@ def plot_glxevol(simulation,radstr='2p00restar',id=None):
 
     #mass
     axes[0].plot(snaptime,mass_star,c='k',lw=2.5,alpha=0.75)
-    axes[0].plot(snaptime,mass_star,c='goldenrod',lw=1.5, label=r'$M_{\star}$ $(2\times R_{\rm eff})$')
+    axes[0].plot(snaptime,mass_star,c='goldenrod',lw=1.5, label=r'$M_{\star}$'+f'({radstr})')
     axes[0].plot(snaptime,mass_gas,c='k',lw=2.5,alpha=0.75)
-    axes[0].plot(snaptime,mass_gas,c='C0',lw=1.5, label=r'$M_{\rm gas}$ $(2\times R_{\rm eff})$')
+    axes[0].plot(snaptime,mass_gas,c='C0',lw=1.5, label=r'$M_{\rm gas}$'+f'({radstr})')
+
 
     axes[0].plot(bhtime,mass_bh,c='grey',lw=2.5,alpha=1)
     axes[0].plot(bhtime,mass_bh,c='k',lw=1.5,alpha=1, label=r'$M_{\rm BH}$'+f' ({int(id)})')
@@ -120,13 +121,13 @@ def plot_glxevol(simulation,radstr='2p00restar',id=None):
 
     #sfr
     axes[1].plot(snaptime,sfr,c='k',lw=2.5,alpha=0.75)
-    axes[1].plot(snaptime,sfr,c='grey',lw=1.5, label=r'SFR $(2\times R_{\rm eff})$')
+    axes[1].plot(snaptime,sfr,c='grey',lw=1.5, label=r'SFR'+f'({radstr})')
 
     axes[1].plot(snaptime,inflow,c='k',lw=2.5,alpha=0.75)
-    axes[1].plot(snaptime,inflow,c='C0',lw=1.5, label=r'$\dot{M}_{\rm in} \, (2\times R_{\rm eff})$')
+    axes[1].plot(snaptime,inflow,c='C0',lw=1.5, label=r'$\dot{M}_{\rm in}$' +f'({radstr})')
 
     axes[1].plot(snaptime,outflow,c='k',lw=2.5,alpha=0.75)
-    axes[1].plot(snaptime,outflow,c='C1',lw=1.5, label=r'$\dot{M}_{\rm out} \, (2\times R_{\rm eff})$')
+    axes[1].plot(snaptime,outflow,c='C1',lw=1.5, label=r'$\dot{M}_{\rm out}$' +f'({radstr})')
 
 
     axes[1].set_xlabel(r'$t\, {\rm [Gyr]}$')
