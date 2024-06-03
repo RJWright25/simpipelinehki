@@ -266,7 +266,7 @@ def plot_glxsep(simulation,ids=None,bh_subsample=10):
     axes[0].set_xlim(tlims)
     axes[0].set_ylabel(r'Separation [kpc]')
     axes[0].set_yscale('log')
-    axes[0].set_ylim(10**-1.5,10**3)
+    axes[0].set_ylim(10**-5,10**3)
 
     #relative vel
     smoothn=1;kernel=np.ones(smoothn)/smoothn
