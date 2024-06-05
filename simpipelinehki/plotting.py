@@ -423,7 +423,9 @@ def render_snap(snapshot,type='baryons',frame=None,galaxies=pd.DataFrame(),cente
     #if a cosmological sim, also add the redshift
     if snapshot.cosmorun:
         ax.text(x=0.95,y=0.95,s=r'$z='+f'{snapshot.redshift:.3f}$',transform=ax.transAxes,ha='right',va='top',color='w')
-    
+    else:
+        ax.text(x=0.95,y=0.95,s=r'Snap '+f'{snapshot.snapshot_idx:.0f}$',transform=ax.transAxes,ha='right',va='top',color='w')
+
     fig.set_dpi(dpi)
 
     return fig,ax
