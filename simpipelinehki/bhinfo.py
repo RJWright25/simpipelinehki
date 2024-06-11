@@ -30,6 +30,8 @@ def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
     if not path:
         print('No path given. Exiting...')
         return None
+    
+    outpath=f'{path}/{outpath}'
 
     # Specify file path and target BH ids
     fileNum = 0
