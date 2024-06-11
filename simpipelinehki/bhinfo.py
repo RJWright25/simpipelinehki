@@ -190,7 +190,7 @@ def read_bhdata(simulation=None,path=None,bhids=None,subsample=1):
         bhdata_ibh['BH_ID']=np.ones(bhdata_ibh.shape[0])*int(bhid)
 
         if simulation==None:
-            bhdata_ibh['ScaleFactor']=bhdata_ibh['Time'].values
+            bhdata_ibh.loc[:,'ScaleFactor']=1
         else:
             if 'cosmo' in simulation.snapshot_type:
                 bhdata_ibh['ScaleFactor']=bhdata_ibh['Time'].values
