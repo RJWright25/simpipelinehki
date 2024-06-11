@@ -111,7 +111,7 @@ def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
 
 
 # This function is used to read the black hole details from a file
-def read_bhdata(simulation,path=None,bhids=None,subsample=1):
+def read_bhdata(simulation=None,path=None,bhids=None,subsample=1):
     """
     Reads the black hole details from a file.
 
@@ -133,6 +133,16 @@ def read_bhdata(simulation,path=None,bhids=None,subsample=1):
         Keys are the black hole IDs.
 
     """
+    if not simulation and not path:
+        print('No simulation object found. Exiting...')
+        return None
+    
+    if not simulation:
+        hubble=0.71
+    else:
+        hubble=simulation.hubble
+
+
     if not path:
         path=simulation.snapshots[0].snapshot_file.split('/')[:-1]
         path='/'.join(path)+'/blackhole_details_post_processing/'
@@ -176,26 +186,26 @@ def read_bhdata(simulation,path=None,bhids=None,subsample=1):
         #assign columns
         bhdata_ibh.columns=columns
         bhdata_ibh['BH_ID']=np.ones(bhdata_ibh.shape[0])*int(bhid)
-        if 'cosmo' in simulation.snapshot_type:
+
+        if simulation==None:
             bhdata_ibh['ScaleFactor']=bhdata_ibh['Time'].values
         else:
-            bhdata_ibh['ScaleFactor']=np.ones(bhdata_ibh.shape[0])
+            if 'cosmo' in simulation.snapshot_type:
+                bhdata_ibh['ScaleFactor']=bhdata_ibh['Time'].values
+            else:
+                bhdata_ibh['ScaleFactor']=np.ones(bhdata_ibh.shape[0])
 
         #convert to physical units
-        bhdata_ibh['bh_M']=bhdata_ibh['bh_M']*1e10/simulation.hubble
+        bhdata_ibh['bh_M']=bhdata_ibh['bh_M']*1e10/hubble
         bhdata_ibh['bh_Mdot']=bhdata_ibh['bh_Mdot']#don't think this needs to be converted
         for key in [f'Coordinates_{x}' for x in 'xyz']:
-            bhdata_ibh[key]=bhdata_ibh[key]*bhdata_ibh['ScaleFactor'].values/simulation.hubble
-    
-        #now add closest snap index from the main simulation to the BH data
-        bhdata_ibh['isnap']=np.zeros(bhdata_ibh.shape[0])
-        for isnap,snapshot in enumerate(simulation.snapshots):
-            bhdata_ibh.loc[bhdata_ibh['Time'].values>=snapshot.time,'isnap']=isnap
+            bhdata_ibh[key]=bhdata_ibh[key]*bhdata_ibh['ScaleFactor'].values/hubble
 
-        #if cosmo sim, convert to universe age 
-        if 'cosmo' in simulation.snapshot_type:
-            redshifts=1/bhdata_ibh['ScaleFactor'].values-1
-            bhdata_ibh['Time']=simulation.cosmology.age(redshifts).value
+        if not simulation==None:
+            #if cosmo sim, convert to universe age 
+            if 'cosmo' in simulation.snapshot_type:
+                redshifts=1/bhdata_ibh['ScaleFactor'].values-1
+                bhdata_ibh['Time']=simulation.cosmology.age(redshifts).value
 
         #add to the output
         bhdata[bhid]=bhdata_ibh
