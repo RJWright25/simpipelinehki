@@ -50,6 +50,9 @@ class gadget_simulation:
     snapshot_type: str
         The type of snapshot to use (e.g. 'gadget_idealised_snapshot_hki' or 'gadget_cosmo_snapshot_hki').
 
+    snapshot_idxlist: list
+        The list of snapshot indices.
+
 
 
     Attributes:
@@ -72,7 +75,7 @@ class gadget_simulation:
     """
 
     # Initialize the simulation object, take a list of snapshot files and create a list of snapshot objects
-    def __init__(self, snapshot_file_list, snapshot_type=None):
+    def __init__(self, snapshot_file_list, snapshot_idxs=None,snapshot_type=None):
         
         if snapshot_type=='gadget_idealised_snapshot_hki':
             snapshot_type = gadget_idealised_snapshot_hki
@@ -87,7 +90,10 @@ class gadget_simulation:
 
         self.snapshot_flist = snapshot_file_list;times=[h5py.File(snapshot_file, 'r')['Header'].attrs['Time'] for snapshot_file in self.snapshot_flist]
         self.snapshot_flist = [snapshot_file for _,snapshot_file in sorted(zip(times,self.snapshot_flist))]
-        self.snapshots = [snapshot_type(snapshot_file,snapshot_idx=snapshot_idx) for snapshot_idx,snapshot_file in enumerate(self.snapshot_flist)]
+        if not snapshot_idxs:
+            self.snapshots = [snapshot_type(snapshot_file,snapshot_idx=snapshot_idx) for snapshot_idx,snapshot_file in enumerate(self.snapshot_flist)]
+        else:
+            self.snapshots = [snapshot_type(snapshot_file,snapshot_idx=snapshot_idx) for snapshot_idx,snapshot_file in zip(snapshot_idxs,self.snapshot_flist)]
         self.snapshot_idxlist = [snapshot.snapshot_idx for snapshot in self.snapshots]
         self.timelist = [snapshot.time for snapshot in self.snapshots]
         self.redshiftlist = [snapshot.redshift for snapshot in self.snapshots]
@@ -345,6 +351,8 @@ class gadget_simulation:
             if os.path.exists(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'):
                 with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
                     kdtree_snap=pickle.load(kdfile)
+            else:
+                kdtree_snap=make_particle_kdtree(snapshot,verbose=verbose)
                     
                 print(f'Loaded KD tree for all processes in snapshot {snapshot.snapshot_idx}')
 
