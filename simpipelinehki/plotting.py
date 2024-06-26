@@ -293,8 +293,6 @@ def plot_glxsep(simulation,ids=None,bh_subsample=10):
 
 
 ############ RENDERING A SIMULATION ############
-
-
 def render_snap(snapshot,type='baryons',frame=None,galaxies=pd.DataFrame(),center=None,useminpot=False,staralpha=1,subsample=1,clims=None):
     """
     Render a snapshot of the simulation.

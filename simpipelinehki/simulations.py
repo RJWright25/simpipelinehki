@@ -375,7 +375,7 @@ class gadget_simulation:
         self.haloes=read_hdf_chunks('outputs/haloes/')
         
     # Method to analyse galaxies in all snapshots using multiprocessing
-    def analyse_galaxies(self,snapshotidxs=None,numproc=1,shells_kpc=None,useminpot=False,rfac_offset=0.1,verbose=False):
+    def analyse_galaxies(self,haloes=None,snapshotidxs=None,numproc=1,shells_kpc=None,useminpot=False,rfac_offset=0.1,verbose=False):
         """
         
         Analyse galaxies in all snapshots using multiprocessing.
@@ -439,7 +439,9 @@ class gadget_simulation:
                     for fname in os.listdir(os.getcwd()+'/logs/galaxies/'+snapdir):
                         if os.path.exists(os.getcwd()+'/logs/galaxies/'+snapdir+'/'+fname):
                             os.remove(os.getcwd()+'/logs/galaxies/'+snapdir+'/'+fname)
-        haloes=self.haloes
+
+        if not haloes:
+            haloes=self.haloes
 
         for snapshot in snapshot_list:
             procs=[]
