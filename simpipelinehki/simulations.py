@@ -440,7 +440,7 @@ class gadget_simulation:
                         if os.path.exists(os.getcwd()+'/logs/galaxies/'+snapdir+'/'+fname):
                             os.remove(os.getcwd()+'/logs/galaxies/'+snapdir+'/'+fname)
 
-        if not haloes:
+        if haloes==None:
             haloes=self.haloes
 
         for snapshot in snapshot_list:
