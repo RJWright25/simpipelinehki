@@ -193,6 +193,7 @@ class gadget_idealised_snapshot_hki:
         #open the snapshot file and get the requested fields
         with h5py.File(self.snapshot_file, 'r') as pfile:
             for ptype in types:
+                print(f'Getting particle data for type {ptype}')
                 try:
                     part = pfile[f'PartType{ptype}']
                 except:
@@ -513,6 +514,7 @@ class gadget_cosmo_snapshot_hki:
         #open the snapshot file and get the requested fields
         with h5py.File(self.snapshot_file, 'r') as pfile:
             for ptype in types:
+                print(f'Getting particle data for type {ptype}')
                 try:
                     part = pfile[f'PartType{ptype}']
                 except:
@@ -530,7 +532,7 @@ class gadget_cosmo_snapshot_hki:
                             with open(kdpath,'rb') as kdfile:
                                 kdtree=pickle.load(kdfile)
                             kdfile.close()
-                            print('Found KDTree.')
+                            print('Found KDTree')
                         else:
                             print('No KDTree found. Generating...')
                             kdtree=make_particle_kdtree(self)
