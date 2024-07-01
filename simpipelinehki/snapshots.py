@@ -214,6 +214,10 @@ class gadget_idealised_snapshot_hki:
                         else:
                             print('None found. Generating KDTree...')
                             kdtree=make_particle_kdtree(self)
+
+                            if not os.path.exists(f'{self.snapshot_file.split("output")[0]+"/analysis/"}/outputs/kdtrees/'):
+                                os.makedirs(f'{self.snapshot_file.split("output")[0]+"/analysis/"}/outputs/kdtrees/')
+
                             with open(kdpath, 'wb') as kdfile:
                                 pickle.dump(kdtree, kdfile)
                             return None
