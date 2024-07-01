@@ -205,7 +205,7 @@ class gadget_idealised_snapshot_hki:
                     if kdtree is None:
                         #check if the KDTree file exists
                         print('Checking for KDTree...')
-                        kdpath=f'{self.snapshot_file.split("outputs")[0]+"/analysis/"}/outputs/kdtrees/snap_{str(self.snapshot_idx).zfill(3)}.pkl'
+                        kdpath=f'{self.snapshot_file.split("output")[0]+"/analysis/"}/outputs/kdtrees/snap_{str(self.snapshot_idx).zfill(3)}.pkl'
                         if os.path.exists(kdpath):
                             with open(kdpath,'rb') as kdfile:
                                 kdtree=pickle.load(kdfile)
