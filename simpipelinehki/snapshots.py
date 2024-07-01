@@ -517,6 +517,24 @@ class gadget_cosmo_snapshot_hki:
 
                 #apply any spatial cuts
                 if center is not None and radius is not None:
+                    
+                    if kdtree is None:
+                        #check if the KDTree file exists
+                        print('Checking for KDTree...')
+                        kdpath=f'{self.snapshot_file.split("outputs")[0]+"/analysis/"}/outputs/kdtrees/snap_{str(self.snapshot_idx).zfill(3)}.pkl'
+                        if os.path.exists(kdpath):
+                            with open(kdpath,'rb') as kdfile:
+                                kdtree=pickle.load(kdfile)
+                            kdfile.close()
+                    
+                        else:
+                            print('None found. Generating KDTree...')
+                            kdtree=make_particle_kdtree(self)
+                            with open(kdpath, 'wb') as kdfile:
+                                pickle.dump(kdtree, kdfile)
+                            return None
+
+
                     mask,rrel=sphere_mask(snapshot=self, ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
                     if return_rrel:
                         particle_data[ptype]['R']=rrel
