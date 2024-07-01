@@ -203,14 +203,21 @@ class gadget_idealised_snapshot_hki:
                 #apply any spatial cuts
                 if center is not None and radius is not None:
                     if kdtree is None:
-                        kdpath=f'{self.snapshot_file.split("outputs")[0]+"/analysis/"}/outputs/kdtrees/'
-                        if os.path.exists(f'{kdpath}/kdtree_{str(self.snapshot_idx).zfill(3)}.pkl'):
-                            with open(f'{kdpath}/kdtree_{str(self.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
+                        #check if the KDTree file exists
+                        print('Checking for KDTree...')
+                        kdpath=f'{self.snapshot_file.split("outputs")[0]+"/analysis/"}/outputs/kdtrees/snap_{str(self.snapshot_idx).zfill(3)}.pkl'
+                        if os.path.exists(kdpath):
+                            with open(kdpath,'rb') as kdfile:
                                 kdtree=pickle.load(kdfile)
                             kdfile.close()
+                    
                         else:
-                            print('Error: KDTree not found')
+                            print('None found. Generating KDTree...')
+                            kdtree=make_particle_kdtree(self)
+                            with open(kdpath, 'wb') as kdfile:
+                                pickle.dump(kdtree, kdfile)
                             return None
+
                     
                     mask,rrel=sphere_mask(snapshot=self, ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
                     if return_rrel:
