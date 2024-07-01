@@ -134,8 +134,8 @@ class gadget_idealised_snapshot_hki:
         self.units["nH"] = apy_units.Unit('cm**-3')
 
         # these are the derived fields that are available and the particle type they are associated with
-        self.derived_fields_available = ['Temperature', 'nH']
-        self.derived_fields_ptype={'Temperature': 0,'nH':0}
+        self.derived_fields_available = ['Temperature', 'nH','Metallicity']
+        self.derived_fields_ptype={'Temperature': [0],'nH':[0],'Metallicity':[0,4]}
 
        #initialize the haloes and galaxies lists
         self.haloes=[]
@@ -238,7 +238,7 @@ class gadget_idealised_snapshot_hki:
                                 particle_data[ptype][key+f'_{str(0).zfill(2)}'] = part[key][:][mask][:,0][::subsample]*self.conversions[key]
                         
                         #if the key is a derived field, get the data and apply the conversion
-                        elif key in self.derived_fields_available and ptype == self.derived_fields_ptype[key]:
+                        elif key in self.derived_fields_available and ptype in self.derived_fields_ptype[key]:
                             particle_data[ptype][key] = self.get_derived_field(key, ptype)[mask][::subsample]
 
                         #if key is Masses and ptype is 1, return the mass_dm
@@ -297,13 +297,19 @@ class gadget_idealised_snapshot_hki:
                 return (u / (3 / 2.) * av_m / apy_const.k_B).to(self.units["Temperature"]).value
             
             ## nH DERIVED FIELD
-            elif key == 'nH' and type == 0:
+            elif key == 'nH':
                 # calculate the hydrogen number density from the density and the mean molecular weight
                 rho = np.array(part['Density'][:])*self.conversions['Density']*self.units["Density"] #g/cm^3
                 ne = np.array(part['ElectronAbundance'][:])*self.conversions['ElectronAbundance']*self.units["ElectronAbundance"]
                 tmp = self.XH / 1.008 + self.XHe / 4.003
                 av_m = (apy_const.m_p.value*apy_units.Unit('kg')*(tmp + ne * self.XH)).to(apy_units.Unit("g"))
                 return (rho / av_m).to(self.units["nH"]).value
+            
+            elif key=='Metallicity':
+                #metals are: 0 = 3He, 1 = 12C, 2 = 24Mg, 3 = 16O, 4 = 56e, 5 = 28Si, 6 = H, 7 = 14N, 8 = 20Ne, 9 = 32S, 10 = 40Ca, 11 = 62Zn
+                #return total metallicity subracting the hydrogen and helium mass fractions
+                metals=(np.nansum(np.array(part['Metallicity'][:,:]),axis=1)-part['Metallicity'][:,0]-part['Metallicity'][:,6])/np.array(part['Masses'][:])*self.units["Metallicity"]
+                return metals
             
             ## ERROR
             else:
@@ -442,8 +448,8 @@ class gadget_cosmo_snapshot_hki:
         self.units["nH"] = apy_units.Unit('cm**-3')
 
         # these are the derived fields that are available and the particle type they are associated with
-        self.derived_fields_available = ['Temperature', 'nH']
-        self.derived_fields_ptype={'Temperature': 0,'nH':0}
+        self.derived_fields_available = ['Temperature', 'nH','Metallicity']
+        self.derived_fields_ptype={'Temperature': [0],'nH':[0],'Metallicity':[0,4]}
 
 
         self.haloes=[]
@@ -536,7 +542,7 @@ class gadget_cosmo_snapshot_hki:
                                 particle_data[ptype][key+f'_{str(0).zfill(2)}'] = part[key][:][mask][:,0][::subsample]*self.conversions[key]
                         
                         #if the key is a derived field, get the data and apply the conversion
-                        elif key in self.derived_fields_available and ptype == self.derived_fields_ptype[key]:
+                        elif key in self.derived_fields_available and ptype in self.derived_fields_ptype[key]:
                             particle_data[ptype][key] = self.get_derived_field(key, ptype)[mask][::subsample]
 
                         #if key is Masses and ptype is 1, return the mass_dm
@@ -594,13 +600,19 @@ class gadget_cosmo_snapshot_hki:
                 return (u / (3 / 2.) * av_m / apy_const.k_B).to(self.units["Temperature"]).value
             
             ## nH DERIVED FIELD
-            elif key == 'nH' and type == 0:
+            elif key == 'nH':
                 # calculate the hydrogen number density from the density and the mean molecular weight
                 rho = np.array(part['Density'][:])*self.conversions['Density']*self.units["Density"] #g/cm^3
                 ne = np.array(part['ElectronAbundance'][:])*self.conversions['ElectronAbundance']*self.units["ElectronAbundance"]
                 tmp = self.XH / 1.008 + self.XHe / 4.003
                 av_m = (apy_const.m_p.value*apy_units.Unit('kg')*(tmp + ne * self.XH)).to(apy_units.Unit("g"))
                 return (rho / av_m).to(self.units["nH"]).value
+            
+            elif key=='Metallicity':
+                #metals are: 0 = 3He, 1 = 12C, 2 = 24Mg, 3 = 16O, 4 = 56e, 5 = 28Si, 6 = H, 7 = 14N, 8 = 20Ne, 9 = 32S, 10 = 40Ca, 11 = 62Zn
+                #return total metallicity subracting the hydrogen and helium mass fractions
+                metals=(np.nansum(np.array(part['Metallicity'][:,:]),axis=1)-part['Metallicity'][:,0]-part['Metallicity'][:,6])/np.array(part['Masses'][:])*self.units["Metallicity"]
+                return metals
             
             ## ERROR
             else:
