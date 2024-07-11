@@ -134,8 +134,8 @@ class gadget_idealised_snapshot_hki:
         self.units["nH"] = apy_units.Unit('cm**-3')
 
         # these are the derived fields that are available and the particle type they are associated with
-        self.derived_fields_available = ['Temperature', 'nH','Metallicity']
-        self.derived_fields_ptype={'Temperature': [0],'nH':[0],'Metallicity':[0,4]}
+        self.derived_fields_available = ['Temperature', 'nH','Ztot']
+        self.derived_fields_ptype={'Temperature': [0],'nH':[0],'Ztot':[0,4]}
 
        #initialize the haloes and galaxies lists
         self.haloes=[]
@@ -311,7 +311,7 @@ class gadget_idealised_snapshot_hki:
                 av_m = (apy_const.m_p.value*apy_units.Unit('kg')*(tmp + ne * self.XH)).to(apy_units.Unit("g"))
                 return (rho / av_m).to(self.units["nH"]).value
             
-            elif key=='Metallicity':
+            elif key=='Ztot':
                 #metals are: 0 = 3He, 1 = 12C, 2 = 24Mg, 3 = 16O, 4 = 56e, 5 = 28Si, 6 = H, 7 = 14N, 8 = 20Ne, 9 = 32S, 10 = 40Ca, 11 = 62Zn
                 #return total metallicity subracting the hydrogen and helium mass fractions
                 metals=(np.nansum(np.array(part['Metallicity'][:,:]),axis=1)-part['Metallicity'][:,0]-part['Metallicity'][:,6])/np.array(part['Masses'][:])*self.units["Metallicity"]
