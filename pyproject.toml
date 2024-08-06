@@ -1,0 +1,15 @@
+[project]
+name = "simpipelinehki_TEST"
+version = "1"
+authors = [
+  { name="Ruby Wright", email="ruby.wright@helsinki.fi" },
+]
+description = "Python package to deal with outputs from Helsinki-based GADGET/KETJU simulations."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
