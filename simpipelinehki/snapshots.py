@@ -73,7 +73,7 @@ class gadget_idealised_snapshot_hki:
 
     Methods:
     -----------
-    get_particle_data(keys, types, center, radius, subsample)
+    get_particle_data(keys, types, center, radius)
         Returns the requested particle data in physical units.
     get_derived_field(key, type)
         Returns the requested derived field in physical units.
@@ -90,20 +90,19 @@ class gadget_idealised_snapshot_hki:
         with h5py.File(self.snapshot_file, 'r') as snapshot:
             self.redshift=0 #not a cosmological simulation
             self.scalefac=1/(1+self.redshift)
-            self.time=snapshot['Header'].attrs['Time']
+            self.timeraw=snapshot['Header'].attrs['Time']
+            self.time=snapshot['Header'].attrs['Time']/0.72611
             self.boxsize=snapshot['Header'].attrs['BoxSize']
             self.npart=snapshot['Header'].attrs['NumPart_ThisFile']
             self.Om0=snapshot['Header'].attrs['Omega0']
             self.hubble=snapshot['Header'].attrs['HubbleParam']
             self.cosmology = apy_cosmo.FlatLambdaCDM(H0=self.hubble*100, Om0=self.Om0)
-        
             self.mass_dm=None#only for cosmological sims
             self.cosmorun=False
             self.XH=0.76
             self.XHe=0.24
         snapshot.close()
 
- 
 
         #these conversions take the GADGET outputs and give them in physical units (as defined below)
         self.conversions={'ParticleIDs': 1,
@@ -113,6 +112,7 @@ class gadget_idealised_snapshot_hki:
                           'Potential': 1,
                           'Density': 1.989e43*1/(self.hubble)/((3.08568e21/self.hubble)**3),
                           'StarFormationRate': 1,
+                          'StellarFormationTime': 1/0.72611,
                           'CS Temperature':1,
                           'Metallicity': 1,
                           'InternalEnergy':1,
@@ -127,6 +127,7 @@ class gadget_idealised_snapshot_hki:
         self.units["Potential"] = apy_units.Unit('km**2/s**2')
         self.units["Density"] = apy_units.Unit('g/cm**3')
         self.units["StarFormationRate"] = apy_units.Unit('Msun/yr')
+        self.units["StellarFormationTime"] = apy_units.Unit('Gyr')
         self.units["Metallicity"] = apy_units.Unit('1')
         self.units["InternalEnergy"] = apy_units.Unit('km**2/s**2')
         self.units["ElectronAbundance"] = apy_units.Unit('1')
@@ -148,10 +149,8 @@ class gadget_idealised_snapshot_hki:
             pfile.close()
         return keys
     
-
-    
     #method to get requested field of particle data (and type) in physical units. return pandas dataframs with the requested field(s) in physical units with a field for the particle type. dynamically allocate memory for the dataframes to avoid memory issues. 
-    def get_particle_data(self, keys=None, types=None, kdtree=None,center=None, radius=None, return_rrel=False, subsample=1):
+    def get_particle_data(self, keys=None, types=None, kdtree=None,center=None, radius=None, return_rrel=False,):
 
         """
         Returns the requested particle data in physical units.
@@ -166,8 +165,6 @@ class gadget_idealised_snapshot_hki:
             The center of the sphere to be returned.
         radius: float as astropy.units.Quantity
             The radius of the sphere to be returned.
-        subsample: int
-            The subsampling factor for the particle data.
         
         Returns:
         -----------
@@ -205,7 +202,11 @@ class gadget_idealised_snapshot_hki:
                 if center is not None and radius is not None:
                     if kdtree is None:
                         #check if the KDTree file exists
-                        kdpath=f'{self.snapshot_file.split("output")[0]+"/analysis/"}/outputs/kdtrees/snap_{str(self.snapshot_idx).zfill(3)}.pkl'
+                        if self.snapshot_idx is None:
+                            snapfname=self.snapshot_file.split('/')[-1].split('.hdf5')[0]
+                            kdpath=f'kdtrees/{snapfname}_kdtree.pkl'
+                        else:
+                            kdpath=f'{self.snapshot_file.split("output")[0]+"/analysis/"}/outputs/kdtrees/snap_{str(self.snapshot_idx).zfill(3)}.pkl'
                         if os.path.exists(kdpath):
                             with open(kdpath,'rb') as kdfile:
                                 kdtree=pickle.load(kdfile)
@@ -214,6 +215,8 @@ class gadget_idealised_snapshot_hki:
                         else:
                             print('No KDTree found. Generating...')
                             kdtree=make_particle_kdtree(self)
+                            if not os.path.exists(kdpath.split('/')[0]):
+                                os.makedirs(kdpath.split('/')[0])
                             with open(kdpath, 'wb') as kdfile:
                                 pickle.dump(kdtree, kdfile)
                             return None
@@ -236,28 +239,28 @@ class gadget_idealised_snapshot_hki:
                             particle_data[ptype][key] = part[key][:][mask]*self.conversions[key]
                             if len(particle_data[ptype][key].shape)==2 and particle_data[ptype][key].shape[1] == 3:
                                 del particle_data[ptype][key]
-                                particle_data[ptype][key+'_x'] = part[key][:][mask][:,0][::subsample]*self.conversions[key]
-                                particle_data[ptype][key+'_y'] = part[key][:][mask][:,1][::subsample]*self.conversions[key]
-                                particle_data[ptype][key+'_z'] = part[key][:][mask][:,2][::subsample]*self.conversions[key]
+                                particle_data[ptype][key+'_x'] = part[key][:][mask][:,0]*self.conversions[key]
+                                particle_data[ptype][key+'_y'] = part[key][:][mask][:,1]*self.conversions[key]
+                                particle_data[ptype][key+'_z'] = part[key][:][mask][:,2]*self.conversions[key]
                             elif len(particle_data[ptype][key].shape)==2:
                                 del particle_data[ptype][key]
-                                particle_data[ptype][key+f'_{str(0).zfill(2)}'] = part[key][:][mask][:,0][::subsample]*self.conversions[key]
+                                particle_data[ptype][key+f'_{str(0).zfill(2)}'] = part[key][:][mask][:,0]*self.conversions[key]
                         
                         #if the key is a derived field, get the data and apply the conversion
                         elif key in self.derived_fields_available and ptype in self.derived_fields_ptype[key]:
-                            particle_data[ptype][key] = self.get_derived_field(key, ptype)[mask][::subsample]
+                            particle_data[ptype][key] = self.get_derived_field(key, ptype)[mask]
 
                         #if key is Masses and ptype is 1, return the mass_dm
-                        elif key == 'Masses' and ptype == 1:
-                            particle_data[ptype][key] = np.ones(num_particles)[::subsample]*self.mass_dm
+                        elif key == 'Masses' and ptype == 1 and self.mass_dm is not None:
+                            particle_data[ptype][key] = np.ones(num_particles)*self.mass_dm
 
                         #if the key is not available for this type, fill with NaNs
                         else:
-                            particle_data[ptype][key]=np.zeros(num_particles)[::subsample]+np.nan
+                            particle_data[ptype][key]=np.zeros(num_particles)+np.nan
                 
                     #add a column for the particle type
                     particle_data[ptype] = pd.DataFrame(particle_data[ptype])
-                    particle_data[ptype]['ParticleTypes']=np.ones(num_particles)[::subsample]*ptype
+                    particle_data[ptype]['ParticleTypes']=np.ones(num_particles)*ptype
 
                 else:
                     particle_data[ptype] = pd.DataFrame()
@@ -325,7 +328,7 @@ class gadget_idealised_snapshot_hki:
             return None
 
     # Add method to render the snapshot
-    def render_snap(self,type='baryons',frame=300,galaxies=None,useminpot=False,subsample=1,verbose=False):
+    def render_snap(self,type='baryons',frame=300,galaxies=None,useminpot=False,verbose=False):
         """
         Function to render the snapshot.
 
@@ -340,15 +343,13 @@ class gadget_idealised_snapshot_hki:
             If provided, the galaxy centres will be rendered as well.
         useminpot: bool
             If True (and galaxies provided), use the minimum potential to centre the galaxies.
-        subsample: int
-            The subsampling factor for the particle data.
         verbose: bool
             If True, print out the time taken to render the snapshot.
         
         """
         
         # Use the render_snap function to render the snapshot
-        fig, ax=render_snap(self,type=type,frame=frame,galaxies=galaxies,useminpot=useminpot,subsample=subsample,verbose=verbose)
+        fig, ax=render_snap(self,type=type,frame=frame,galaxies=galaxies,useminpot=useminpot,verbose=verbose)
         return fig, ax
         
 
@@ -392,7 +393,7 @@ class gadget_cosmo_snapshot_hki:
 
     Methods:
     -----------
-    get_particle_data(keys, types, center, radius, subsample)
+    get_particle_data(keys, types, center, radius)
         Returns the requested particle data in physical units.
     get_derived_field(key, type)
         Returns the requested derived field in physical units.
@@ -419,6 +420,7 @@ class gadget_cosmo_snapshot_hki:
             self.XHe=0.24
             self.mass_dm=snapshot['Header'].attrs['MassTable'][1]*1e10/self.hubble
             self.cosmorun=True
+
             #get time from cosmology and afac
             self.time=self.cosmology.age(self.redshift).value
 
@@ -457,7 +459,6 @@ class gadget_cosmo_snapshot_hki:
         self.derived_fields_available = ['Temperature', 'nH','Metallicity']
         self.derived_fields_ptype={'Temperature': [0],'nH':[0],'Metallicity':[0,4]}
 
-
         self.haloes=[]
         self.galaxies=[]
     
@@ -468,11 +469,10 @@ class gadget_cosmo_snapshot_hki:
             keys=list(pfile[f'PartType{ptype}'].keys())
             pfile.close()
         return keys
-    
 
 
     #method to get requested field of particle data (and type) in physical units. return pandas dataframs with the requested field(s) in physical units with a field for the particle type. dynamically allocate memory for the dataframes to avoid memory issues. 
-    def get_particle_data(self, keys=None, types=None, kdtree=None,center=None, radius=None, return_rrel=False, subsample=1):
+    def get_particle_data(self, keys=None, types=None, kdtree=None,center=None, radius=None, return_rrel=False):
 
         """
         Returns the requested particle data in physical units.
@@ -487,9 +487,7 @@ class gadget_cosmo_snapshot_hki:
             The center of the sphere to be returned.
         radius: float as astropy.units.Quantity
             The radius of the sphere to be returned.
-        subsample: int
-            The subsampling factor for the particle data.
-        
+
         Returns:
         -----------
         pd.DataFrame
@@ -524,22 +522,26 @@ class gadget_cosmo_snapshot_hki:
 
                 #apply any spatial cuts
                 if center is not None and radius is not None:
-                    
                     if kdtree is None:
                         #check if the KDTree file exists
-                        kdpath=f'{self.snapshot_file.split("output")[0]+"/analysis/"}/outputs/kdtrees/snap_{str(self.snapshot_idx).zfill(3)}.pkl'
+                        if self.snapshot_idx is None:
+                            snapfname=self.snapshot_file.split('/')[-1].split('.hdf5')[0]
+                            kdpath=f'kdtrees/{snapfname}_kdtree.pkl'
+                        else:
+                            kdpath=f'{self.snapshot_file.split("output")[0]+"/analysis/"}/outputs/kdtrees/snap_{str(self.snapshot_idx).zfill(3)}.pkl'
                         if os.path.exists(kdpath):
                             with open(kdpath,'rb') as kdfile:
                                 kdtree=pickle.load(kdfile)
                             kdfile.close()
-                            print('Found KDTree')
+                            print('Found KDTree.')
                         else:
                             print('No KDTree found. Generating...')
                             kdtree=make_particle_kdtree(self)
+                            if not os.path.exists(kdpath.split('/')[0]):
+                                os.makedirs(kdpath.split('/')[0])
                             with open(kdpath, 'wb') as kdfile:
                                 pickle.dump(kdtree, kdfile)
                             return None
-
 
                     mask,rrel=sphere_mask(snapshot=self, ptype=ptype, center=center, radius=radius, kdtree=kdtree, return_rrel=return_rrel)
                     if return_rrel:
@@ -558,28 +560,28 @@ class gadget_cosmo_snapshot_hki:
                             particle_data[ptype][key] = part[key][:][mask]*self.conversions[key]
                             if len(particle_data[ptype][key].shape)==2 and particle_data[ptype][key].shape[1] == 3:
                                 del particle_data[ptype][key]
-                                particle_data[ptype][key+'_x'] = part[key][:][mask][:,0][::subsample]*self.conversions[key]
-                                particle_data[ptype][key+'_y'] = part[key][:][mask][:,1][::subsample]*self.conversions[key]
-                                particle_data[ptype][key+'_z'] = part[key][:][mask][:,2][::subsample]*self.conversions[key]
+                                particle_data[ptype][key+'_x'] = part[key][:][mask][:,0]*self.conversions[key]
+                                particle_data[ptype][key+'_y'] = part[key][:][mask][:,1]*self.conversions[key]
+                                particle_data[ptype][key+'_z'] = part[key][:][mask][:,2]*self.conversions[key]
                             elif len(particle_data[ptype][key].shape)==2:
                                 del particle_data[ptype][key]
-                                particle_data[ptype][key+f'_{str(0).zfill(2)}'] = part[key][:][mask][:,0][::subsample]*self.conversions[key]
+                                particle_data[ptype][key+f'_{str(0).zfill(2)}'] = part[key][:][mask][:,0]*self.conversions[key]
                         
                         #if the key is a derived field, get the data and apply the conversion
                         elif key in self.derived_fields_available and ptype in self.derived_fields_ptype[key]:
-                            particle_data[ptype][key] = self.get_derived_field(key, ptype)[mask][::subsample]
+                            particle_data[ptype][key] = self.get_derived_field(key, ptype)[mask]
 
                         #if key is Masses and ptype is 1, return the mass_dm
-                        elif key == 'Masses' and ptype == 1:
-                            particle_data[ptype][key] = np.ones(num_particles)[::subsample]*self.mass_dm
+                        elif key == 'Masses' and ptype == 1 and self.mass_dm is not None:
+                            particle_data[ptype][key] = np.ones(num_particles)*self.mass_dm
 
                         #if the key is not available for this type, fill with NaNs
                         else:
-                            particle_data[ptype][key]=np.zeros(num_particles)[::subsample]+np.nan
+                            particle_data[ptype][key]=np.zeros(num_particles)+np.nan
                 
                     #add a column for the particle type
                     particle_data[ptype] = pd.DataFrame(particle_data[ptype])
-                    particle_data[ptype]['ParticleTypes']=np.ones(num_particles)[::subsample]*ptype
+                    particle_data[ptype]['ParticleTypes']=np.ones(num_particles)*ptype
                 else:
                     particle_data[ptype] = pd.DataFrame()
 
@@ -647,7 +649,7 @@ class gadget_cosmo_snapshot_hki:
 
 
     # Add method to render the snapshot
-    def render_snap(self,type='baryons',frame=None,galaxies=None,useminpot=False,subsample=1,verbose=False):
+    def render_snap(self,type='baryons',frame=None,galaxies=None,useminpot=False,verbose=False):
         """
         Function to render the snapshot.
 
@@ -662,19 +664,15 @@ class gadget_cosmo_snapshot_hki:
             If provided, the galaxy centres will be rendered as well.
         useminpot: bool
             If True (and galaxies provided), use the minimum potential to centre the galaxies.
-        subsample: int
-            The subsampling factor for the particle data.
         verbose: bool
             If True, print out the time taken to render the snapshot.
         
         """
         
         # Use the render_snap function to render the snapshot
-        fig, ax=render_snap(self,type=type,frame=frame,galaxies=galaxies,useminpot=useminpot,subsample=subsample,verbose=verbose)
+        fig, ax=render_snap(self,type=type,frame=frame,galaxies=galaxies,useminpot=useminpot,verbose=verbose)
         return fig, ax
         
-
-
 
 #KDTrees for particle data
 def make_particle_kdtree(snapshot):
@@ -786,15 +784,20 @@ def stack_kdtrees_worker(snaplist,iproc,verbose=False):
             pickle.dump(kdtree, kdfile)
         kdfile.close()
 
-    
     logging.info(f'Finished making KDtrees for snapshots {[snapshot.snapshot_idx for snapshot in snaplist]} [runtime {time.time()-t0:.2f} s]')
-
-
 
 
 #mask for particles within a sphere of a given radius and center
 def sphere_mask(snapshot, center, radius, kdtree, ptype, return_rrel=False):
     
+    #if center is an np array, assume kpc and convert to apy
+    if isinstance(center, np.ndarray):
+        center = center*apy_units.kpc
+    
+    #if radius is a flat, assume kpc and convert to apy
+    if isinstance(radius, (int, float)):
+        radius = radius*apy_units.kpc
+
     #convert the center and radius to physical units
     if isinstance(center, apy_units.Quantity):
         center = center.to(snapshot.units["Coordinates"]).value
