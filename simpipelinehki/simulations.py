@@ -30,7 +30,6 @@ from .analysis import *
 from .bhinfo import *
 from .snapshots import *
 from .plotting import *
-from .groupfinder import basic_groupfinder
 
 # Ignore warnings
 import warnings
@@ -189,6 +188,7 @@ class gadget_simulation:
 
         """
 
+
         ketjubhs,ketjubinaries=read_ketjubhdata(self,path=path)
 
         self.ketjubhs=ketjubhs
@@ -201,7 +201,7 @@ class gadget_simulation:
     def gen_kdtrees(self,snapshotidxs=None,numproc=1, verbose=False):
             
         """
-        Generate KD trees for all snapshots using multiprocessing.
+        Generate KD trees for all snapshots using multiprocessing. Parallelized across snapshots.
 
         Parameters:
         -----------
@@ -226,20 +226,16 @@ class gadget_simulation:
         t0stack=time.time()
 
         #make a directory for the outputs
-        if not os.path.exists(os.getcwd()+'/outputs/'):
-            os.mkdir(os.getcwd()+'/outputs/')
         if not os.path.exists(os.getcwd()+'/outputs/kdtrees/'):
-            os.mkdir(os.getcwd()+'/outputs/kdtrees/')
+            os.makedirs(os.getcwd()+'/outputs/kdtrees/')
         else:
             for fname in os.listdir(os.getcwd()+'/outputs/kdtrees/'):
                 if os.path.exists(os.getcwd()+'/outputs/kdtrees/'+fname):
                     os.remove(os.getcwd()+'/outputs/kdtrees/'+fname)
 
         #make a directory for the logs
-        if not os.path.exists(os.getcwd()+'/logs/'):
-            os.mkdir(os.getcwd()+'/logs/')
         if not os.path.exists(os.getcwd()+'/logs/kdtrees/'):
-            os.mkdir(os.getcwd()+'/logs/kdtrees/')
+            os.makedirs(os.getcwd()+'/logs/kdtrees/')
         else:
             for fname in os.listdir(os.getcwd()+'/logs/kdtrees/'):
                 if os.path.exists(os.getcwd()+'/logs/kdtrees/'+fname):
@@ -269,7 +265,7 @@ class gadget_simulation:
     def find_haloes(self,snapshotidxs=None,numproc=1,delta=200,useminpot=False,verbose=False):
         
         """
-        Find haloes in desired snapshots using multiprocessing.
+        Find haloes in desired snapshots using multiprocessing. Parallelised across haloes in a given snapshot.
 
         Parameters:
         -----------
@@ -294,6 +290,7 @@ class gadget_simulation:
             snapshot_list=[self.snapshots[i] for i in snapshotidxs]
         else:
             snapshot_list=self.snapshots
+
         print()
         print(f'===========================================================================================')
         print(f'Finding haloes in {len(snapshot_list)} snapshots using {numproc} processes...')
@@ -401,11 +398,12 @@ class gadget_simulation:
             The galaxy data (see galaxyanalysis.py for details).
         
         """
-
+        #if no snapshot indices are provided, analyse all snapshots
         if snapshotidxs is not None:
             snapshot_list=[self.snapshots[i] for i in snapshotidxs]
         else:
             snapshot_list=self.snapshots
+
         print()
         print(f'===========================================================================================')
         print(f'Analysing galaxies in {len(snapshot_list)} snapshots using {numproc} processes...')
@@ -416,11 +414,8 @@ class gadget_simulation:
         t0stack=time.time()
 
         #make a temporary directory for the outputs
-        if not os.path.exists(os.getcwd()+'/outputs/'):
-            os.mkdir(os.getcwd()+'/outputs/')
-        
         if not os.path.exists(os.getcwd()+'/outputs/galaxies/'):
-            os.mkdir(os.getcwd()+'/outputs/galaxies/')
+            os.makedirs(os.getcwd()+'/outputs/galaxies/')
         else:
             for snapdir in os.listdir(os.getcwd()+'/outputs/galaxies/'):
                 if os.path.exists(os.getcwd()+'/outputs/galaxies/'+snapdir):
@@ -429,10 +424,8 @@ class gadget_simulation:
                             os.remove(os.getcwd()+'/outputs/galaxies/'+snapdir+'/'+fname)
 
         #make a directory for the logs
-        if not os.path.exists(os.getcwd()+'/logs/'):
-            os.mkdir(os.getcwd()+'/logs/')
         if not os.path.exists(os.getcwd()+'/logs/galaxies/'):
-            os.mkdir(os.getcwd()+'/logs/galaxies/')
+            os.makedirs(os.getcwd()+'/logs/galaxies/')
         else:
             for snapdir in os.listdir(os.getcwd()+'/logs/galaxies/'):
                 if os.path.exists(os.getcwd()+'/logs/galaxies/'+snapdir):
@@ -461,13 +454,14 @@ class gadget_simulation:
                 except:
                     pass
 
-            #load in the KD tree
+            #load in the KD tree for the snapshot
             if os.path.exists(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'):
                 with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
                     kdtree_snap=pickle.load(kdfile)
-                    
-                print(f'Loaded KD tree for all processes in snapshot {snapshot.snapshot_idx}')
+            else:
+                kdtree_snap=make_particle_kdtree(snapshot,verbose=verbose)
             
+            print(f'Loaded KD tree for all processes in snapshot {snapshot.snapshot_idx}')
             for iproc in range(numproc):
                     time.sleep(0.1)
                     proc = multiprocessing.Process(target=galaxy_analysis, args=(snapshot,haloes,kdtree_snap,iproc,numproc,shells_kpc,useminpot,rfac_offset,verbose))
@@ -550,7 +544,7 @@ class gadget_simulation:
         return fig,axes
     
     # Method to render all simulation snapshots
-    def gen_sim_animation(self,numproc=1,fps=10,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,staralpha=1,subsample=1,clims=None):
+    def gen_sim_animation(self,numproc=1,fps=10,type='baryons',frame=None,,staralpha=1,clims=None):
         """
         Render all simulation snapshots.
 
@@ -561,7 +555,7 @@ class gadget_simulation:
         fps: int
             The frames per second for the animation.
         type: str
-            The type of particles to render.
+            The type of particles to render ('baryons', 'stars' or 'darkmatter').
         frame: float
             The size of the frame to render (in kpc)
         galaxies: pd.DataFrame
@@ -575,7 +569,7 @@ class gadget_simulation:
 
         """
 
-        gen_sim_animation(self,numproc=numproc,fps=fps,type=type,frame=frame,galaxies=galaxies,useminpot=useminpot,staralpha=staralpha,subsample=subsample,clims=clims)
+        gen_sim_animation(self,numproc=numproc,fps=fps,type=type,frame=frame,staralpha=staralpha,clims=clims)
 
         
 

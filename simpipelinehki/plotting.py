@@ -13,6 +13,7 @@ import os
 import time
 import numpy as np
 import pandas as pd
+import scipy
 import multiprocessing
 import matplotlib
 import matplotlib.pyplot as plt
@@ -24,7 +25,6 @@ from .tools import split_list
 dpi=1000
 
 # Define cmaps for gas and stars
-cname_star='#FDF9E8'
 cmapname_gas='magma'
 cmap_gas = plt.get_cmap(cmapname_gas, 256)
 cmaplist_gas = cmap_gas(np.linspace(0, 1, 256))
@@ -34,6 +34,14 @@ for ival,cmapval in enumerate(cmaplist_gas):
     cmaplist_gas[ival,-1] = (ival+1)/256
 cmap_gas = matplotlib.colors.ListedColormap(cmaplist_gas)
 
+cname_star='#FDF9E8'
+cmap_star = plt.get_cmap(cname_star, 256)
+cmaplist_star = cmap_star(np.linspace(0, 1, 256))
+for ival,cmapval in enumerate(cmaplist_star):
+    hsv=matplotlib.colors.rgb_to_hsv(cmapval[:3])
+    cmaplist_star[ival,:3] = matplotlib.colors.hsv_to_rgb(hsv)
+    cmaplist_star[ival,-1] = (ival+1)/256
+cmap_star = matplotlib.colors.ListedColormap(cmaplist_star)
 
 ############ TIME SERIES DATA ############
 
@@ -291,71 +299,82 @@ def plot_glxsep(simulation,ids=None,bh_subsample=10):
 
 
 ############ RENDERING A SIMULATION ############
-def render_snap(snapshot,type='baryons',frame=None,galaxies=pd.DataFrame(),center=None,useminpot=False,staralpha=1,subsample=1,clims=None):
+def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=1,clims=None):
     """
     Render a snapshot of the simulation.
 
-    Parameters
-    ----------
-    snapshot : snapshot object
-        Snapshot object to render.
-    type : str
-        Type of rendering to perform. Options are 'baryons' and 'dm'.
-    galaxies : pandas dataframe
-        Dataframe containing the properties of the galaxies found in the snapshots (optional).
-    useminpot : bool
-        If True, use the minimum potential of the star particles as the halo centre.
-    verbose : bool
-        If True, print the progress of the rendering.
+    Parameters:
+    -----------
+    type: str
+        The type of particles to render -- either 'baryons', 'stars' or 'dm'.
+    frame: str  
+        The frame size (in kpc) to render the snapshot.
+    center: array 1x3 as astropy.units.Quantity
+        The center to be used for the rendering.
+    staralpha: float
+        The alpha value for the stars in the rendering if type='baryons'.
+    clims: list
+        The color limits for the rendering.
+
     """
 
     #set up the rendering parameters based on type
     if type=='baryons':
-        ptypes=[0,4,1,5];radstr='Halo_R_Crit200';rfac=1
+        ptypes=[0,4,1,5]
         cmap=cmap_gas
-        ls_sphere='--'
+    elif type=='stars':
+        ptypes=[4]
+        cmap=cmap_star
     elif type=='dm':
-        ptypes=[1,0,4,5];radstr='Halo_R_Crit200';rfac=1
+        ptypes=[1,0,4,5]
         cmap='viridis'
-        ls_sphere='--'
     else:
         print('Type not recognized. Options are "baryons" and "dm".')
         return
+    
+    #find frame and center based on particle positions
+    if frame is None:
+        #box size
+        max_x=np.nanpercentile(pdata['Coordinates_x'].values,99)
+        min_x=np.nanpercentile(pdata['Coordinates_x'].values,1)
+        frame=(max_x-min_x)/2
+        if snapshot.cosmorun:
+            frame/=2
 
-    censtr=''
-    if useminpot:censtr='minpot'
+    else:
+        radius=frame*np.sqrt(2)
 
+    pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=ptypes, center=center, radius=radius)
 
-    pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=ptypes, center=None, radius=None,subsample=subsample)
-
-    #find center based on particle positions
+    #find center based on particle positions if not given
     if not center:
         center=np.sum(pdata.loc[:,[f'Coordinates_{x}' for x in 'xyz']].values*pdata['Masses'].values[:,np.newaxis],axis=0)/np.sum(pdata['Masses'].values)
         pdata['Coordinates_x']-=center[0]
         pdata['Coordinates_y']-=center[1]
         pdata['Coordinates_z']-=center[2]
 
-    #find frame and center based on particle positions
-    if not frame:
-        max_x=np.nanpercentile(pdata['Coordinates_x'].values,99)
-        min_x=np.nanpercentile(pdata['Coordinates_x'].values,1)
-        frame=(max_x-min_x)/2
+    #make 2d histogram
+    ptype_mask=pdata['ParticleTypes'].values==ptypes[0]
+    coordinates=pdata.loc[ptype_mask,[f'Coordinates_{x}' for x in 'xyz']].values
+    masses=pdata.loc[ptype_mask,'Masses'].values
 
-        #if cosmo, half this
-        if snapshot.cosmorun:
-            frame/=2
+    bins=np.linspace(-frame,frame,513)
+    binarea=(bins[1]-bins[0])**2
 
-    sph_fluidmask=pdata['ParticleTypes'].values==ptypes[0]
-    sph_particles=sphviewer.Particles(pdata.loc[sph_fluidmask,[f'Coordinates_{x}' for x in 'xyz']].values,
-                                      pdata.loc[sph_fluidmask,'Masses'].values,nb=8)
+    #2d histogram
+    surface_density=scipy.stats.binned_statistic_2d(coordinates[:,0],coordinates[:,1],masses,bins=[bins]*2,statistic='sum')[0]/binarea
+
+    # old code for sphviewer
+    # sph_particles=sphviewer.Particles(pdata.loc[sph_fluidmask,[f'Coordinates_{x}' for x in 'xyz']].values,
+    #                                   pdata.loc[sph_fluidmask,'Masses'].values,nb=8)
     
-    sph_camera = sphviewer.Camera(r='infinity', t=0, p=0, roll=0, xsize=1500, ysize=1500,
-                                                x=0, y=0, z=0,
-                                                extent=[-frame,frame,-frame,frame])
-    sph_scene = sphviewer.Scene(sph_particles,sph_camera)
-    sph_render = sphviewer.Render(sph_scene)
-    sph_extent = sph_render.get_extent()
-    sph_img=sph_render.get_image()
+    # sph_camera = sphviewer.Camera(r='infinity', t=0, p=0, roll=0, xsize=1500, ysize=1500,
+    #                                             x=0, y=0, z=0,
+    #                                             extent=[-frame,frame,-frame,frame])
+    # sph_scene = sphviewer.Scene(sph_particles,sph_camera)
+    # sph_render = sphviewer.Render(sph_scene)
+    # sph_extent = sph_render.get_extent()
+    # sph_img=sph_render.get_image()
 
     if clims:
         norm=matplotlib.colors.LogNorm(*clims)
@@ -366,50 +385,21 @@ def render_snap(snapshot,type='baryons',frame=None,galaxies=pd.DataFrame(),cente
     fig,ax=plt.subplots(1,1,figsize=(5,5),gridspec_kw={'left':0.1,'right':0.99,'bottom':0.1,'top':0.99})
     ax.set_facecolor('k')
     ax.grid(which='both',alpha=0)
-    ax.imshow(sph_img,extent=sph_extent,origin='lower',cmap=cmap,norm=norm,zorder=1)
-    
-    #add stars if necessary
+    # ax.imshow(sph_img,extent=sph_extent,origin='lower',cmap=cmap,norm=norm,zorder=1)
+    ax.imshow(surface_density.T,extent=[-frame,frame,-frame,frame],origin='lower',cmap=cmap,norm=norm,zorder=1)
+
+    #add stars to baryonic plot
     if type=='baryons':
         stars=pdata.loc[pdata['ParticleTypes'].values==4,:]
         ax.scatter(stars.loc[:,'Coordinates_x'].values,stars.loc[:,'Coordinates_y'].values,c=cname_star,alpha=0.03*staralpha,s=0.05,lw=0,zorder=2)
 
+    #plot position of BHs if baryonic particles are being plotted
     blackholes=pdata.loc[pdata['ParticleTypes'].values==5,:]
     if type=='baryons' and blackholes.shape[0]:
         for ibh,bh in blackholes.iterrows():
             ax.add_artist(plt.Circle(radius=0.15,xy=[bh[f'Coordinates_x']-center[0],bh[f'Coordinates_y']-center[1]],color='w',lw=1,ls='-',fill=True,zorder=3))
             ax.add_artist(plt.Circle(radius=0.10,xy=[bh[f'Coordinates_x']-center[0],bh[f'Coordinates_y']-center[1]],color='k',lw=0.5,ls='-',fill=True,zorder=3))
 
-    #add galaxy positions
-    try:
-        numgal=galaxies.shape[0]
-    except:
-        numgal=0
-
-    if numgal:
-        isnap_galaxies=galaxies.loc[galaxies['isnap'].values==snapshot.snapshot_idx,:]
-        if isnap_galaxies.shape[0]:
-            mstar_mask=isnap_galaxies['1p00restar_sphere_star_tot'].values>=0
-            centrals=np.logical_and.reduce([isnap_galaxies['Central'].values==1,mstar_mask])
-            sats=np.logical_and.reduce([isnap_galaxies['Central'].values==0,mstar_mask])
-            remnants=np.logical_and.reduce([isnap_galaxies['RemnantCentral'].values==1,mstar_mask])
-
-            if np.nansum(centrals):
-                for igal,gal in isnap_galaxies.loc[centrals,:].iterrows():
-                    ax.scatter(gal[f'x{censtr}']-center[0],gal[f'y{censtr}']-center[1],s=1,c='w',zorder=3)
-                    ax.scatter(gal[f'x{censtr}']-center[0],gal[f'y{censtr}']-center[1],s=0.5,c='k',zorder=3)
-                    ax.add_artist(plt.Circle(radius=gal[radstr]*rfac,xy=[gal[f'x{censtr}']-center[0],gal[f'y{censtr}']-center[1]],color='w',lw=0.5,ls=ls_sphere,fill=False,zorder=3))
-
-            if np.nansum(sats):
-                for igal,gal in isnap_galaxies.loc[sats,:].iterrows():
-                    ax.scatter(gal[f'x{censtr}']-center[0],gal[f'y{censtr}']-center[1],s=0.5,c='w',zorder=3)
-                    ax.scatter(gal[f'x{censtr}']-center[0],gal[f'y{censtr}']-center[1],s=0.25,c='grey',zorder=3)
-            
-            if np.nansum(remnants):
-                for ibh,bh in isnap_galaxies.loc[remnants,:].iterrows():
-                    ax.add_artist(plt.Circle(radius=bh[radstr]*rfac,xy=[bh[f'x{censtr}']-center[0],bh[f'y{censtr}']-center[1]],color='w',lw=1,ls='-',fill=False,zorder=3))
-                    ax.add_artist(plt.Circle(radius=bh[radstr]*rfac,xy=[bh[f'x{censtr}']-center[0],bh[f'y{censtr}']-center[1]],color='red',lw=0.5,ls='-',fill=False,zorder=3))
-
-                    
     ax.set_xlim(-frame,frame)
     ax.set_ylim(-frame,frame)
 
@@ -420,14 +410,15 @@ def render_snap(snapshot,type='baryons',frame=None,galaxies=pd.DataFrame(),cente
     if snapshot.cosmorun:
         ax.text(x=0.95,y=0.95,s=r'$z='+f'{snapshot.redshift:.3f}$',transform=ax.transAxes,ha='right',va='top',color='w')
     else:
-        ax.text(x=0.95,y=0.95,s=r'Snap '+f'{snapshot.snapshot_idx:.0f}',transform=ax.transAxes,ha='right',va='top',color='w')
+        if snapshot.snapshot_idx: 
+            ax.text(x=0.95,y=0.95,s=r'Snap '+f'{snapshot.snapshot_idx:.0f}',transform=ax.transAxes,ha='right',va='top',color='w')
 
     fig.set_dpi(dpi)
 
     return fig,ax
 
 
-def render_sim_worker(snaplist,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,staralpha=1,subsample=1,clims=None):
+def render_sim_worker(snaplist,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,staralpha=1,clims=None):
     
     """
     Worker function to make an animation of the simulation for a given set of snaps.
@@ -451,12 +442,12 @@ def render_sim_worker(snaplist,type='baryons',frame=None,galaxies=pd.DataFrame()
     
     for snapshot in snaplist:
         print(f"Rendering snap {snapshot.snapshot_idx}...")
-        fig,_=render_snap(snapshot,type=type,frame=frame,galaxies=galaxies,useminpot=useminpot,staralpha=staralpha,subsample=subsample,clims=clims)
+        fig,_=render_snap(snapshot,type=type,frame=frame,galaxies=galaxies,useminpot=useminpot,staralpha=staralpha,clims=clims)
         fig.savefig(f'plots/render_sim_{type}/snap_{str(snapshot.snapshot_idx).zfill(3)}.png',dpi=dpi)
         plt.close(fig)
 
 
-def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,staralpha=1,subsample=1,clims=None):
+def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,staralpha=1,clims=None):
     """
     Render all simulation snapshots.
 
@@ -474,8 +465,6 @@ def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,gala
         The galaxy data from analyse_galaxies (see galaxyanalysis.py for details).
     useminpot: bool
         If True, use the minimum potential of the star particles as the galaxy centre.
-    subsample: int
-        The subsampling factor to use when loading the particle data.
     verbose: bool
         If True, print the progress of the rendering.
 
@@ -501,7 +490,7 @@ def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,gala
     for iproc in range(numproc):
         time.sleep(0.1)
         snapshots_ichunk=snapshots_chunks[iproc]
-        proc = multiprocessing.Process(target=render_sim_worker, args=(snapshots_ichunk,type,frame,galaxies,useminpot,staralpha,subsample,clims))
+        proc = multiprocessing.Process(target=render_sim_worker, args=(snapshots_ichunk,type,frame,galaxies,useminpot,staralpha,clims))
         procs.append(proc)
         proc.start()
 
@@ -523,7 +512,7 @@ def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,gala
 
 
 # This function is used to create an animation of the interaction between two galaxies specified by their IDs.
-def render_merger_worker(snaplist,galaxies,ids=None,staralpha=10,clims=(1e3,3e8),useminpot=False,verbose=False):
+def render_merger_worker(snaplist,galaxies,ids=None,staralpha=10,clims=None,useminpot=False,verbose=False):
     
     """
     Worker function to make an animation of the interaction between two galaxies specified by their IDs.
@@ -598,11 +587,11 @@ def render_merger_worker(snaplist,galaxies,ids=None,staralpha=10,clims=(1e3,3e8)
 
         frame=np.nanmax([xysep*1,25])
 
-        pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=[0,4,5], center=None, radius=None,subsample=1)
+        pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=[0,4,5], center=None, radius=None)
         stars=pdata.loc[pdata['ParticleTypes'].values==4,:]
         gas=pdata.loc[pdata['ParticleTypes'].values==0,:]
 
-        #sph rendering
+        #gas 2d histogram
         sph_particles=sphviewer.Particles(gas.loc[:,[f'Coordinates_{x}' for x in 'xyz']].values-center,gas['Masses'].values,nb=32)
         sph_camera = sphviewer.Camera(r='infinity', t=0, p=0, roll=0, xsize=1500, ysize=1500,
                                                     x=0, y=0, z=0,
@@ -646,7 +635,7 @@ def render_merger_worker(snaplist,galaxies,ids=None,staralpha=10,clims=(1e3,3e8)
 
 
 # Method to render a merger 
-def gen_merger_animation(simulation,numproc=1,ids=None,fps=10,staralpha=10,clims=(1e3,3e8),useminpot=False,verbose=False):
+def gen_merger_animation(simulation,numproc=1,ids=None,fps=10,staralpha=10,clims=None,useminpot=False,verbose=False):
 
     """
     Render an animation of the interaction between two galaxies specified by their IDs.
@@ -655,7 +644,7 @@ def gen_merger_animation(simulation,numproc=1,ids=None,fps=10,staralpha=10,clims
     ----------
     simulation : simulation object
         Simulation object containing the data to be plotted.
-        NB: The simulation object must contain the following data:
+        NB: The simulation object *must* contain the following data:
         - haloes: pandas dataframe containing the properties of the halos found in the snapshot.
         - galaxies: pandas dataframe containing the properties of the galaxies found in the snapshot.
         - bhdetails: dictionary of pandas dataframes containing the properties of the black holes found in the snapshot.
@@ -739,10 +728,7 @@ def gen_merger_animation(simulation,numproc=1,ids=None,fps=10,staralpha=10,clims
     clip.write_videofile(f'plots/render_merger_{int(ids[0])}_{int(ids[1])}/animation.mp4')
 
 
-
-
 ############ KETJU BINARIES ############
-
 def plot_bhbinarypars(simulation,binaries=None):
     """
     Plot the binary parameters of the black holes in the simulation.
@@ -801,6 +787,4 @@ def plot_bhbinarypars(simulation,binaries=None):
         plt.savefig(f'plots/ketjubinary_{binary[0]}_{binary[1]}.png',dpi=dpi)
         plt.show()
     
-
-
 

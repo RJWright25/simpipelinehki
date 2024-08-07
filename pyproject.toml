@@ -1,5 +1,5 @@
 [project]
-name = "simpipelinehki_TEST"
+name = "simpipelinehki"
 version = "1.0"
 authors = [
   { name="Ruby Wright", email="ruby.wright@helsinki.fi" },
