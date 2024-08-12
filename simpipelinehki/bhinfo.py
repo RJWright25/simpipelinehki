@@ -79,7 +79,7 @@ def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
                     print(select_data.loc[0,0],select_data.loc[select_data.shape[0]-1,0])
                     continue
 
-            print('BHID:', BHID, 'Number of rows:', select_data.shape[0])
+            # print('BHID:', BHID, 'Number of rows:', select_data.shape[0])
        
             if not f'{BHID}' in BHDetails:
                 BHDetails[f'{BHID}'] = select_data
