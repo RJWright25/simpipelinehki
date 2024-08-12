@@ -222,8 +222,8 @@ class gadget_simulation:
                     os.remove(os.getcwd()+'/postprocessing/kdtrees/'+fname)
 
         #make a directory for the logs
-        if not os.path.exists(os.getcwd()+'postprocessing/kdtrees/logs'):
-            os.makedirs(os.getcwd()+'postprocessing/kdtrees/logs')
+        if not os.path.exists(os.getcwd()+'/postprocessing/kdtrees/logs'):
+            os.makedirs(os.getcwd()+'/postprocessing/kdtrees/logs')
 
         #split the snapshots into chunks for multiprocessing
         snapshot_chunks=split_list(snapshot_list,numproc)
