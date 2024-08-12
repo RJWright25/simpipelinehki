@@ -53,6 +53,8 @@ def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
         # data[0] contains "BH=ID". Find the unique BH IDs in this file:
         # replace column with BHIDs
         data.loc[:,0] = data[0].str.extract('BH=(\d+)').values.flatten()
+        data.dropna(axis=0,how='any',inplace=True) #
+        data.loc[:,0] = data.loc[:,0].astype(np.int64)
         data.sort_values(by=[0],inplace=True,ignore_index=True)
         data.reset_index(drop=True,inplace=True)
 
@@ -71,7 +73,7 @@ def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
             select_data = data.iloc[firstidx:lastidx,:]
 
             #remove any rows containing a nan
-            select_data = select_data.dropna(axis=0,how='any') #
+            select_data = 
 
             print('BHID:', BHID, 'Number of rows:', select_data.shape[0])
             print(select_data.iloc[0,:])
