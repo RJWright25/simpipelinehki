@@ -29,6 +29,7 @@ def postprocess_bhdata(path=None,outpath='postprocessing/blackhole_details_post_
     if not os.path.exists(outpath):
         os.makedirs(outpath)
 
+    directory=path
     #option to run the postprocessing in a batch script
     if slurm:
         # Create a python file to run the postprocessing
