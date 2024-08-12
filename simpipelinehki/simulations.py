@@ -319,11 +319,12 @@ class gadget_simulation:
                 kdpath=f'postprocessing/kdtrees/{snapfname}_kdtree.pkl'
             else:
                 kdpath=f'postprocessing/kdtrees/snap_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
+
             if os.path.exists(kdpath):
                 with open(kdpath,'rb') as kdfile:
                     kdtree_snap=pickle.load(kdfile)
             else:
-                print('Error: KD trees not found. Please generate first.')
+                print(f'Error: KD tree not found at {kdpath}. Please generate first.')
                 return None
 
             #split the snapshots into chunks for multiprocessing
