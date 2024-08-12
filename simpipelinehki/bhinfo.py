@@ -52,7 +52,7 @@ def postprocess_bhdata(path=None,outpath='postprocessing/blackhole_details_post_
 
 
         # Create a slurm file to run the postprocessing
-        with open(f'{outpath}/postprocessing.slurm','w') as f:
+        with open(f'{outpath}/bhpostprocessing.slurm','w') as f:
             f.write(f'#!/bin/bash\n')
             f.write(f'#SBATCH --job-name=bhpostprocessing\n')
             f.write(f'#SBATCH --output=bhpostprocessing.out\n')
@@ -61,14 +61,14 @@ def postprocess_bhdata(path=None,outpath='postprocessing/blackhole_details_post_
             f.write(f'#SBATCH --time=1:00:00\n')
             f.write(f'#SBATCH --partition=test\n')
             f.write(f'#SBATCH --nodes=1\n')
-            f.write(f'#SBATCH --cpus-per-node=128\n')
+            f.write(f'#SBATCH --ntasks-per-node=128\n')
 
             f.write(f'python bhpostprocessing.py\n')
 
             f.close()
 
         # Run the slurm file
-        os.system(f'sbatch {outpath}/postprocessing.slurm')
+        os.system(f'sbatch {outpath}/bhpostprocessing.slurm')
 
     #run the postprocessing
     else:
