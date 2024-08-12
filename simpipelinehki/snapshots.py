@@ -108,7 +108,7 @@ class gadget_snapshot_hki:
 
             #dm particle mass
             if 'MassTable' in snapshot['Header'].attrs.keys():
-                mvalraw=snapshot.attrs['MassTable'][1]*1e10/self.hubble
+                mvalraw=snapshot['Header'].attrs['MassTable'][1]*1e10/self.hubble
                 if mvalraw>0:
                     self.mass_dm=mvalraw
                 else:
