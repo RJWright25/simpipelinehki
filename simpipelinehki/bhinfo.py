@@ -118,7 +118,7 @@ def postprocess_bhdata(path=None,outpath='postprocessing/blackhole_details_post_
         
     # Save files
     if not os.path.exists(f'{outpath}'):
-        os.mkdir(f'{outpath}')
+        os.makedirs(f'{outpath}')
     else:
         # Remove all files in the directory
         files = os.listdir(f'{outpath}')
