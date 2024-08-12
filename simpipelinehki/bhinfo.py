@@ -45,7 +45,7 @@ def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
     BHDetails = {}
     # Load files
     for file_index in list(range(fileNum))[:]:
-        if file_index % 10 == 0:
+        if file_index % 1 == 0:
             print('Processing file:', file_index+1, '/', fileNum)
 
         fileName = f"{path}/blackhole_details/blackhole_details_{file_index}.txt"
