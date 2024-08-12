@@ -46,13 +46,11 @@ class gadget_simulation:
     snapshot_file_list: list
         The list of paths to the snapshot files.
 
-    snapshot_type: str
-        The type of snapshot to use (e.g. 'gadget_idealised_snapshot_hki' or 'gadget_cosmo_snapshot_hki').
-
     snapshot_idxlist: list
         The list of snapshot indices.
 
-
+    cosmo: bool
+        If True, assumes run is a comoving simulation.
 
     Attributes:
     -----------
@@ -74,25 +72,15 @@ class gadget_simulation:
     """
 
     # Initialize the simulation object, take a list of snapshot files and create a list of snapshot objects
-    def __init__(self, snapshot_file_list, snapshot_idxs=None,snapshot_type=None):
-        
-        if snapshot_type=='gadget_idealised_snapshot_hki':
-            snapshot_type = gadget_idealised_snapshot_hki
-            self.snapshot_type = 'idealised'
-        elif snapshot_type=='gadget_cosmo_snapshot_hki':
-            snapshot_type = gadget_cosmo_snapshot_hki
-            self.snapshot_type = 'cosmo'
-        else:
-            print('Error: snapshot type not recognized. Available types are "gadget_idealised_snapshot_hki" and "gadget_cosmo_snapshot_hki".')
-            return None
-
-
+    def __init__(self, snapshot_file_list, snapshot_idxs=None,cosmo=False):
+    
         self.snapshot_flist = snapshot_file_list;times=[h5py.File(snapshot_file, 'r')['Header'].attrs['Time'] for snapshot_file in self.snapshot_flist]
         self.snapshot_flist = [snapshot_file for _,snapshot_file in sorted(zip(times,self.snapshot_flist))]
         if not snapshot_idxs:
-            self.snapshots = [snapshot_type(snapshot_file,snapshot_idx=snapshot_idx) for snapshot_idx,snapshot_file in enumerate(self.snapshot_flist)]
+            self.snapshots = [gadget_snapshot_hki(snapshot_file,snapshot_idx=snapshot_idx) for snapshot_idx,snapshot_file in enumerate(self.snapshot_flist)]
         else:
-            self.snapshots = [snapshot_type(snapshot_file,snapshot_idx=snapshot_idx) for snapshot_idx,snapshot_file in zip(snapshot_idxs,self.snapshot_flist)]
+            self.snapshots = [gadget_snapshot_hki(snapshot_file,snapshot_idx=snapshot_idx) for snapshot_idx,snapshot_file in zip(snapshot_idxs,self.snapshot_flist)]
+            
         self.snapshot_idxlist = [snapshot.snapshot_idx for snapshot in self.snapshots]
         self.timelist = [snapshot.time for snapshot in self.snapshots]
         self.redshiftlist = [snapshot.redshift for snapshot in self.snapshots]

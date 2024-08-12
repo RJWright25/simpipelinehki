@@ -77,15 +77,10 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
     cosmo=snapshot.cosmology
 
     #set up the logging
-    logging_folder=f'{os.getcwd()}/logs/'
-    if not os.path.exists(logging_folder):
-        os.mkdir(logging_folder)
-    if not os.path.exists(logging_folder+'haloes/'):
-        os.mkdir(logging_folder+'haloes/')
     logging_folder=f'{os.getcwd()}/logs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/'
     if not os.path.exists(logging_folder):
         try:
-            os.mkdir(logging_folder)
+            os.makedirs(logging_folder)
         except:
             pass        
 
@@ -99,15 +94,10 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
     logging.basicConfig(filename=logging_name, level=logging.INFO)
 
     # set up the output
-    output_folder=f'{os.getcwd()}/outputs/'
-    if not os.path.exists(output_folder):
-        os.mkdir(output_folder)
-    if not os.path.exists(output_folder+'haloes/'):
-        os.mkdir(output_folder+'haloes/')
     output_folder=f'{os.getcwd()}/outputs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/'
     if not os.path.exists(output_folder):
         try:
-            os.mkdir(output_folder)
+            os.makedirs(output_folder)
         except:
             pass
     output_name=output_folder+f'iproc_{iproc}.hdf5'
@@ -116,7 +106,6 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
             os.remove(output_name)
         except:
             pass
-
 
     logging.info(f'')
     logging.info(f'************{datetime.now()}************')
@@ -160,14 +149,18 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
 
     # get the KDTree
     if kdtree is None:
-        logging.info(f'Checking for KDTree in snapshot {snapshot.snapshot_file}...')
-        if os.path.exists(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'):
+        if snapshot.snapshot_idx is None:
+            snapfname=snapshot.snapshot_file.split('/')[-1].split('.hdf5')[0]
+            kdpath=f'kdtrees/{snapfname}_kdtree.pkl'
+        else:
+            kdpath=f'{snapshot.snapshot_file.split("output")[0]+"/analysis/"}/outputs/kdtrees/snap_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
 
-            with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
+        logging.info(f'Checking for KDTree in snapshot {snapshot.snapshot_file}...')
+        if os.path.exists(kdpath):
+            with open(kdpath,'rb') as kdfile:
                 kdtree_snap=pickle.load(kdfile)
             
             logging.info(f'KDTree found for snapshot {snapshot.snapshot_file}.')
-
             if verbose:
                 print(f'KDTree found for snapshot {snapshot.snapshot_file}.')
                 print(f'Num particles in tree = {[kdtree_snap[ptype].data.shape[0] for ptype in kdtree_snap.keys()]}')
