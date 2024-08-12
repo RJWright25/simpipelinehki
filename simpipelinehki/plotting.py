@@ -358,7 +358,7 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
     coordinates=pdata.loc[ptype_mask,[f'Coordinates_{x}' for x in 'xyz']].values
     masses=pdata.loc[ptype_mask,'Masses'].values
 
-    bins=np.linspace(-frame,frame,513)
+    bins=np.linspace(-frame,frame,1025)
     binarea=(bins[1]-bins[0])**2
 
     #2d histogram
