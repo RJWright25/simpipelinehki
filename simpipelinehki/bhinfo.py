@@ -72,9 +72,6 @@ def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
 
             select_data = data.iloc[firstidx:lastidx,:]
 
-            #remove any rows containing a nan
-            select_data = 
-
             print('BHID:', BHID, 'Number of rows:', select_data.shape[0])
             print(select_data.iloc[0,:])
             print(select_data.iloc[-1,:])
