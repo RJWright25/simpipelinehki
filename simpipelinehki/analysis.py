@@ -125,7 +125,7 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
     """ 
     
     #set up the logging
-    logging_folder=f'{os.getcwd()}/logs/galaxies/snap_{str(snapshot.snapshot_idx).zfill(3)}/'
+    logging_folder=f'{os.getcwd()}/postprocessing/logs/galaxies/snap_{str(snapshot.snapshot_idx).zfill(3)}/'
     if not os.path.exists(logging_folder):
         os.makedirs(logging_folder)
     logging_name=logging_folder+f'iproc_{str(iproc).zfill(3)}.log'
@@ -137,7 +137,7 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
     logging.basicConfig(filename=logging_name, level=logging.INFO)
 
     # set up the output
-    output_folder=f'{os.getcwd()}/outputs/galaxies/snap_{str(snapshot.snapshot_idx).zfill(3)}/'
+    output_folder=f'{os.getcwd()}/postprocessing/galaxies/snap_{str(snapshot.snapshot_idx).zfill(3)}/'
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
     output_name=output_folder+f'iproc_{str(iproc).zfill(3)}.hdf5'
@@ -151,9 +151,9 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
     if kdtree is None:
         if snapshot.snapshot_idx is None:
             snapfname=snapshot.snapshot_file.split('/')[-1].split('.hdf5')[0]
-            kdpath=f'kdtrees/{snapfname}_kdtree.pkl'
+            kdpath=f'postprocessing/kdtrees/{snapfname}_kdtree.pkl'
         else:
-            kdpath=f'{snapshot.snapshot_file.split("output")[0]+"/analysis/"}/outputs/kdtrees/snap_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
+            kdpath=f'postprocessing/kdtrees/snap_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
 
         logging.info(f'Checking for KDTree in snapshot {snapshot.snapshot_file}...')
         if os.path.exists(kdpath):
@@ -161,14 +161,10 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
                 kdtree_snap=pickle.load(kdfile)
             
             logging.info(f'KDTree found for snapshot {snapshot.snapshot_file}.')
-
-            if verbose:
-                print(f'KDTree found for snapshot {snapshot.snapshot_file}.')
-                print(f'Num particles in tree = {[kdtree_snap[ptype].data.shape[0] for ptype in kdtree_snap.keys()]}')
                 
         else:
             logging.info(f'KDTree not found for snapshot {snapshot.snapshot_file}.')
-            kdtree_snap=None
+
     else:
         kdtree_snap=kdtree
 
@@ -219,12 +215,12 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
         else:shells_kpc_str.append(f'0p{str(int(ishellkpc*1000)).zfill(3)}kpc')
     shells_kpc={shell_kpc_str:shell_kpc for shell_kpc_str,shell_kpc in zip(shells_kpc_str,shells_kpc)}
 
-    # get the KDTree
-    if self.snapshot_idx is None:
-        snapfname=self.snapshot_file.split('/')[-1].split('.hdf5')[0]
+    # get the KDTree to use for all subprocesses
+    if snapshot.snapshot_idx is None:
+        snapfname=snapshot.snapshot_file.split('/')[-1].split('.hdf5')[0]
         kdpath=f'kdtrees/{snapfname}_kdtree.pkl'
     else:
-        kdpath=f'{self.snapshot_file.split("output")[0]+"/analysis/"}/outputs/kdtrees/snap_{str(self.snapshot_idx).zfill(3)}.pkl'
+        kdpath=f'{snapshot.snapshot_file.split("output")[0]+"/analysis/"}/outputs/kdtrees/snap_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
 
     logging.info(f'Checking for KDTree in snapshot {snapshot.snapshot_file}...')
     if os.path.exists(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'):
@@ -480,3 +476,4 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
     galaxies.to_hdf(output_name,key='chunk')
     
     return galaxies
+

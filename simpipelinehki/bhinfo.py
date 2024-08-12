@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 
 # This function is used to postprocess the blackhole details files. (credit: Shihong Liao reprocess.py)
-def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
+def postprocess_bhdata(path=None,outpath='postprocessing/blackhole_details_post_processing'):
     """
     Postprocesses the black hole details files. This is from Shihong Liao's reprocess.py file.
 
@@ -30,8 +30,6 @@ def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
     if not path:
         print('No path given. Exiting...')
         return None
-    
-    outpath=f'{path}/{outpath}'
 
     # Specify file path and target BH ids
     fileNum = 0
@@ -168,8 +166,7 @@ def read_bhdata(simulation=None,path=None,bhids=None,subsample=1):
 
 
     if not path:
-        path=simulation.snapshots[0].snapshot_file.split('/')[:-1]
-        path='/'.join(path)+'/blackhole_details_post_processing/'
+        path='postprocessing/blackhole_details_post_processing/'
         if os.path.exists(path):
             print(f'Using path {path} to read black hole details...')
         else:

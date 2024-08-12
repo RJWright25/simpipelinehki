@@ -77,30 +77,22 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
     cosmo=snapshot.cosmology
 
     #set up the logging
-    logging_folder=f'{os.getcwd()}/logs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/'
+    logging_folder=f'{os.getcwd()}/postprocessing/logs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/'
     if not os.path.exists(logging_folder):
-        try:
-            os.makedirs(logging_folder)
-        except:
-            pass        
-
+        os.makedirs(logging_folder)
     logging_name=logging_folder+f'iproc_{str(iproc).zfill(3)}.log'
     if os.path.exists(logging_name):
         try:
             os.remove(logging_name)
         except:
             pass
-        
     logging.basicConfig(filename=logging_name, level=logging.INFO)
 
     # set up the output
-    output_folder=f'{os.getcwd()}/outputs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/'
+    output_folder=f'{os.getcwd()}/postprocessing/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/'
     if not os.path.exists(output_folder):
-        try:
-            os.makedirs(output_folder)
-        except:
-            pass
-    output_name=output_folder+f'iproc_{iproc}.hdf5'
+        os.makedirs(output_folder)
+    output_name=output_folder+f'iproc_{str(iproc).zfill(3)}.hdf5'
     if os.path.exists(output_name):
         try:
             os.remove(output_name)
@@ -151,9 +143,9 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
     if kdtree is None:
         if snapshot.snapshot_idx is None:
             snapfname=snapshot.snapshot_file.split('/')[-1].split('.hdf5')[0]
-            kdpath=f'kdtrees/{snapfname}_kdtree.pkl'
+            kdpath=f'postprocessing/kdtrees/{snapfname}_kdtree.pkl'
         else:
-            kdpath=f'{snapshot.snapshot_file.split("output")[0]+"/analysis/"}/outputs/kdtrees/snap_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
+            kdpath=f'postprocessing/kdtrees/snap_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
 
         logging.info(f'Checking for KDTree in snapshot {snapshot.snapshot_file}...')
         if os.path.exists(kdpath):

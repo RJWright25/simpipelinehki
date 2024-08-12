@@ -154,6 +154,11 @@ class gadget_snapshot_hki:
         self.haloes=[]
         self.galaxies=[]
     
+
+        #initialise output directories
+        if not os.path.exists('postprocessing'):
+            os.makedirs('postprocessing')
+
     #simple method to list the available particle fields
     def list_particle_fields(self, ptype=0):
         with h5py.File(self.snapshot_file, 'r') as pfile:
@@ -216,9 +221,9 @@ class gadget_snapshot_hki:
                         #check if the KDTree file exists
                         if self.snapshot_idx is None:
                             snapfname=self.snapshot_file.split('/')[-1].split('.hdf5')[0]
-                            kdpath=f'kdtrees/{snapfname}_kdtree.pkl'
+                            kdpath=f'postprocessing/kdtrees/{snapfname}_kdtree.pkl'
                         else:
-                            kdpath=f'{self.snapshot_file.split("output")[0]+"/analysis/"}/outputs/kdtrees/snap_{str(self.snapshot_idx).zfill(3)}.pkl'
+                            kdpath=f'postprocessing/kdtrees/snap_{str(self.snapshot_idx).zfill(3)}.pkl'
                         if os.path.exists(kdpath):
                             with open(kdpath,'rb') as kdfile:
                                 kdtree=pickle.load(kdfile)
