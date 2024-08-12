@@ -509,10 +509,8 @@ def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,gala
 
 ############ RENDERING A MERGER ############
 
-
-
 # This function is used to create an animation of the interaction between two galaxies specified by their IDs.
-def render_merger_worker(snaplist,galaxies,ids=None,staralpha=10,clims=None,useminpot=False,verbose=False):
+def render_merger_worker(snaplist,galaxies,ids=None,staralpha=0.03,clims=None,useminpot=False,verbose=False):
     
     """
     Worker function to make an animation of the interaction between two galaxies specified by their IDs.
@@ -592,23 +590,31 @@ def render_merger_worker(snaplist,galaxies,ids=None,staralpha=10,clims=None,usem
         gas=pdata.loc[pdata['ParticleTypes'].values==0,:]
 
         #gas 2d histogram
-        sph_particles=sphviewer.Particles(gas.loc[:,[f'Coordinates_{x}' for x in 'xyz']].values-center,gas['Masses'].values,nb=32)
-        sph_camera = sphviewer.Camera(r='infinity', t=0, p=0, roll=0, xsize=1500, ysize=1500,
-                                                    x=0, y=0, z=0,
-                                                    extent=[-frame,frame,-frame,frame])
-        sph_scene=sphviewer.Scene(sph_particles,sph_camera)
-        sph_render = sphviewer.Render(sph_scene)
-        sph_extent = sph_render.get_extent()
-        sph_img=sph_render.get_image()
-        sph_img[sph_img==0]
+        bins=np.linspace(-frame,frame,513)
+        binarea=(bins[1]-bins[0])**2
+        surface_density=scipy.stats.binned_statistic_2d(gas['Coordinates_x'].values,gas['Coordinates_y'].values,gas['Masses'].values,bins=[bins]*2,statistic='sum')[0]/binarea
 
-        # ax.fill_between([-200,200],[-200,-200],[200,200],color='k',alpha=1,zorder=0)
+        #plot the gas
+        ax.pcolormesh(bins,bins,surface_density.T,cmap=cmap_gas,norm=matplotlib.colors.LogNorm(),zorder=1)
+
+        # sph_particles=sphviewer.Particles(gas.loc[:,[f'Coordinates_{x}' for x in 'xyz']].values-center,gas['Masses'].values,nb=32)
+        # sph_camera = sphviewer.Camera(r='infinity', t=0, p=0, roll=0, xsize=1500, ysize=1500,
+        #                                             x=0, y=0, z=0,
+        #                                             extent=[-frame,frame,-frame,frame])
+        # sph_scene=sphviewer.Scene(sph_particles,sph_camera)
+        # sph_render = sphviewer.Render(sph_scene)
+        # sph_extent = sph_render.get_extent()
+        # sph_img=sph_render.get_image()
+        # sph_img[sph_img==0]
+
+        ax.fill_between([-200,200],[-200,-200],[200,200],color='k',alpha=1,zorder=0)
         if clims:
             norm=matplotlib.colors.LogNorm(*clims)
         else:
             norm=matplotlib.colors.LogNorm()
-        ax.imshow(sph_img,extent=sph_extent,origin='lower',cmap=cmap_gas,norm=norm,zorder=1)
-        ax.scatter(stars.loc[:,'Coordinates_x'].values-center[0],stars.loc[:,'Coordinates_y'].values-center[1],c=cname_star,alpha=0.03*staralpha,s=0.05,lw=0,zorder=2)
+        # ax.imshow(sph_img,extent=sph_extent,origin='lower',cmap=cmap_gas,norm=norm,zorder=1)
+
+        ax.scatter(stars.loc[:,'Coordinates_x'].values-center[0],stars.loc[:,'Coordinates_y'].values-center[1],c=cname_star,alpha=staralpha,s=0.05,lw=0,zorder=2)
 
         #plot the galaxies
         ax.scatter(x1-center[0],y1-center[1],s=2,c=f'w',zorder=2)
