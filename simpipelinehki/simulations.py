@@ -222,12 +222,8 @@ class gadget_simulation:
                     os.remove(os.getcwd()+'/postprocessing/kdtrees/'+fname)
 
         #make a directory for the logs
-        if not os.path.exists(os.getcwd()+'postprocessing/logs/kdtrees/'):
-            os.makedirs(os.getcwd()+'postprocessing/logs/kdtrees/')
-        else:
-            for fname in os.listdir(os.getcwd()+'postprocessing/logs/kdtrees/'):
-                if os.path.exists(os.getcwd()+'postprocessing/logs/kdtrees/'+fname):
-                    os.remove(os.getcwd()+'postprocessing/logs/kdtrees/'+fname)
+        if not os.path.exists(os.getcwd()+'postprocessing/kdtrees/logs'):
+            os.makedirs(os.getcwd()+'postprocessing/kdtrees/logs')
 
         #split the snapshots into chunks for multiprocessing
         snapshot_chunks=split_list(snapshot_list,numproc)
@@ -287,7 +283,7 @@ class gadget_simulation:
 
         t0stack=time.time()
 
-        #make a temporary directory for the outputs
+        #make a directory for the outputs
         if not os.path.exists(os.getcwd()+'/postprocessing/haloes/'):
             os.makedirs(os.getcwd()+'/postprocessing/haloes/')
         else:
@@ -298,14 +294,8 @@ class gadget_simulation:
                             os.remove(os.getcwd()+'/postprocessing/haloes/'+snapdir+'/'+fname)
 
         #make a directory for the logs
-        if not os.path.exists(os.getcwd()+'postprocessing/logs/haloes/'):
-            os.makedirs(os.getcwd()+'postprocessing/logs/haloes/')
-        else:
-            for snapdir in os.listdir(os.getcwd()+'postprocessing/logs/haloes/'):
-                if os.path.exists(os.getcwd()+'postprocessing/logs/haloes/'+snapdir):
-                    for fname in os.listdir(os.getcwd()+'postprocessing/logs/haloes/'+snapdir):
-                        if os.path.exists(os.getcwd()+'postprocessing/logs/haloes/'+snapdir+'/'+fname):
-                            os.remove(os.getcwd()+'postprocessing/logs/haloes/'+snapdir+'/'+fname)
+        if not os.path.exists(os.getcwd()+'postprocessing/haloes/logs'):
+            os.makedirs(os.getcwd()+'postprocessing/haloes/logs')
 
         for snapshot in snapshot_list:
             print("Analysing haloes in snapshot = ", snapshot.snapshot_idx, ' --  z = ', snapshot.redshift)
@@ -317,9 +307,9 @@ class gadget_simulation:
                 except:
                     pass
             
-            if not os.path.exists(os.getcwd()+f'postprocessing/logs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/'):
+            if not os.path.exists(os.getcwd()+f'postprocessing/haloes/logs/snap_{str(snapshot.snapshot_idx).zfill(3)}/'):
                 try:
-                    os.mkdir(os.getcwd()+f'postprocessing/logs/haloes/snap_{str(snapshot.snapshot_idx).zfill(3)}/')
+                    os.mkdir(os.getcwd()+f'postprocessing/haloes/logs/snap_{str(snapshot.snapshot_idx).zfill(3)}/')
                 except:
                     pass
 
@@ -333,7 +323,7 @@ class gadget_simulation:
                 with open(kdpath,'rb') as kdfile:
                     kdtree_snap=pickle.load(kdfile)
             else:
-                print('Error: KD trees not found. Generate first.')
+                print('Error: KD trees not found. Please generate first.')
                 return None
 
             #split the snapshots into chunks for multiprocessing
@@ -351,9 +341,8 @@ class gadget_simulation:
         print()
         print(f'----> Halo finding for {len(self.snapshots)} snaps complete in {time.time()-t0stack:.2f} seconds.')
 
-    
-        self.haloes=read_hdf_chunks('outputs/haloes/')
-        
+        self.haloes=read_hdf_chunks('postprocessing/haloes/')        
+
     # Method to analyse galaxies in all snapshots using multiprocessing
     def analyse_galaxies(self,haloes=None,snapshotidxs=None,numproc=1,shells_kpc=None,useminpot=False,rfac_offset=0.1,verbose=False):
         """
@@ -407,14 +396,9 @@ class gadget_simulation:
                             os.remove(os.getcwd()+'/postprocessing/galaxies/'+snapdir+'/'+fname)
 
         #make a directory for the logs
-        if not os.path.exists(os.getcwd()+'postprocessing/logs/galaxies/'):
-            os.makedirs(os.getcwd()+'postprocessing/logs/galaxies/')
-        else:
-            for snapdir in os.listdir(os.getcwd()+'postprocessing/logs/galaxies/'):
-                if os.path.exists(os.getcwd()+'postprocessing/logs/galaxies/'+snapdir):
-                    for fname in os.listdir(os.getcwd()+'postprocessing/logs/galaxies/'+snapdir):
-                        if os.path.exists(os.getcwd()+'postprocessing/logs/galaxies/'+snapdir+'/'+fname):
-                            os.remove(os.getcwd()+'postprocessing/logs/galaxies/'+snapdir+'/'+fname)
+        if not os.path.exists(os.getcwd()+'postprocessing/galaxies/logs'):
+            os.makedirs(os.getcwd()+'postprocessing/galaxies/logs')
+
 
         if not len(haloes):
             haloes=self.haloes
@@ -431,9 +415,9 @@ class gadget_simulation:
                 except:
                     pass
             
-            if not os.path.exists(os.getcwd()+f'postprocessing/logs/galaxies/snap_{str(snapshotidx).zfill(3)}/'):
+            if not os.path.exists(os.getcwd()+f'postprocessing/galaxies/logs/snap_{str(snapshotidx).zfill(3)}/'):
                 try:
-                    os.mkdir(os.getcwd()+f'postprocessing/logs/galaxies/snap_{str(snapshotidx).zfill(3)}/')
+                    os.mkdir(os.getcwd()+f'postprocessing/galaxies/logs/snap_{str(snapshotidx).zfill(3)}/')
                 except:
                     pass
 
