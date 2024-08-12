@@ -26,9 +26,11 @@ def postprocess_bhdata(path=None,outpath='postprocessing/blackhole_details_post_
         The path to the directory containing the black hole details files.
     """
 
+    if not os.path.exists(outpath):
+        os.makedirs(outpath)
+
     #option to run the postprocessing in a batch script
     if slurm:
-
         # Create a python file to run the postprocessing
         with open(f'{outpath}/bhpostprocessing.py','w') as f:
             f.write(f'import os\n')
