@@ -71,6 +71,11 @@ def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
                 lastidx=np.searchsorted(data.loc[:,0].values,BHIDsInFile[ibh+1])            
 
             select_data = data.iloc[firstidx:lastidx,:]
+
+            print('BHID:', BHID, 'Number of rows:', select_data.shape[0])
+            print(select_data.iloc[0,:])
+            print(select_data.iloc[-1,:])
+            
             if not f'{BHID}' in BHDetails:
                 BHDetails[f'{BHID}'] = select_data
             else:
