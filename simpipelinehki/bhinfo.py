@@ -31,160 +31,117 @@ def postprocess_bhdata(path=None,outpath='postprocessing/blackhole_details_post_
 
     directory=path
 
-    # If slurm is True, create a python file and a slurm file to run the postprocessing. 
-    # This is quite unstable, only points to my (RW) installation of the code and would need to be rewritten for different HPC other than Mahti.
-    # Just found it handy to have.
-   
-    if slurm:
-        # Create a python file to run the postprocessing
-        with open(f'{outpath}/bhpostprocessing.py','w') as f:
-            f.write(f'import os\n')
-            f.write(f'import numpy as np\n')
-            f.write(f'import pandas as pd\n')
-            f.write(f'import sys\n')
-            f.write(f'sys.path.append("/users/rubywrig/code/simpipelinehki")\n')
-            f.write(f'from simpipelinehki.simulations import gadget_simulation #import simulation class\n')
-            f.write(f'from simpipelinehki.bhinfo import read_bhdata #import read_bhdata function\n')
 
-            f.write(f'directory="/scratch/pjohanss/cosmo_run/ketju_run/" #directory with simulation outputs\n')
-            f.write(f'snapfnames=sorted([directory+file for file in os.listdir(directory) if ".hdf5" in file and not "bh" in file]) #list of snapshot files\n')
-            f.write(f'simulation=gadget_simulation(snapfnames,cosmo=True) #initialise simulation object\n')
-            f.write(f'bhdata=read_bhdata(simulation,path="{directory}") #read the black hole data\n')
+    # if no path, get from simulation
+    if not path:
+        print('No path given. Exiting...')
+        return None
 
-            f.close()
+    # Specify file path and target BH ids
+    fileNum = 0
+    fileName = f"{path}/blackhole_details/blackhole_details_{fileNum}.txt"
 
-        # Create a slurm file to run the postprocessing
-        with open(f'{outpath}/bhpostprocessing.slurm','w') as f:
-            f.write(f'#!/bin/bash\n')
-            f.write(f'#SBATCH --job-name=bhpostprocessing\n')
-            f.write(f'#SBATCH --output=bhpostprocessing.out\n')
-            f.write(f'#SBATCH --error=bhpostprocessing.err\n')
-            f.write(f'#SBATCH --account=pjohanss\n')
-            f.write(f'#SBATCH --time=1:00:00\n')
-            f.write(f'#SBATCH --partition=test\n')
-            f.write(f'#SBATCH --nodes=1\n')
-            f.write(f'#SBATCH --ntasks-per-node=128\n')
+    while(os.path.isfile(fileName)):
+        fileNum += 1
+        fileName = f"{path}/blackhole_details/blackhole_details_{fileNum}.txt" 
+    print('Total files found:', fileNum)
 
-            f.write(f'python bhpostprocessing.py\n')
+    BHDetails = {}
+    # Load files
+    for file_index in list(range(fileNum))[:]:
+        if file_index % 100 == 0:
+            print('Processing file:', file_index+1, '/', fileNum)
 
-            f.close()
+        fileName = f"{path}/blackhole_details/blackhole_details_{file_index}.txt"
+        data = pd.read_csv(fileName,usecols=list(range(11)),delim_whitespace=True,header=None)
+        # data[0] contains "BH=ID". Find the unique BH IDs in this file:
+        # replace column with BHIDs
+        data.loc[:,0] = data[0].str.extract('BH=(\d+)').values.flatten()
+        data.dropna(axis=0,how='any',inplace=True) #
+        data.loc[:,0] = data.loc[:,0].astype(np.int64)
+        data.sort_values(by=[0],inplace=True,ignore_index=True)
+        data.reset_index(drop=True,inplace=True)
 
-        # Run the slurm file
-        os.system(f'sbatch {outpath}/bhpostprocessing.slurm')
+        BHIDsInFile = [int(BHID) for BHID in data.loc[:,0].values if np.isfinite(np.float32(BHID))]
+        BHIDsInFile = np.unique(BHIDsInFile)
+        BHNum= len(BHIDsInFile)
+        for ibh in range(BHNum):
+            BHID=BHIDsInFile[ibh]
+            
+            firstidx=np.searchsorted(data.loc[:,0].values,BHID)
+            if ibh==BHNum-1:
+                lastidx=data.shape[0]
+            else:
+                lastidx=np.searchsorted(data.loc[:,0].values,BHIDsInFile[ibh+1])            
 
-    #run the postprocessing
+            select_data = data.iloc[firstidx:lastidx,:]
+
+            #check that the id in the first and last row is the same
+            if select_data.shape[0]>1:
+                if not select_data.values[0,0]==select_data.values[select_data.shape[0]-1,0]:
+                    print('Error: BHID mismatch')
+                    print(select_data.loc[0,0],select_data.loc[select_data.shape[0]-1,0])
+                    continue
+
+            # print('BHID:', BHID, 'Number of rows:', select_data.shape[0])
+    
+            if not f'{BHID}' in BHDetails:
+                BHDetails[f'{BHID}'] = select_data
+            else:
+                BHDetails[f"{BHID}"] = [BHDetails[f"{BHID}"],select_data]
+    
+    #concatenate the dataframes
+    for BHID in BHDetails.keys():
+        if type(BHDetails[f"{BHID}"])==list:
+            BHDetails[f"{BHID}"] = pd.concat(BHDetails[f"{BHID}"],axis=0)
+
+    #check first value of each column to see if it is a nan
+    BHIDs = np.array(list(BHDetails.keys()))
+    BHIDs = np.array([int(BHIDs[ibh]) for ibh in range(BHNum)])
+    for ibh in range(len(BHIDs)):
+        BHDetails[f"{BHIDs[ibh]}"]=BHDetails[f"{BHIDs[ibh]}"].dropna(axis=1,how='all')
+
+    # Get the number of BHs
+    BHNum = len(BHIDs)
+    print('BH number = ', BHNum)
+
+    #Remove string columns
+    for ibh in range(BHNum):
+        BHDetails[f"{BHIDs[ibh]}"] = BHDetails[f"{BHIDs[ibh]}"].drop(columns=[0])
+
+    #print number of columns
+    numcol=BHDetails[str(BHIDs[0])].shape[1]
+    print('Number of columns:',BHDetails[str(BHIDs[0])].shape[1])
+    
+    # Add column names
+    for ibh in range(BHNum):
+        BHDetails[f"{BHIDs[ibh]}"].columns = ['Time', 'bh_M', 'bh_Mdot', 'rho', 'cs', 'gas_Vrel_tot', 'Coordinates_x', 'Coordinates_y', 'Coordinates_z', 'V_x', 'V_y', 'V_z', 'gas_Vrel_x', 'gas_Vrel_y', 'gas_Vrel_z', 'Flag_binary', 'companion_ID', 'bh_hsml'][:numcol]
+    
+    #ensure all are floats
+    for ibh in range(BHNum):
+        BHDetails[f"{BHIDs[ibh]}"]=BHDetails[f"{BHIDs[ibh]}"].astype(float)
+        
+    # Sort according to time
+    for ibh in range(BHNum):
+        BHDetails[f"{BHIDs[ibh]}"] = BHDetails[str((BHIDs[ibh]))].sort_values(by=['Time'])
+        BHDetails[f"{BHIDs[ibh]}"].reset_index(inplace=True,drop=True)
+        
+    # Save files  
+    if not os.path.exists(f'{outpath}'):
+        os.makedirs(f'{outpath}')
     else:
+        # Remove all files in the directory
+        files = os.listdir(f'{outpath}')
+        for file in files:
+            os.remove(f'{outpath}/{file}')
+
+    for ibh in range(BHNum):
+        fname = f'{outpath}/BH_{BHIDs[ibh]}.txt'
+        BHDetails[str(BHIDs[ibh])].to_csv(fname, sep=' ', index=False, header=False)
+
+    return BHDetails
+
         
-        # if no path, get from simulation
-        if not path:
-            print('No path given. Exiting...')
-            return None
-
-        # Specify file path and target BH ids
-        fileNum = 0
-        fileName = f"{path}/blackhole_details/blackhole_details_{fileNum}.txt"
-
-        while(os.path.isfile(fileName)):
-            fileNum += 1
-            fileName = f"{path}/blackhole_details/blackhole_details_{fileNum}.txt" 
-        print('Total files found:', fileNum)
-
-        BHDetails = {}
-        # Load files
-        for file_index in list(range(fileNum))[:]:
-            if file_index % 100 == 0:
-                print('Processing file:', file_index+1, '/', fileNum)
-
-            fileName = f"{path}/blackhole_details/blackhole_details_{file_index}.txt"
-            data = pd.read_csv(fileName,usecols=list(range(11)),delim_whitespace=True,header=None)
-            # data[0] contains "BH=ID". Find the unique BH IDs in this file:
-            # replace column with BHIDs
-            data.loc[:,0] = data[0].str.extract('BH=(\d+)').values.flatten()
-            data.dropna(axis=0,how='any',inplace=True) #
-            data.loc[:,0] = data.loc[:,0].astype(np.int64)
-            data.sort_values(by=[0],inplace=True,ignore_index=True)
-            data.reset_index(drop=True,inplace=True)
-
-            BHIDsInFile = [int(BHID) for BHID in data.loc[:,0].values if np.isfinite(np.float32(BHID))]
-            BHIDsInFile = np.unique(BHIDsInFile)
-            BHNum= len(BHIDsInFile)
-            for ibh in range(BHNum):
-                BHID=BHIDsInFile[ibh]
-                
-                firstidx=np.searchsorted(data.loc[:,0].values,BHID)
-                if ibh==BHNum-1:
-                    lastidx=data.shape[0]
-                else:
-                    lastidx=np.searchsorted(data.loc[:,0].values,BHIDsInFile[ibh+1])            
-
-                select_data = data.iloc[firstidx:lastidx,:]
-
-                #check that the id in the first and last row is the same
-                if select_data.shape[0]>1:
-                    if not select_data.values[0,0]==select_data.values[select_data.shape[0]-1,0]:
-                        print('Error: BHID mismatch')
-                        print(select_data.loc[0,0],select_data.loc[select_data.shape[0]-1,0])
-                        continue
-
-                # print('BHID:', BHID, 'Number of rows:', select_data.shape[0])
-        
-                if not f'{BHID}' in BHDetails:
-                    BHDetails[f'{BHID}'] = select_data
-                else:
-                    BHDetails[f"{BHID}"] = [BHDetails[f"{BHID}"],select_data]
-        
-        #concatenate the dataframes
-        for BHID in BHDetails.keys():
-            if type(BHDetails[f"{BHID}"])==list:
-                BHDetails[f"{BHID}"] = pd.concat(BHDetails[f"{BHID}"],axis=0)
-
-        #check first value of each column to see if it is a nan
-        BHIDs = np.array(list(BHDetails.keys()))
-        BHIDs = np.array([int(BHIDs[ibh]) for ibh in range(BHNum)])
-        for ibh in range(len(BHIDs)):
-            BHDetails[f"{BHIDs[ibh]}"]=BHDetails[f"{BHIDs[ibh]}"].dropna(axis=1,how='all')
-
-        # Get the number of BHs
-        BHNum = len(BHIDs)
-        print('BH number = ', BHNum)
-
-        #Remove string columns
-        for ibh in range(BHNum):
-            BHDetails[f"{BHIDs[ibh]}"] = BHDetails[f"{BHIDs[ibh]}"].drop(columns=[0])
-
-        #print number of columns
-        numcol=BHDetails[str(BHIDs[0])].shape[1]
-        print('Number of columns:',BHDetails[str(BHIDs[0])].shape[1])
-        
-        # Add column names
-        for ibh in range(BHNum):
-            BHDetails[f"{BHIDs[ibh]}"].columns = ['Time', 'bh_M', 'bh_Mdot', 'rho', 'cs', 'gas_Vrel_tot', 'Coordinates_x', 'Coordinates_y', 'Coordinates_z', 'V_x', 'V_y', 'V_z', 'gas_Vrel_x', 'gas_Vrel_y', 'gas_Vrel_z', 'Flag_binary', 'companion_ID', 'bh_hsml'][:numcol]
-        
-        #ensure all are floats
-        for ibh in range(BHNum):
-            BHDetails[f"{BHIDs[ibh]}"]=BHDetails[f"{BHIDs[ibh]}"].astype(float)
-            
-        # Sort according to time
-        for ibh in range(BHNum):
-            BHDetails[f"{BHIDs[ibh]}"] = BHDetails[str((BHIDs[ibh]))].sort_values(by=['Time'])
-            BHDetails[f"{BHIDs[ibh]}"].reset_index(inplace=True,drop=True)
-            
-        # Save files
-        if not os.path.exists(f'{outpath}'):
-            os.makedirs(f'{outpath}')
-        else:
-            # Remove all files in the directory
-            files = os.listdir(f'{outpath}')
-            for file in files:
-                os.remove(f'{outpath}/{file}')
-
-        for ibh in range(BHNum):
-            fname = f'{outpath}/BH_{BHIDs[ibh]}.txt'
-            BHDetails[str(BHIDs[ibh])].to_csv(fname, sep=' ', index=False, header=False)
-
-        return BHDetails
-
-
     # This function is used to read the black hole details from a file
     def read_bhdata(simulation=None,path=None,bhids=None,subsample=1):
         """
