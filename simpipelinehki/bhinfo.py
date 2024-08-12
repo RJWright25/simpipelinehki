@@ -50,7 +50,7 @@ def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
 
         fileName = f"{path}/blackhole_details/blackhole_details_{file_index}.txt"
 
-        data = pd.DataFrame(fileName,usecols=list(range(11)),delim_whitespace=True,header=None)
+        data = pd.read_csv(fileName,usecols=list(range(11)),delim_whitespace=True,header=None)
         # data[0] contains "BH=ID". Find the unique BH IDs in this file:
         BHIDsInFile = data[0].str.extract('BH=(\d+)').values.flatten()
         BHIDsInFile = [int(BHID) for BHID in BHIDsInFile if np.isfinite(np.float32(BHID))]
