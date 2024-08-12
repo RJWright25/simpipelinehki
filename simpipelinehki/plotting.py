@@ -299,7 +299,7 @@ def plot_glxsep(simulation,ids=None,bh_subsample=10):
 
 
 ############ RENDERING A SIMULATION ############
-def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=1,clims=None):
+def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,clims=None):
     """
     Render a snapshot of the simulation.
 
@@ -391,7 +391,7 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=1,clims
     #add stars to baryonic plot
     if type=='baryons':
         stars=pdata.loc[pdata['ParticleTypes'].values==4,:]
-        ax.scatter(stars.loc[:,'Coordinates_x'].values,stars.loc[:,'Coordinates_y'].values,c=cname_star,alpha=0.03*staralpha,s=0.05,lw=0,zorder=2)
+        ax.scatter(stars.loc[:,'Coordinates_x'].values,stars.loc[:,'Coordinates_y'].values,c=cname_star,alpha=staralpha,s=0.05,lw=0,zorder=2)
 
     #plot position of BHs if baryonic particles are being plotted
     blackholes=pdata.loc[pdata['ParticleTypes'].values==5,:]
@@ -418,7 +418,7 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=1,clims
     return fig,ax
 
 
-def render_sim_worker(snaplist,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,staralpha=1,clims=None):
+def render_sim_worker(snaplist,type='baryons',frame=None,staralpha=1,clims=None):
     
     """
     Worker function to make an animation of the simulation for a given set of snaps.
@@ -442,7 +442,7 @@ def render_sim_worker(snaplist,type='baryons',frame=None,galaxies=pd.DataFrame()
     
     for snapshot in snaplist:
         print(f"Rendering snap {snapshot.snapshot_idx}...")
-        fig,_=render_snap(snapshot,type=type,frame=frame,galaxies=galaxies,useminpot=useminpot,staralpha=staralpha,clims=clims)
+        fig,_=render_snap(snapshot,type=type,frame=frame,staralpha=staralpha,clims=clims)
         fig.savefig(f'plots/render_sim_{type}/snap_{str(snapshot.snapshot_idx).zfill(3)}.png',dpi=dpi)
         plt.close(fig)
 

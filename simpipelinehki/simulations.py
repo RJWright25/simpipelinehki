@@ -517,7 +517,7 @@ class gadget_simulation:
         return fig,axes
     
     # Method to render all simulation snapshots
-    def gen_sim_animation(self,numproc=1,fps=10,type='baryons',frame=None,staralpha=1,clims=None):
+    def gen_sim_animation(self,numproc=1,fps=10,type='baryons',frame=None,staralpha=0.03,clims=None):
         """
         Render all simulation snapshots.
 
