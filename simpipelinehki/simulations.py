@@ -333,9 +333,8 @@ class gadget_simulation:
                 with open(kdpath,'rb') as kdfile:
                     kdtree_snap=pickle.load(kdfile)
             else:
-                kdtree_snap=make_particle_kdtree(snapshot)
-                    
-                print(f'Loaded KD tree for all processes in snapshot {snapshot.snapshot_idx}')
+                print('Error: KD trees not found. Generate first.')
+                return None
 
             #split the snapshots into chunks for multiprocessing
             procs=[]
@@ -448,7 +447,8 @@ class gadget_simulation:
                 with open(kdpath,'rb') as kdfile:
                     kdtree_snap=pickle.load(kdfile)
             else:
-                kdtree_snap=make_particle_kdtree(snapshot)
+                print('Error: KD trees not found. Generate first.')
+                return None
             
             print(f'Loaded KD tree for all processes in snapshot {snapshot.snapshot_idx}')
             for iproc in range(numproc):
