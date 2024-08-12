@@ -429,13 +429,9 @@ def stack_kdtrees_worker(snaplist,iproc,verbose=False):
     """
     
     #log file
-    logfile=f'postprocessing/logs/kdtrees/iproc{str(iproc).zfill(3)}.log'
-    if not os.path.exists('postprocessing/logs/kdtrees/'):
-        os.makedirs('postprocessing/logs/kdtrees/')
-    else:
-        for file in os.listdir('postprocessing/logs/kdtrees/'):
-            os.remove(f'postprocessing/logs/kdtrees/{file}')
-
+    logfile=f'postprocessing/kdtrees/logs/iproc{str(iproc).zfill(3)}.log'
+    if not os.path.exists('postprocessing/kdtrees/logs'):
+        os.makedirs('postprocessing/kdtrees/logs')
     if os.path.exists(logfile):
         os.remove(logfile)
 
