@@ -30,7 +30,11 @@ def postprocess_bhdata(path=None,outpath='postprocessing/blackhole_details_post_
         os.makedirs(outpath)
 
     directory=path
-    #option to run the postprocessing in a batch script
+
+    # If slurm is True, create a python file and a slurm file to run the postprocessing. 
+    # This is quite unstable, only points to my (RW) installation of the code and would need to be rewritten for different HPC other than Mahti.
+    # Just found it handy to have.
+   
     if slurm:
         # Create a python file to run the postprocessing
         with open(f'{outpath}/bhpostprocessing.py','w') as f:
@@ -48,8 +52,6 @@ def postprocess_bhdata(path=None,outpath='postprocessing/blackhole_details_post_
             f.write(f'bhdata=read_bhdata(simulation,path="{directory}") #read the black hole data\n')
 
             f.close()
-            
-
 
         # Create a slurm file to run the postprocessing
         with open(f'{outpath}/bhpostprocessing.slurm','w') as f:
