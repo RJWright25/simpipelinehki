@@ -532,7 +532,7 @@ class gadget_simulation:
         return fig,axes
     
     # Method to render all simulation snapshots
-    def gen_sim_animation(self,numproc=1,fps=10,type='baryons',frame=None,,staralpha=1,clims=None):
+    def gen_sim_animation(self,numproc=1,fps=10,type='baryons',frame=None,staralpha=1,clims=None):
         """
         Render all simulation snapshots.
 
@@ -546,12 +546,8 @@ class gadget_simulation:
             The type of particles to render ('baryons', 'stars' or 'darkmatter').
         frame: float
             The size of the frame to render (in kpc)
-        galaxies: pd.DataFrame
-            The galaxy data from analyse_galaxies (see galaxyanalysis.py for details).
-        useminpot: bool
-            If True, use the minimum potential of the star particles as the galaxy centre.
-        subsample: int
-            The subsampling factor to use when loading the particle data.
+        staralpha: float
+            The alpha value of the star particles.
         verbose: bool
             If True, print the progress of the rendering.
 
