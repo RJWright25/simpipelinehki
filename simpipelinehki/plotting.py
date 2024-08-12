@@ -447,7 +447,7 @@ def render_sim_worker(snaplist,type='baryons',frame=None,staralpha=1,clims=None)
         plt.close(fig)
 
 
-def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,galaxies=pd.DataFrame(),useminpot=False,staralpha=1,clims=None):
+def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,staralpha=0.03,clims=None):
     """
     Render all simulation snapshots.
 
@@ -490,7 +490,7 @@ def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,gala
     for iproc in range(numproc):
         time.sleep(0.1)
         snapshots_ichunk=snapshots_chunks[iproc]
-        proc = multiprocessing.Process(target=render_sim_worker, args=(snapshots_ichunk,type,frame,galaxies,useminpot,staralpha,clims))
+        proc = multiprocessing.Process(target=render_sim_worker, args=(snapshots_ichunk,type,frame,staralpha,clims))
         procs.append(proc)
         proc.start()
 
