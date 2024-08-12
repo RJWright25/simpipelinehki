@@ -16,7 +16,7 @@ import pandas as pd
 # This function is used to postprocess the blackhole details files. (credit: Shihong Liao reprocess.py)
 def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
     """
-    Postprocesses the black hole details files.
+    Postprocesses the black hole details files. This is from Shihong Liao's reprocess.py file.
 
     Parameters:
     -----------
@@ -49,7 +49,8 @@ def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
             print('Processing file:', file_index+1, '/', fileNum)
 
         fileName = f"{path}/blackhole_details/blackhole_details_{file_index}.txt"
-        data = pd.read_csv(fileName, header=None, delimiter=" ")
+
+        data = pd.read_csv(fileName, header=None, delim_whitespace=True)
         # data[0] contains "BH=ID". Find the unique BH IDs in this file:
         BHIDsInFile = data[0].str.extract('BH=(\d+)').values.flatten()
         BHIDsInFile = [int(BHID) for BHID in BHIDsInFile if np.isfinite(np.float32(BHID))]
