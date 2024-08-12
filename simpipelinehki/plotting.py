@@ -332,14 +332,11 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
         print('Type not recognized. Options are "baryons" and "dm".')
         return
     
-    #get particle data
-    pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=ptypes, center=center, radius=radius)
-
     #find frame and center based on particle positions
     if frame is None:
         #box size
-        max_x=np.nanpercentile(pdata['Coordinates_x'].values,99)
-        min_x=np.nanpercentile(pdata['Coordinates_x'].values,1)
+        max_x=snapshot.boxsize/2
+        min_x=-snapshot.boxsize/2
         frame=(max_x-min_x)/2
         if snapshot.cosmorun:
             frame/=2
@@ -347,6 +344,7 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
     else:
         radius=frame*np.sqrt(2)
 
+    pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=ptypes, center=center, radius=radius)
 
     #find center based on particle positions if not given
     if not center:
