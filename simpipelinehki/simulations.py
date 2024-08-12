@@ -218,7 +218,7 @@ class gadget_simulation:
             os.makedirs(os.getcwd()+'/postprocessing/kdtrees/')
         else:
             for fname in os.listdir(os.getcwd()+'/postprocessing/kdtrees/'):
-                if os.path.exists(os.getcwd()+'/postprocessing/kdtrees/'+fname):
+                if os.path.exists(os.getcwd()+'/postprocessing/kdtrees/'+fname) and fname.endswith('.pkl'):
                     os.remove(os.getcwd()+'/postprocessing/kdtrees/'+fname)
 
         #make a directory for the logs
