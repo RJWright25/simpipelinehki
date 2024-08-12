@@ -536,7 +536,7 @@ def render_merger_worker(snaplist,galaxies,ids=None,staralpha=0.03,clims=None,us
 
     #make an animation of stars & gas
     if not ids:
-        haloids_unique=galaxies['ID'].unique()[::-1][:2]
+        haloids_unique=h5py.File(snaplist[0].snapshot_file,'r')['PartType5']['ParticleIDs'][:][:2]
     else:
         haloids_unique=ids
 
