@@ -74,7 +74,7 @@ def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
 
             #check that the id in the first and last row is the same
             if select_data.shape[0]>1:
-                if not select_data.loc[0,0]==select_data.loc[select_data.shape[0]-1,0]:
+                if not select_data.values[0,0]==select_data.values[select_data.shape[0]-1,0]:
                     print('Error: BHID mismatch')
                     print(select_data.loc[0,0],select_data.loc[select_data.shape[0]-1,0])
                     continue
