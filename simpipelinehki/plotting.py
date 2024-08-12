@@ -341,9 +341,9 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
         if snapshot.cosmorun:
             frame/=2
 
-    else:
-        radius=frame*np.sqrt(2)
+    radius=frame*np.sqrt(2)
 
+    #get particle data
     pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=ptypes, center=center, radius=radius)
 
     #find center based on particle positions if not given
