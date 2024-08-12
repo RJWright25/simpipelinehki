@@ -53,13 +53,17 @@ def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
         data = pd.read_csv(fileName,usecols=list(range(11)),delim_whitespace=True,header=None)
         # data[0] contains "BH=ID". Find the unique BH IDs in this file:
         BHIDsInFile = data[0].str.extract('BH=(\d+)').values.flatten()
+        data.loc[:,0] = BHIDsInFile
         BHIDsInFile = [int(BHID) for BHID in BHIDsInFile if np.isfinite(np.float32(BHID))]
         BHIDsInFile = np.unique(BHIDsInFile)
         BHNum= len(BHIDsInFile)
-        
+
+        # data.sort_values(by=[0],inplace=True,ignore_index=True)
+
         for ibh in range(BHNum):
             BHID=BHIDsInFile[ibh]
-            select_data = data.loc[data[0].str.contains(f'BH={BHID}'),:]
+            mask=data.loc[:,0].values==BHID
+            select_data = data.loc[mask,:]
             if not f'{BHID}' in BHDetails:
                 BHDetails[f'{BHID}'] = select_data
             else:
