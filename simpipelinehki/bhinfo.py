@@ -76,15 +76,18 @@ def postprocess_bhdata(path=None,outpath='postprocessing/blackhole_details_post_
                     print('Error: BHID mismatch')
                     print(select_data.loc[0,0],select_data.loc[select_data.shape[0]-1,0])
                     continue
+
+            # print('BHID:', BHID, 'Number of rows:', select_data.shape[0])
        
             if not f'{BHID}' in BHDetails:
-                BHDetails[f'{BHID}'] = [select_data]
+                BHDetails[f'{BHID}'] = select_data
             else:
-                BHDetails[f"{BHID}"] = BHDetails[f"{BHID}"] + [select_data]
+                BHDetails[f"{BHID}"] = [BHDetails[f"{BHID}"],select_data]
     
     #concatenate the dataframes
-    for ibh in range(len(BHDetails.keys())):
-        BHDetails[f"{list(BHDetails.keys())[ibh]}"] = pd.concat(BHDetails[f"{list(BHDetails.keys())[ibh]}"],ignore_index=True)
+    for BHID in BHDetails.keys():
+        if type(BHDetails[f"{BHID}"])==list:
+            BHDetails[f"{BHID}"] = pd.concat(BHDetails[f"{BHID}"],axis=0)
 
     #check first value of each column to see if it is a nan
     BHIDs = np.array(list(BHDetails.keys()))
