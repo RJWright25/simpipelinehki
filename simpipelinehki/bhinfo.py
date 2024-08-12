@@ -52,7 +52,7 @@ def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
         data = pd.read_csv(fileName,usecols=list(range(11)),delim_whitespace=True,header=None)
         # data[0] contains "BH=ID". Find the unique BH IDs in this file:
         # replace column with BHIDs
-        data.loc[:,0] = BHIDsInFile
+        data.loc[:,0] = data[0].str.extract('BH=(\d+)').values.flatten()
         data.sort_values(by=[0],inplace=True,ignore_index=True)
         data.reset_index(drop=True,inplace=True)
 
@@ -62,7 +62,6 @@ def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
         for ibh in range(BHNum):
             BHID=BHIDsInFile[ibh]
             
-            
             firstidx=np.searchsorted(data.loc[:,0].values,BHID)
             if ibh==BHNum-1:
                 lastidx=data.shape[0]
@@ -70,6 +69,9 @@ def postprocess_bhdata(path=None,outpath='blackhole_details_post_processing'):
                 lastidx=np.searchsorted(data.loc[:,0].values,BHIDsInFile[ibh+1])            
 
             select_data = data.iloc[firstidx:lastidx,:]
+
+            #remove any rows containing a nan
+            select_data = select_data.dropna(axis=0,how='any') #
 
             print('BHID:', BHID, 'Number of rows:', select_data.shape[0])
             print(select_data.iloc[0,:])
