@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 
 # This function is used to postprocess the blackhole details files. (credit: Shihong Liao reprocess.py)
-def postprocess_bhdata(path=None,outpath='postprocessing/blackhole_details_post_processing',slurm=False):
+def postprocess_bhdata(path=None,outpath='postprocessing/blackhole_details_post_processing'):
     """
     Postprocesses the black hole details files. This is from Shihong Liao's reprocess.py file.
 
@@ -28,9 +28,6 @@ def postprocess_bhdata(path=None,outpath='postprocessing/blackhole_details_post_
 
     if not os.path.exists(outpath):
         os.makedirs(outpath)
-
-    directory=path
-
 
     # if no path, get from simulation
     if not path:
@@ -142,106 +139,106 @@ def postprocess_bhdata(path=None,outpath='postprocessing/blackhole_details_post_
     return BHDetails
 
         
-    # This function is used to read the black hole details from a file
-    def read_bhdata(simulation=None,path=None,bhids=None,subsample=1):
-        """
-        Reads the black hole details from a file.
+# This function is used to read the black hole details from a file
+def read_bhdata(simulation=None,path=None,bhids=None,subsample=1):
+    """
+    Reads the black hole details from a file.
 
-        Parameters:
-        -----------
-        simulation: simulation object
-            The simulation object for which the black hole details are to be read.
-        path: str
-            The path to the directory containing the black hole details files.
-        bhids: lsit
-            The IDs of the black hole to read (may not be all bhs).
-        subsample: int
-            The subsampling factor to use when reading the data.
-        
-        Returns:
-        -----------
-        bhdata : dict
-            A dictionary containing a pandas dataframe of the data for each black hole.
-            Keys are the black hole IDs.
+    Parameters:
+    -----------
+    simulation: simulation object
+        The simulation object for which the black hole details are to be read.
+    path: str
+        The path to the directory containing the black hole details files.
+    bhids: lsit
+        The IDs of the black hole to read (may not be all bhs).
+    subsample: int
+        The subsampling factor to use when reading the data.
+    
+    Returns:
+    -----------
+    bhdata : dict
+        A dictionary containing a pandas dataframe of the data for each black hole.
+        Keys are the black hole IDs.
 
-        """
-        if not simulation and not path:
-            print('No simulation object found. Exiting...')
+    """
+    if not simulation and not path:
+        print('No simulation object found. Exiting...')
+        return None
+    
+    if not simulation:
+        hubble=0.71
+    else:
+        hubble=simulation.hubble
+
+
+    if not path:
+        path='postprocessing/blackhole_details_post_processing/'
+        if os.path.exists(path):
+            print(f'Using path {path} to read black hole details...')
+        else:
+            print('No path found. Exiting...')
             return None
-        
-        if not simulation:
-            hubble=0.71
-        else:
-            hubble=simulation.hubble
+    
+    #find all the files in the directory
+    bhfiles=np.array([path+'/'+fname for fname in os.listdir(path) if 'BH' in fname])
 
+    #cull the list if not all BHs are requested
+    if bhids:
+        bhfiles=np.array([fname for fname in bhfiles if int(fname.split('/BH_')[-1].split('.txt')[0]) in bhids])
+    else:
+        bhids=np.array([int(fname.split('/BH_')[-1].split('.txt')[0]) for fname in bhfiles])
 
-        if not path:
-            path='postprocessing/blackhole_details_post_processing/'
-            if os.path.exists(path):
-                print(f'Using path {path} to read black hole details...')
-            else:
-                print('No path found. Exiting...')
-                return None
-        
-        #find all the files in the directory
-        bhfiles=np.array([path+'/'+fname for fname in os.listdir(path) if 'BH' in fname])
+    #sort by bhid
+    bhids=bhids[np.argsort(bhids)]
+    bhfiles=bhfiles[np.argsort(bhids)]
 
-        #cull the list if not all BHs are requested
-        if bhids:
-            bhfiles=np.array([fname for fname in bhfiles if int(fname.split('/BH_')[-1].split('.txt')[0]) in bhids])
-        else:
-            bhids=np.array([int(fname.split('/BH_')[-1].split('.txt')[0]) for fname in bhfiles])
+    #columns
+    fpath=path+f'/BH_{str(int(bhids[0]))}.txt'
+    bhdata_ibh=pd.DataFrame(np.loadtxt(fpath,dtype=str)[::subsample,:].astype(float))
+    bhdata_ibh.dropna(axis=1,how='all',inplace=True)
+    numcol=bhdata_ibh.shape[-1]
+    columns=np.array(['Time','bh_M','bh_Mdot','rho','cs','gas_Vrel_tot','Coordinates_x','Coordinates_y','Coordinates_z','V_x','V_y','V_z','gas_Vrel_x','gas_Vrel_y','gas_Vrel_z','Flag_binary','companion_ID','bh_hsml'])
+    columns=columns[:numcol]
+    
+    #initialize the output
+    bhdata={}
 
-        #sort by bhid
-        bhids=bhids[np.argsort(bhids)]
-        bhfiles=bhfiles[np.argsort(bhids)]
-
-        #columns
-        fpath=path+f'/BH_{str(int(bhids[0]))}.txt'
+    #read the data
+    for bhid in bhids:
+        print(f'Reading black hole details for BHID = {bhid}...')
+        fpath=path+f'/BH_{str(int(bhid))}.txt'
         bhdata_ibh=pd.DataFrame(np.loadtxt(fpath,dtype=str)[::subsample,:].astype(float))
         bhdata_ibh.dropna(axis=1,how='all',inplace=True)
-        numcol=bhdata_ibh.shape[-1]
-        columns=np.array(['Time','bh_M','bh_Mdot','rho','cs','gas_Vrel_tot','Coordinates_x','Coordinates_y','Coordinates_z','V_x','V_y','V_z','gas_Vrel_x','gas_Vrel_y','gas_Vrel_z','Flag_binary','companion_ID','bh_hsml'])
-        columns=columns[:numcol]
-        
-        #initialize the output
-        bhdata={}
 
-        #read the data
-        for bhid in bhids:
-            print(f'Reading black hole details for BHID = {bhid}...')
-            fpath=path+f'/BH_{str(int(bhid))}.txt'
-            bhdata_ibh=pd.DataFrame(np.loadtxt(fpath,dtype=str)[::subsample,:].astype(float))
-            bhdata_ibh.dropna(axis=1,how='all',inplace=True)
+        #assign columns
+        bhdata_ibh.columns=columns
+        bhdata_ibh['BH_ID']=np.ones(bhdata_ibh.shape[0])*int(bhid)
 
-            #assign columns
-            bhdata_ibh.columns=columns
-            bhdata_ibh['BH_ID']=np.ones(bhdata_ibh.shape[0])*int(bhid)
-
-            if simulation==None:
-                bhdata_ibh.loc[:,'ScaleFactor']=1
+        if simulation==None:
+            bhdata_ibh.loc[:,'ScaleFactor']=1
+        else:
+            if 'cosmo' in simulation.snapshot_type:
+                bhdata_ibh['ScaleFactor']=bhdata_ibh['Time'].values
             else:
-                if 'cosmo' in simulation.snapshot_type:
-                    bhdata_ibh['ScaleFactor']=bhdata_ibh['Time'].values
-                else:
-                    bhdata_ibh['ScaleFactor']=np.ones(bhdata_ibh.shape[0])
+                bhdata_ibh['ScaleFactor']=np.ones(bhdata_ibh.shape[0])
 
-            #convert to physical units
-            bhdata_ibh['bh_M']=bhdata_ibh['bh_M']*1e10/hubble
-            bhdata_ibh['bh_Mdot']=bhdata_ibh['bh_Mdot']#don't think this needs to be converted
-            for key in [f'Coordinates_{x}' for x in 'xyz']:
-                bhdata_ibh[key]=bhdata_ibh[key]*bhdata_ibh['ScaleFactor'].values/hubble
+        #convert to physical units
+        bhdata_ibh['bh_M']=bhdata_ibh['bh_M']*1e10/hubble
+        bhdata_ibh['bh_Mdot']=bhdata_ibh['bh_Mdot']#don't think this needs to be converted
+        for key in [f'Coordinates_{x}' for x in 'xyz']:
+            bhdata_ibh[key]=bhdata_ibh[key]*bhdata_ibh['ScaleFactor'].values/hubble
 
-            if not simulation==None:
-                #if cosmo sim, convert to universe age 
-                if 'cosmo' in simulation.snapshot_type:
-                    redshifts=1/bhdata_ibh['ScaleFactor'].values-1
-                    bhdata_ibh['Time']=simulation.cosmology.age(redshifts).value
+        if not simulation==None:
+            #if cosmo sim, convert to universe age 
+            if 'cosmo' in simulation.snapshot_type:
+                redshifts=1/bhdata_ibh['ScaleFactor'].values-1
+                bhdata_ibh['Time']=simulation.cosmology.age(redshifts).value
 
-            #add to the output
-            bhdata[bhid]=bhdata_ibh
-            
-        return bhdata
+        #add to the output
+        bhdata[bhid]=bhdata_ibh
+        
+    return bhdata
 
 
 
