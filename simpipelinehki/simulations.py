@@ -402,24 +402,24 @@ class gadget_simulation:
         t0stack=time.time()
 
         #make a temporary directory for the outputs
-        if not os.path.exists(os.getcwd()+'/outputs/galaxies/'):
-            os.makedirs(os.getcwd()+'/outputs/galaxies/')
+        if not os.path.exists(os.getcwd()+'/postprocessing/galaxies/'):
+            os.makedirs(os.getcwd()+'/postprocessing/galaxies/')
         else:
-            for snapdir in os.listdir(os.getcwd()+'/outputs/galaxies/'):
-                if os.path.exists(os.getcwd()+'/outputs/galaxies/'+snapdir):
-                    for fname in os.listdir(os.getcwd()+'/outputs/galaxies/'+snapdir):
-                        if os.path.exists(os.getcwd()+'/outputs/galaxies/'+snapdir+'/'+fname):
-                            os.remove(os.getcwd()+'/outputs/galaxies/'+snapdir+'/'+fname)
+            for snapdir in os.listdir(os.getcwd()+'/postprocessing/galaxies/'):
+                if os.path.exists(os.getcwd()+'/postprocessing/galaxies/'+snapdir):
+                    for fname in os.listdir(os.getcwd()+'/postprocessing/galaxies/'+snapdir):
+                        if os.path.exists(os.getcwd()+'/postprocessing/galaxies/'+snapdir+'/'+fname):
+                            os.remove(os.getcwd()+'/postprocessing/galaxies/'+snapdir+'/'+fname)
 
         #make a directory for the logs
-        if not os.path.exists(os.getcwd()+'/logs/galaxies/'):
-            os.makedirs(os.getcwd()+'/logs/galaxies/')
+        if not os.path.exists(os.getcwd()+'postprocessing/logs/galaxies/'):
+            os.makedirs(os.getcwd()+'postprocessing/logs/galaxies/')
         else:
-            for snapdir in os.listdir(os.getcwd()+'/logs/galaxies/'):
-                if os.path.exists(os.getcwd()+'/logs/galaxies/'+snapdir):
-                    for fname in os.listdir(os.getcwd()+'/logs/galaxies/'+snapdir):
-                        if os.path.exists(os.getcwd()+'/logs/galaxies/'+snapdir+'/'+fname):
-                            os.remove(os.getcwd()+'/logs/galaxies/'+snapdir+'/'+fname)
+            for snapdir in os.listdir(os.getcwd()+'postprocessing/logs/galaxies/'):
+                if os.path.exists(os.getcwd()+'postprocessing/logs/galaxies/'+snapdir):
+                    for fname in os.listdir(os.getcwd()+'postprocessing/logs/galaxies/'+snapdir):
+                        if os.path.exists(os.getcwd()+'postprocessing/logs/galaxies/'+snapdir+'/'+fname):
+                            os.remove(os.getcwd()+'postprocessing/logs/galaxies/'+snapdir+'/'+fname)
 
         if not len(haloes):
             haloes=self.haloes
@@ -430,21 +430,26 @@ class gadget_simulation:
             print("Analysing galaxies in snapshot: ", snapshotidx)
             print("Time: ", datetime.now())
 
-            if not os.path.exists(os.getcwd()+f'/outputs/galaxies/snap_{str(snapshotidx).zfill(3)}/'):
+            if not os.path.exists(os.getcwd()+f'/postprocessing/galaxies/snap_{str(snapshotidx).zfill(3)}/'):
                 try:
-                    os.mkdir(os.getcwd()+f'/outputs/galaxies/snap_{str(snapshotidx).zfill(3)}/')
+                    os.mkdir(os.getcwd()+f'/postprocessing/galaxies/snap_{str(snapshotidx).zfill(3)}/')
                 except:
                     pass
             
-            if not os.path.exists(os.getcwd()+f'/logs/galaxies/snap_{str(snapshotidx).zfill(3)}/'):
+            if not os.path.exists(os.getcwd()+f'postprocessing/logs/galaxies/snap_{str(snapshotidx).zfill(3)}/'):
                 try:
-                    os.mkdir(os.getcwd()+f'/logs/galaxies/snap_{str(snapshotidx).zfill(3)}/')
+                    os.mkdir(os.getcwd()+f'postprocessing/logs/galaxies/snap_{str(snapshotidx).zfill(3)}/')
                 except:
                     pass
 
             #load in the KD tree for the snapshot
-            if os.path.exists(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'):
-                with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
+            if self.snapshot_idx is None:
+                snapfname=self.snapshot_file.split('/')[-1].split('.hdf5')[0]
+                kdpath=f'postprocessing/kdtrees/{snapfname}_kdtree.pkl'
+            else:
+                kdpath=f'postprocessing/kdtrees/snap_{str(self.snapshot_idx).zfill(3)}.pkl'
+            if os.path.exists(kdpath):
+                with open(kdpath,'rb') as kdfile:
                     kdtree_snap=pickle.load(kdfile)
             else:
                 kdtree_snap=make_particle_kdtree(snapshot)
