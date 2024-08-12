@@ -337,7 +337,7 @@ class gadget_simulation:
                 with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
                     kdtree_snap=pickle.load(kdfile)
             else:
-                kdtree_snap=make_particle_kdtree(snapshot,verbose=verbose)
+                kdtree_snap=make_particle_kdtree(snapshot)
                     
                 print(f'Loaded KD tree for all processes in snapshot {snapshot.snapshot_idx}')
 
@@ -447,7 +447,7 @@ class gadget_simulation:
                 with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
                     kdtree_snap=pickle.load(kdfile)
             else:
-                kdtree_snap=make_particle_kdtree(snapshot,verbose=verbose)
+                kdtree_snap=make_particle_kdtree(snapshot)
             
             print(f'Loaded KD tree for all processes in snapshot {snapshot.snapshot_idx}')
             for iproc in range(numproc):
