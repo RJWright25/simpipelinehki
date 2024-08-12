@@ -214,20 +214,20 @@ class gadget_simulation:
         t0stack=time.time()
 
         #make a directory for the outputs
-        if not os.path.exists(os.getcwd()+'/outputs/kdtrees/'):
-            os.makedirs(os.getcwd()+'/outputs/kdtrees/')
+        if not os.path.exists(os.getcwd()+'/postprocessing/kdtrees/'):
+            os.makedirs(os.getcwd()+'/postprocessing/kdtrees/')
         else:
-            for fname in os.listdir(os.getcwd()+'/outputs/kdtrees/'):
-                if os.path.exists(os.getcwd()+'/outputs/kdtrees/'+fname):
-                    os.remove(os.getcwd()+'/outputs/kdtrees/'+fname)
+            for fname in os.listdir(os.getcwd()+'/postprocessing/kdtrees/'):
+                if os.path.exists(os.getcwd()+'/postprocessing/kdtrees/'+fname):
+                    os.remove(os.getcwd()+'/postprocessing/kdtrees/'+fname)
 
         #make a directory for the logs
-        if not os.path.exists(os.getcwd()+'/logs/kdtrees/'):
-            os.makedirs(os.getcwd()+'/logs/kdtrees/')
+        if not os.path.exists(os.getcwd()+'postprocessing/logs/kdtrees/'):
+            os.makedirs(os.getcwd()+'postprocessing/logs/kdtrees/')
         else:
-            for fname in os.listdir(os.getcwd()+'/logs/kdtrees/'):
-                if os.path.exists(os.getcwd()+'/logs/kdtrees/'+fname):
-                    os.remove(os.getcwd()+'/logs/kdtrees/'+fname)
+            for fname in os.listdir(os.getcwd()+'postprocessing/logs/kdtrees/'):
+                if os.path.exists(os.getcwd()+'postprocessing/logs/kdtrees/'+fname):
+                    os.remove(os.getcwd()+'postprocessing/logs/kdtrees/'+fname)
 
         #split the snapshots into chunks for multiprocessing
         snapshot_chunks=split_list(snapshot_list,numproc)
