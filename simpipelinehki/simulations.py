@@ -288,7 +288,7 @@ class gadget_simulation:
             os.makedirs(os.getcwd()+'/postprocessing/haloes/')
         else:
             for snapdir in os.listdir(os.getcwd()+'/postprocessing/haloes/'):
-                if os.path.exists(os.getcwd()+'/postprocessing/haloes/'+snapdir):
+                if os.path.exists(os.getcwd()+'/postprocessing/haloes/'+snapdir) and 'log'  not in snapdir:
                     for fname in os.listdir(os.getcwd()+'/postprocessing/haloes/'+snapdir):
                         if os.path.exists(os.getcwd()+'/postprocessing/haloes/'+snapdir+'/'+fname):
                             os.remove(os.getcwd()+'/postprocessing/haloes/'+snapdir+'/'+fname)
@@ -390,7 +390,7 @@ class gadget_simulation:
             os.makedirs(os.getcwd()+'/postprocessing/galaxies/')
         else:
             for snapdir in os.listdir(os.getcwd()+'/postprocessing/galaxies/'):
-                if os.path.exists(os.getcwd()+'/postprocessing/galaxies/'+snapdir):
+                if os.path.exists(os.getcwd()+'/postprocessing/galaxies/'+snapdir) and 'log'  not in snapdir:
                     for fname in os.listdir(os.getcwd()+'/postprocessing/galaxies/'+snapdir):
                         if os.path.exists(os.getcwd()+'/postprocessing/galaxies/'+snapdir+'/'+fname):
                             os.remove(os.getcwd()+'/postprocessing/galaxies/'+snapdir+'/'+fname)
