@@ -401,7 +401,6 @@ def make_particle_kdtree(snapshot):
 
     #get the particle data
     for ptype in ptypes:
-        print("Getting particle data for KDTree, type = ", ptype)
         coordinates=snapshot.get_particle_data(keys=['Coordinates'], types=ptype)
         coordinates=coordinates[['Coordinates_x','Coordinates_y','Coordinates_z']].values
         kdtree[ptype]=cKDTree(coordinates)
@@ -431,12 +430,12 @@ def stack_kdtrees_worker(snaplist,iproc,verbose=False):
     """
     
     #log file
-    logfile=f'logs/kdtrees/iproc{str(iproc).zfill(3)}.log'
-    if not os.path.exists('logs/kdtrees/'):
-        os.makedirs('logs/kdtrees/')
+    logfile=f'postprocessing/logs/kdtrees/iproc{str(iproc).zfill(3)}.log'
+    if not os.path.exists('postprocessing/logs/kdtrees/'):
+        os.makedirs('postprocessing/logs/kdtrees/')
     else:
-        for file in os.listdir('logs/kdtrees/'):
-            os.remove(f'logs/kdtrees/{file}')
+        for file in os.listdir('postprocessing/logs/kdtrees/'):
+            os.remove(f'postprocessing/logs/kdtrees/{file}')
 
     if os.path.exists(logfile):
         os.remove(logfile)
@@ -460,14 +459,14 @@ def stack_kdtrees_worker(snaplist,iproc,verbose=False):
         print()
 
     t0=time.time()
-    if not os.path.exists('outputs/kdtrees'):
-        os.makedirs('outputs/kdtrees')
+    if not os.path.exists('postprocessing/kdtrees'):
+        os.makedirs('postprocessing/kdtrees')
 
     for snapshot in snaplist:
         logging.info(f'Processing snapshot {snapshot.snapshot_idx}... [runtime {time.time()-t0:.2f} s]')
         kdtree=make_particle_kdtree(snapshot)
 
-        with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl', 'wb') as kdfile:
+        with open(f'postprocessing/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl', 'wb') as kdfile:
             pickle.dump(kdtree, kdfile)
         kdfile.close()
 
