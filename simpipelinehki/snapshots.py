@@ -223,6 +223,7 @@ class gadget_snapshot_hki:
                             kdpath=f'postprocessing/kdtrees/{snapfname}_kdtree.pkl'
                         else:
                             kdpath=f'postprocessing/kdtrees/kdtree_{str(self.snapshot_idx).zfill(3)}.pkl'
+                            
                         if os.path.exists(kdpath):
                             with open(kdpath,'rb') as kdfile:
                                 kdtree=pickle.load(kdfile)
