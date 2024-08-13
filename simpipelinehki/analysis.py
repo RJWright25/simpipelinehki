@@ -312,7 +312,7 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
 
                 if shell_stars.shape[0]:
                     galaxy_output[f'{shell_str}_sphere_star_tot']=np.nansum(masses[shell_star_mask])
-                    galaxy_output[f'{shell_str}_sphere_star_Z']=np.nansum(shell_stars['Ztot'].values*masses[shell_star_mask])/galaxy_output[f'{shell_str}_sphere_star_tot']
+                    galaxy_output[f'{shell_str}_sphere_star_Z']=np.nanmean(shell_stars['Ztot'].value)
                     
                 else:
                     galaxy_output[f'{shell_str}_sphere_star_tot']=np.nan
@@ -323,7 +323,7 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
                     galaxy_output[f'{shell_str}_sphere_gas_tot']=np.nansum(shell_gas_mass*shell_gas_hot)
                     galaxy_output[f'{shell_str}_sphere_gas_cold']=np.nansum(shell_gas_mass*shell_gas_cold)
                     galaxy_output[f'{shell_str}_sphere_gas_sfr']=np.nansum(shell_gas['StarFormationRate'].values)
-                    galaxy_output[f'{shell_str}_sphere_gas_Z']=np.nansum(shell_gas['Ztot'].values*shell_gas_mass)/galaxy_output[f'{shell_str}_sphere_gas_tot']
+                    galaxy_output[f'{shell_str}_sphere_gas_Z']=np.nanmean(shell_gas['Ztot'].values)
 
                 else:
                     galaxy_output[f'{shell_str}_sphere_gas_tot']=np.nan
@@ -355,7 +355,7 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
 
                 if shell_stars.shape[0]:
                     galaxy_output[f'{shell_str}_shell_star_totsd']=np.nansum(masses[shell_star_mask])/dA
-                    galaxy_output[f'{shell_str}_shell_star_Z']=np.nansum(shell_stars['Ztot'].values*masses[shell_star_mask])/galaxy_output[f'{shell_str}_shell_star_totsd']
+                    galaxy_output[f'{shell_str}_shell_star_Z']=np.nanmean(shell_stars['Ztot'].values)
 
                 else:
                     galaxy_output[f'{shell_str}_shell_star_totsd']=0
@@ -366,7 +366,7 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
                     galaxy_output[f'{shell_str}_shell_gas_sfrsd']=np.nansum(shell_gas['StarFormationRate'].values)/dA                    
                     galaxy_output[f'{shell_str}_shell_gas_nH']=np.average(shell_gas['nH'].values,weights=shell_gas_mass)
                     galaxy_output[f'{shell_str}_shell_gas_T']=np.average(shell_gas['Temperature'].values,weights=shell_gas_mass)
-                    galaxy_output[f'{shell_str}_shell_gas_Z']=np.nansum(shell_gas['Ztot'].values*shell_gas_mass)/galaxy_output[f'{shell_str}_shell_gas_totsd']
+                    galaxy_output[f'{shell_str}_shell_gas_Z']=np.nanmean(shell_gas['Ztot'].values)
                 else:
                     galaxy_output[f'{shell_str}_shell_gas_totsd']=0
                     galaxy_output[f'{shell_str}_shell_gas_sfrsd']=0                
@@ -388,7 +388,7 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
                     if np.nansum(mask):
                         galaxy_output[f'{shell_str}_shell_gas{flow_str}_mdot']=1/dr*np.sum(shell_gas_mass[mask]*(vrad_converted[mask]))*sign
                         galaxy_output[f'{shell_str}_shell_gas{flow_str}_T']=np.average(shell_gas['Temperature'].values[mask],weights=shell_gas_mass[mask])
-                        galaxy_output[f'{shell_str}_shell_gas{flow_str}_Z']=np.nansum(shell_gas['Ztot'].values[mask]*shell_gas_mass[mask])/np.nansum(shell_gas_mass[mask])
+                        galaxy_output[f'{shell_str}_shell_gas{flow_str}_Z']=np.nanmean(shell_gas['Ztot'].values[mask])
 
                     else:
                         galaxy_output[f'{shell_str}_shell_gas{flow_str}_mdot']=0
