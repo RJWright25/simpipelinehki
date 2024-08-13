@@ -194,25 +194,6 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
         else:shells_kpc_str.append(f'0p{str(int(ishellkpc*1000)).zfill(3)}kpc')
     shells_kpc={shell_kpc_str:shell_kpc for shell_kpc_str,shell_kpc in zip(shells_kpc_str,shells_kpc)}
 
-    # get the KDTree to use for all subprocesses
-    if snapshot.snapshot_idx is None:
-        snapfname=snapshot.snapshot_file.split('/')[-1].split('.hdf5')[0]
-        kdpath=f'kdtrees/{snapfname}_kdtree.pkl'
-    else:
-        kdpath=f'{snapshot.snapshot_file.split("output")[0]+"/analysis/"}/outputs/kdtrees/snap_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
-
-    logging.info(f'Checking for KDTree in snapshot {snapshot.snapshot_file}...')
-    if os.path.exists(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'):
-        logging.info(f'KDTree found for snapshot {snapshot.snapshot_file}.')
-        if verbose:
-            print(f'KDTree found for snapshot {snapshot.snapshot_file}.')
-        with open(f'outputs/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl','rb') as kdfile:
-            kdtree_snap=pickle.load(kdfile)
-    else:
-        logging.info(f'KDTree not found for snapshot {snapshot.snapshot_file}. Creating KDTree...')
-        kdtree_snap=None
-
-
     logging.info(f'There are **{numhaloes}** haloes to use for analysing galaxies in snapshot {snapshot.snapshot_file}.')
     logging.info(f'')
     if verbose:
@@ -248,7 +229,7 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
             center=np.array([halo['x'],halo['y'],halo['z']])*snapshot.units["Coordinates"]
 
         #get the particle data and sort by radius
-        galaxy=snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential','StarFormationRate','Temperature','Metallicity','nH'],types=[0,4],center=center,radius=(1+rfac_offset*1.5)*halo['Halo_R_Crit200']*apy_units.kpc,return_rrel=True,kdtree=kdtree_snap)
+        galaxy=snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential','StarFormationRate','Temperature','Metallicity','nH'],types=[0,4],center=center,radius=(1+rfac_offset*1.5)*halo['Halo_R_Crit200']*apy_units.kpc,return_rrel=True,kdtree=kdtree)
         
         if galaxy.shape[0]==0:
             logging.info(f'No baryonic particles to analyse in galaxy {int(halo["ID"])}.')
