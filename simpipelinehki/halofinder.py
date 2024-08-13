@@ -283,6 +283,7 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
         halo_output[f'Halo_M_Crit{delta}'][ibh]=sorted_cummass[iradius]
         halo_output[f'Halo_R_Crit{delta}'][ibh]=sorted_radius[iradius]
 
+
         #logging
         logging.info(f'--> Halo {bhlocs["ParticleIDs"].values[ibh]} analysed at snap {snapshot.snapshot_idx} -- actual mass = {halo_output[f"Halo_M_Crit{delta}"][ibh]:.2e} Msun and radius = {halo_output[f"Halo_R_Crit{delta}"][ibh]:.2f} kpc.')
         logging.info(f"--> Runtime: {time.time()-t0:.2f} seconds.")
@@ -300,6 +301,11 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
         print(f'----> Halo finding complete for {snapshot.snapshot_file.split("/")[-1]} in {time.time()-t0:.2f} seconds.')
         print()
     
+    
+    #convert ID and isnap to integers
+    halo_output['ID']=halo_output['ID'].astype(int)
+    halo_output['isnap']=halo_output['isnap'].astype(int)
+
     #return the dataframe
     haloes=pd.DataFrame(halo_output)
     haloes.to_hdf(output_name,key='chunk')

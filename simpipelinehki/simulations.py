@@ -342,6 +342,10 @@ class gadget_simulation:
         print()
         print(f'----> Halo finding for {len(self.snapshots)} snaps complete in {time.time()-t0stack:.2f} seconds.')
 
+        haloes=read_hdf_chunks('outputs/haloes/')
+        
+        haloes['ID']=haloes['ID'].astype(np.int64)
+        haloes['Snap']=haloes['isnap'].astype(np.int64)
         self.haloes=read_hdf_chunks('postprocessing/haloes/')        
 
     # Method to analyse galaxies in all snapshots using multiprocessing

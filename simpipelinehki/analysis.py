@@ -472,6 +472,10 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
         print(f'----> Galaxy characterisation for {snapshot.snapshot_file.split("/")[-1]} complete in {time.time()-t0:.2f} seconds.')
         print()
 
+    #convert ID and isnap to integers
+    galaxies['ID']=halo_output['ID'].astype(int)
+    galaxies['isnap']=halo_output['isnap'].astype(int)
+
     #write the output to a file
     galaxies.to_hdf(output_name,key='chunk')
     
