@@ -68,7 +68,12 @@ def plot_glxevol(simulation,radstr='2p00restar',id=None):
     """
     
     galaxies=simulation.galaxies
-    bhdetails=simulation.bhdetails
+
+    try:
+        bhdetails=simulation.bhdetails
+        plotbh=True
+    except:
+        plotbh=False
     
     #make sure the dataframes are sorted
     galaxies.sort_values(by='Time',ascending=True,inplace=True)
@@ -82,19 +87,22 @@ def plot_glxevol(simulation,radstr='2p00restar',id=None):
         id=[id for id in ids if ids_shape[id]==np.max(list(ids_shape.values()))][0]
 
     galaxy_masked=galaxies.loc[galaxies['ID'].values==id,:]
-    bhdetails_masked=bhdetails[id]
+    if plotbh:
+        bhdetails_masked=bhdetails[id]
 
     #kernels
     snapkernel=np.ones(1)/1;bhkernel=np.ones(10)/10
 
     #times
     snaptime=np.convolve(galaxy_masked['Time'].values,snapkernel,mode='valid')
-    bhtime=np.convolve(bhdetails_masked['Time'].values,bhkernel,mode='valid')
+    if plotbh:
+        bhtime=np.convolve(bhdetails_masked['Time'].values,bhkernel,mode='valid')
 
     #mass
     mass_star=np.convolve(galaxy_masked[f'{radstr}_sphere_star_tot'].values,snapkernel,mode='valid')
     mass_gas=np.convolve(galaxy_masked[f'{radstr}_sphere_gas_tot'].values,snapkernel,mode='valid')
-    mass_bh=np.convolve(bhdetails_masked['bh_M'].values,bhkernel,mode='valid')
+    if plotbh:
+        mass_bh=np.convolve(bhdetails_masked['bh_M'].values,bhkernel,mode='valid')
 
     #sfr and outflow/inflow
     sfr=np.convolve(galaxy_masked[f'{radstr}_sphere_gas_sfr'].values,snapkernel,mode='valid')
@@ -113,9 +121,9 @@ def plot_glxevol(simulation,radstr='2p00restar',id=None):
     axes[0].plot(snaptime,mass_gas,c='k',lw=2.5,alpha=0.75)
     axes[0].plot(snaptime,mass_gas,c='C0',lw=1.5, label=r'$M_{\rm gas}$'+f'({radstr})')
 
-
-    axes[0].plot(bhtime,mass_bh,c='grey',lw=2.5,alpha=1)
-    axes[0].plot(bhtime,mass_bh,c='k',lw=1.5,alpha=1, label=r'$M_{\rm BH}$'+f' ({int(id)})')
+    if plotbh:
+        axes[0].plot(bhtime,mass_bh,c='grey',lw=2.5,alpha=1)
+        axes[0].plot(bhtime,mass_bh,c='k',lw=1.5,alpha=1, label=r'$M_{\rm BH}$'+f' ({int(id)})')
 
     axes[0].set_xlabel(r'$t\, {\rm [Gyr]}$')
     axes[0].set_xlim(snaptime[0],snaptime[-1])
