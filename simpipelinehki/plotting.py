@@ -383,7 +383,6 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
     fig,ax=plt.subplots(1,1,figsize=(5,5),gridspec_kw={'left':0.1,'right':0.99,'bottom':0.1,'top':0.99})
     ax.set_facecolor('k')
     ax.grid(which='both',alpha=0)
-    # ax.imshow(sph_img,extent=sph_extent,origin='lower',cmap=cmap,norm=norm,zorder=1)
     ax.imshow(surface_density.T,extent=[-frame,frame,-frame,frame],origin='lower',cmap=cmap,norm=norm,zorder=1)
 
     #add stars to baryonic plot
@@ -393,7 +392,7 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
 
     #plot position of BHs if baryonic particles are being plotted
     blackholes=pdata.loc[pdata['ParticleTypes'].values==5,:]
-    if type=='baryons' and blackholes.shape[0]:
+    if blackholes.shape[0]:
         for ibh,bh in blackholes.iterrows():
             ax.add_artist(plt.Circle(radius=0.15,xy=[bh[f'Coordinates_x']-center[0],bh[f'Coordinates_y']-center[1]],color='w',lw=1,ls='-',fill=True,zorder=3))
             ax.add_artist(plt.Circle(radius=0.10,xy=[bh[f'Coordinates_x']-center[0],bh[f'Coordinates_y']-center[1]],color='k',lw=0.5,ls='-',fill=True,zorder=3))
