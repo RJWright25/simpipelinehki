@@ -400,10 +400,14 @@ class gadget_simulation:
         if not os.path.exists(os.getcwd()+'postprocessing/galaxies/logs'):
             os.makedirs(os.getcwd()+'postprocessing/galaxies/logs')
 
-
-        if not haloes:
-            haloes=self.haloes
-
+        #if haloes are not a dataframe, use the cached haloes
+        if not isinstance(haloes,pd.DataFrame):
+            try:
+                haloes=read_hdf_chunks('postprocessing/haloes/')
+            except:
+                print('Error: No haloes found. Please run find_haloes first.')
+                return None
+            
         for snapshot in snapshot_list:
             procs=[]
             snapshotidx=snapshot.snapshot_idx
