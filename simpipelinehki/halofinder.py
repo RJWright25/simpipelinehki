@@ -86,6 +86,7 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
             os.remove(logging_name)
         except:
             pass
+
     logging.basicConfig(filename=logging_name, level=logging.INFO)
 
     # set up the output
@@ -228,7 +229,6 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
             center=apy_units.Quantity([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']],unit='kpc')
 
         #get particle data within 1000 kpc of the center and sort by radius
-
         t0_counter=time.time()
         pdata_m200=snapshot.get_particle_data(keys=['Coordinates','Masses'],types=[0,1,4,5],center=center,radius=rhalo_est*apy_units.kpc,return_rrel=True,kdtree=kdtree_snap)
 
