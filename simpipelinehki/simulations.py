@@ -456,6 +456,30 @@ class gadget_simulation:
 
         self.galaxies=read_hdf_chunks('outputs/galaxies/')
 
+
+    def load_cached_data(self):
+
+        """
+        Load the cached data from the postprocessing directory.
+
+        """
+        try:
+            self.haloes=read_hdf_chunks('postprocessing/haloes/')
+            print('Loaded saved halo data')
+        except:
+            print('No halo data found.')
+        try:
+            self.galaxies=read_hdf_chunks('postprocessing/galaxies/')
+            print('Loaded saved galaxy data')
+        except:
+            print('No galaxy data found.')
+        try:
+            self.bhdetails=read_hdf_chunks('postprocessing/blackhole_details_post_processing/')
+            print('Loaded saved halo data')
+        except:
+            print('No black hole data found.')
+
+
     
     def save_as_pickle(self, fname):
         """
