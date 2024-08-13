@@ -312,7 +312,7 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
 
                 if shell_stars.shape[0]:
                     galaxy_output[f'{shell_str}_sphere_star_tot']=np.nansum(masses[shell_star_mask])
-                    galaxy_output[f'{shell_str}_sphere_star_Z']=np.nanmean(shell_stars['Ztot'].value)
+                    galaxy_output[f'{shell_str}_sphere_star_Z']=np.nanmean(shell_stars['Ztot'].values)
                     
                 else:
                     galaxy_output[f'{shell_str}_sphere_star_tot']=np.nan
