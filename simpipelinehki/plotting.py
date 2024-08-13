@@ -321,7 +321,7 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
         ptypes=[0,4,1,5]
         cmap=cmap_gas
     elif type=='stars':
-        ptypes=[4]
+        ptypes=[4,5]
         cmap=cmap_star
     elif type=='dm':
         ptypes=[1,0,4,5]
@@ -394,8 +394,8 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
     blackholes=pdata.loc[pdata['ParticleTypes'].values==5,:]
     if blackholes.shape[0]:
         for ibh,bh in blackholes.iterrows():
-            ax.add_artist(plt.Circle(radius=0.15,xy=[bh[f'Coordinates_x']-center[0],bh[f'Coordinates_y']-center[1]],color='w',lw=1,ls='-',fill=True,zorder=3))
-            ax.add_artist(plt.Circle(radius=0.10,xy=[bh[f'Coordinates_x']-center[0],bh[f'Coordinates_y']-center[1]],color='k',lw=0.5,ls='-',fill=True,zorder=3))
+            ax.add_artist(plt.Circle(radius=0.15,xy=[bh[f'Coordinates_x']-center[0],bh[f'Coordinates_y']-center[1]],color='w',lw=1,ls='-',fill=True,zorder=5))
+            ax.add_artist(plt.Circle(radius=0.10,xy=[bh[f'Coordinates_x']-center[0],bh[f'Coordinates_y']-center[1]],color='k',lw=0.5,ls='-',fill=True,zorder=5))
 
     ax.set_xlim(-frame,frame)
     ax.set_ylim(-frame,frame)
