@@ -785,7 +785,7 @@ def plot_bhbinarypars(simulation,binaries=None):
         if not os.path.exists(os.getcwd()+'/plots/'):
             os.mkdir(os.getcwd()+'/plots/')
 
-        fig.suptitle(f'Binary: ID1: {binary[0]} and ID2: {binary[1]}\n {"/".join(simulation.snapshots[0].snapshot_file.split("/")[:-1])}',fontsize=8)
+        fig.suptitle(f'Binary: ID1: {binary[0]} and ID2: {binary[1]}',fontsize=8)
         
         fig.set_dpi(dpi)
         plt.savefig(f'plots/ketjubinary_{binary[0]}_{binary[1]}.png',dpi=dpi)
