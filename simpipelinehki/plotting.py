@@ -344,13 +344,6 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
     #get particle data
     pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=ptypes, center=center, radius=radius)
 
-    #find center based on particle positions if not given
-    if not center:
-        center=np.sum(pdata.loc[:,[f'Coordinates_{x}' for x in 'xyz']].values*pdata['Masses'].values[:,np.newaxis],axis=0)/np.sum(pdata['Masses'].values)
-        pdata['Coordinates_x']-=center[0]
-        pdata['Coordinates_y']-=center[1]
-        pdata['Coordinates_z']-=center[2]
-
     #make 2d histogram
     ptype_mask=pdata['ParticleTypes'].values==ptypes[0]
     coordinates=pdata.loc[ptype_mask,[f'Coordinates_{x}' for x in 'xyz']].values
@@ -394,8 +387,8 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
     blackholes=pdata.loc[pdata['ParticleTypes'].values==5,:]
     if blackholes.shape[0]:
         for ibh,bh in blackholes.iterrows():
-            ax.add_artist(plt.Circle(radius=0.15,xy=[bh[f'Coordinates_x']-center[0],bh[f'Coordinates_y']-center[1]],color='w',lw=1,ls='-',fill=True,zorder=5))
-            ax.add_artist(plt.Circle(radius=0.10,xy=[bh[f'Coordinates_x']-center[0],bh[f'Coordinates_y']-center[1]],color='k',lw=0.5,ls='-',fill=True,zorder=5))
+            ax.add_artist(plt.Circle(radius=0.15,xy=[bh[f'Coordinates_x'],bh[f'Coordinates_y']],color='w',lw=1,ls='-',fill=True,zorder=5))
+            ax.add_artist(plt.Circle(radius=0.10,xy=[bh[f'Coordinates_x'],bh[f'Coordinates_y']],color='k',lw=0.5,ls='-',fill=True,zorder=5))
 
     ax.set_xlim(-frame,frame)
     ax.set_ylim(-frame,frame)
