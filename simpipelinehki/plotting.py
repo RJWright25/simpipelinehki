@@ -327,7 +327,7 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
         ptypes=[1,0,4,5]
         cmap='viridis'
     else:
-        print('Type not recognized. Options are "baryons" and "dm".')
+        print('Type not recognized. Options are "baryons", "stars" and "dm".')
         return
     
     #find frame and center based on particle positions
