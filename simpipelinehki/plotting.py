@@ -129,7 +129,7 @@ def plot_glxevol(simulation,radstr='2p00restar',id=None):
     axes[0].set_xlim(snaptime[0],snaptime[-1])
     axes[0].set_ylabel(r'$M\, [{\rm M}_{\odot}]$')
     axes[0].set_yscale('log')
-    axes[0].legend(loc='lower center')
+    axes[0].legend(loc='lower center',prop={'size':6})
 
     #sfr
     axes[1].plot(snaptime,sfr,c='k',lw=2.5,alpha=0.75)
