@@ -424,6 +424,10 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
     if galaxy_output_all:
         galaxies=pd.concat(galaxy_output_all)
         galaxies.reset_index(drop=True,inplace=True)
+        #convert ID and isnap to integers
+        galaxies['ID']=galaxies['ID'].astype(int)
+        galaxies['isnap']=galaxies['isnap'].astype(int)
+
     else:
         logging.info(f'No haloes found in snapshot {snapshot.snapshot_file.split("/")[-1]}.')
         print(f'No haloes found in snapshot {snapshot.snapshot_file.split("/")[-1]}.')
@@ -432,10 +436,6 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
     if verbose:
         print(f'----> Galaxy characterisation for {snapshot.snapshot_file.split("/")[-1]} complete in {time.time()-t0:.2f} seconds.')
         print()
-
-    #convert ID and isnap to integers
-    galaxies['ID']=galaxies['ID'].astype(int)
-    galaxies['isnap']=galaxies['isnap'].astype(int)
 
     #write the output to a file
     galaxies.to_hdf(output_name,key='chunk')
