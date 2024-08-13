@@ -458,7 +458,7 @@ class gadget_simulation:
         print()
         print(f'----> Galaxy analysis for {len(self.snapshots)} snaps complete in {time.time()-t0stack:.2f} seconds.')
 
-        self.galaxies=read_hdf_chunks('outputs/galaxies/')
+        self.galaxies=read_hdf_chunks('postprocessing/galaxies/')
 
 
     def load_saved_postprocessing(self):
