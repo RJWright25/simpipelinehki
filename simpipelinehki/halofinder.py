@@ -158,7 +158,8 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
                 print(f'Num particles in tree = {[kdtree_snap[ptype].data.shape[0] for ptype in kdtree_snap.keys()]}')
                 
         else:
-            logging.info(f'KDTree not found for snapshot {snapshot.snapshot_file}.')
+            print(f'KDTree not found for snapshot {snapshot.snapshot_file}.')
+            logging.info(f'KDTree not found for snapshot {snapshot.snapshot_file} (not at {kdpath}).')
             kdtree_snap=None
     else:
         kdtree_snap=kdtree

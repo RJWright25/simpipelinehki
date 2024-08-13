@@ -246,7 +246,7 @@ class gadget_simulation:
 
 
     # Method to find haloes in all snapshots using multiprocessing
-    def find_haloes(self,snapshotidxs=None,numproc=1,delta=200,useminpot=False,verbose=False):
+    def find_haloes(self,snapshotidxs=None,numproc=1,delta=200,mcut=5,useminpot=False,verbose=False):
         
         """
         Find haloes in desired snapshots using multiprocessing. Parallelised across haloes in a given snapshot.
@@ -330,7 +330,7 @@ class gadget_simulation:
             #split the snapshots into chunks for multiprocessing
             procs=[]
             for iproc in range(numproc):
-                proc = multiprocessing.Process(target=basic_halofinder, args=(snapshot,kdtree_snap,iproc,numproc,delta,useminpot,verbose))
+                proc = multiprocessing.Process(target=basic_halofinder, args=(snapshot,kdtree_snap,iproc,=numpro,delta,mcut,useminpot,verbose))
                 procs.append(proc)
                 proc.start()
 
