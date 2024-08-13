@@ -99,6 +99,9 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
         except:
             pass
 
+
+    kdtree_snap=kdtree
+
     logging.info(f'')
     logging.info(f'************{datetime.now()}************')
     logging.info(f'')
@@ -133,36 +136,11 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
     bhlocs.reset_index(drop=True,inplace=True)
     bhlocs=bhlocs.loc[bhlocs['Masses']>10**mcut,:]
 
-    #subsample the BHs
+    #subsample the BHs based on the number of processes
     bhlocs=bhlocs.iloc[iproc::numproc,:]
     bhlocs.reset_index(drop=True,inplace=True)
     numbh=bhlocs.shape[0]
     halo_output={column:np.zeros(bhlocs['Masses'].shape[0])+np.nan for column in columns}
-
-    # get the KDTree
-    if kdtree is None:
-        if snapshot.snapshot_idx is None:
-            snapfname=snapshot.snapshot_file.split('/')[-1].split('.hdf5')[0]
-            kdpath=f'postprocessing/kdtrees/{snapfname}_kdtree.pkl'
-        else:
-            kdpath=f'postprocessing/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
-
-        logging.info(f'Checking for KDTree in snapshot {snapshot.snapshot_file}...')
-        if os.path.exists(kdpath):
-            with open(kdpath,'rb') as kdfile:
-                kdtree_snap=pickle.load(kdfile)
-            
-            logging.info(f'KDTree found for snapshot {snapshot.snapshot_file}.')
-            if verbose:
-                print(f'KDTree found for snapshot {snapshot.snapshot_file}.')
-                print(f'Num particles in tree = {[kdtree_snap[ptype].data.shape[0] for ptype in kdtree_snap.keys()]}')
-                
-        else:
-            print(f'KDTree not found for snapshot {snapshot.snapshot_file}.')
-            logging.info(f'KDTree not found for snapshot {snapshot.snapshot_file} (not at {kdpath}).')
-            kdtree_snap=None
-    else:
-        kdtree_snap=kdtree
                 
     logging.info(f'There are **{numbh}** BHs to use for finding haloes in snapshot {snapshot.snapshot_file}.')
     logging.info(f'')
@@ -185,17 +163,18 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
         halo_output['z'][ibh]=ibh_row['Coordinates_z']
         halo_output['BH_Mass'][ibh]=ibh_row['Masses']
         
-
         t0_stars=time.time()
         #find star particles within 2 kpc of the bh
         centralstar = snapshot.get_particle_data(keys=['Coordinates','Velocities','Masses','Potential'],types=4,center=np.array([ibh_row['Coordinates_x'],ibh_row['Coordinates_y'],ibh_row['Coordinates_z']])*apy_units.kpc,radius=2*apy_units.kpc,return_rrel=False, kdtree=kdtree_snap)
         #if no potential data, use the bh location
         starspresent=centralstar.shape[0]
-        try:
-            centralstar['Potential']
-            potentialpresent=True
-        except:
-            potentialpresent=False
+
+        #check if potential data is present
+        if starspresent:
+            if 'Potential' in centralstar.columns:
+                potentialpresent=True
+            else:
+                potentialpresent=False
 
         if verbose:
             print(f"Took {time.time()-t0_stars:.2f} seconds to load {starspresent} star particles within 2 kpc of the BH.")
@@ -219,8 +198,8 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
                     velcop = np.average(centralstar.loc[:,['Velocities_x','Velocities_y','Velocities_z']].values,weights=centralstar['Masses'].values,axis=0)
                 except:
                     velcop = np.array([0,0,0])+np.nan
-        #use the mass of the 2 kpc star particles to generate an estimate of the halo virial radius
-
+                    
+        #use the mass of the 2 kpc star particles to generate an upper limit estimate of the halo virial radius for loading particles
         if starspresent and np.nansum(np.isfinite(velcop)):
             mstar_2kpc=np.nansum(centralstar['Masses'].values)
             mhalo_est=mstar_2kpc*1e3
@@ -260,7 +239,6 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
             logging.info(f'No particles found within {rhalo_est:.2f} kpc of the BH. Skipping to next BH.')
             if verbose:
                 print(f'No particles found within {rhalo_est:.2f} kpc of the BH. Skipping to next BH.')
-
             continue
         
         t0_counter=time.time()

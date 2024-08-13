@@ -147,27 +147,6 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
         except:
             pass
 
-    # get the KDTree
-    if kdtree is None:
-        if snapshot.snapshot_idx is None:
-            snapfname=snapshot.snapshot_file.split('/')[-1].split('.hdf5')[0]
-            kdpath=f'postprocessing/kdtrees/{snapfname}_kdtree.pkl'
-        else:
-            kdpath=f'postprocessing/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
-
-        logging.info(f'Checking for KDTree in snapshot {snapshot.snapshot_file}...')
-        if os.path.exists(kdpath):
-            with open(kdpath,'rb') as kdfile:
-                kdtree_snap=pickle.load(kdfile)
-            
-            logging.info(f'KDTree found for snapshot {snapshot.snapshot_file}.')
-                
-        else:
-            logging.info(f'KDTree not found for snapshot {snapshot.snapshot_file}.')
-
-    else:
-        kdtree_snap=kdtree
-
     logging.basicConfig(filename=logging_name, level=logging.INFO)
 
     logging.info(f'')
