@@ -471,11 +471,11 @@ def stack_kdtrees_worker(snaplist,iproc,verbose=False):
 #mask for particles within a sphere of a given radius and center
 def sphere_mask(snapshot, center, radius, kdtree, ptype, return_rrel=False):
     
-    #if center is an np array, assume kpc and convert to apy
-    if isinstance(center, np.ndarray):
+    #if center does not have units, assume kpc and convert to apy
+    if isinstance(center, (int, float)):
         center = center*apy_units.kpc
     
-    #if radius is a flat, assume kpc and convert to apy
+    #if radius is a float, assume kpc and convert to apy
     if isinstance(radius, (int, float)):
         radius = radius*apy_units.kpc
 
