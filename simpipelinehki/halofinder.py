@@ -145,7 +145,7 @@ def basic_halofinder(snapshot,kdtree=None,iproc=0,numproc=1,delta=200,mcut=5,use
             snapfname=snapshot.snapshot_file.split('/')[-1].split('.hdf5')[0]
             kdpath=f'postprocessing/kdtrees/{snapfname}_kdtree.pkl'
         else:
-            kdpath=f'postprocessing/kdtrees/snap_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
+            kdpath=f'postprocessing/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
 
         logging.info(f'Checking for KDTree in snapshot {snapshot.snapshot_file}...')
         if os.path.exists(kdpath):

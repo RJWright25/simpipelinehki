@@ -318,7 +318,7 @@ class gadget_simulation:
                 snapfname=snapshot.snapshot_file.split('/')[-1].split('.hdf5')[0]
                 kdpath=f'postprocessing/kdtrees/{snapfname}_kdtree.pkl'
             else:
-                kdpath=f'postprocessing/kdtrees/snap_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
+                kdpath=f'postprocessing/kdtrees/kdtree_{str(snapshot.snapshot_idx).zfill(3)}.pkl'
 
             if os.path.exists(kdpath):
                 with open(kdpath,'rb') as kdfile:
@@ -427,7 +427,7 @@ class gadget_simulation:
                 snapfname=self.snapshot_file.split('/')[-1].split('.hdf5')[0]
                 kdpath=f'postprocessing/kdtrees/{snapfname}_kdtree.pkl'
             else:
-                kdpath=f'postprocessing/kdtrees/snap_{str(self.snapshot_idx).zfill(3)}.pkl'
+                kdpath=f'postprocessing/kdtrees/kdtree_{str(self.snapshot_idx).zfill(3)}.pkl'
             if os.path.exists(kdpath):
                 with open(kdpath,'rb') as kdfile:
                     kdtree_snap=pickle.load(kdfile)
