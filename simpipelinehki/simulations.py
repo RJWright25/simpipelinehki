@@ -332,7 +332,7 @@ class gadget_simulation:
             for iproc in range(numproc):
                 proc = multiprocessing.Process(target=basic_halofinder, args=(snapshot,kdtree_snap,iproc,numproc,delta,mcut,useminpot,verbose))
                 procs.append(proc)
-                proc.start(
+                proc.start()
 
             #complete the processes
             for proc in procs:
