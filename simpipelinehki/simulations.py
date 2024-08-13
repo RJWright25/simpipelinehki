@@ -330,9 +330,9 @@ class gadget_simulation:
             #split the snapshots into chunks for multiprocessing
             procs=[]
             for iproc in range(numproc):
-                proc = multiprocessing.Process(target=basic_halofinder, args=(snapshot,kdtree_snap,iproc,=numpro,delta,mcut,useminpot,verbose))
+                proc = multiprocessing.Process(target=basic_halofinder, args=(snapshot,kdtree_snap,iproc,numproc,delta,mcut,useminpot,verbose))
                 procs.append(proc)
-                proc.start()
+                proc.start(
 
             #complete the processes
             for proc in procs:
