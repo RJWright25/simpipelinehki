@@ -401,7 +401,7 @@ class gadget_simulation:
             os.makedirs(os.getcwd()+'postprocessing/galaxies/logs')
 
 
-        if not len(haloes):
+        if not haloes:
             haloes=self.haloes
 
         for snapshot in snapshot_list:
