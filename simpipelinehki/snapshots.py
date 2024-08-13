@@ -343,7 +343,7 @@ class gadget_snapshot_hki:
             return None
 
     # Add method to render the snapshot
-    def render_snap(self,type='baryons',frame=None,center=None,staralpha=1,clims=None):
+    def render_snap(self,type='baryons',frame=None,center=None,staralpha=0.03,clims=None):
         """
         Function to render the snapshot.
 
@@ -363,7 +363,7 @@ class gadget_snapshot_hki:
         """
         
         # Use the render_snap function to render the snapshot
-        fig, ax=render_snap(self,type=type,frame=frame,center=center,staralpha=1,clims=clims)
+        fig, ax=render_snap(self,type=type,frame=frame,center=center,staralpha=staralpha,clims=clims)
         return fig, ax
         
 
