@@ -37,10 +37,8 @@ cmap_gas = matplotlib.colors.ListedColormap(cmaplist_gas)
 cname_star='#FDF9E8'
 #make a colormap for the stars with this color
 cmaplist_star = np.zeros((256,4))
-cmaplist_star[:,0]=np.linspace(1,0,256)
-cmaplist_star[:,1]=np.linspace(0.98,0.98,256)
-cmaplist_star[:,2]=np.linspace(0.9,0.9,256)
-cmaplist_star[:,3]=np.linspace(0,1,256)
+cmaplist_star[:,-1]=np.linspace(0,1,256)
+cmaplist_star[:,:3]=matplotlib.colors.hex2color(cname_star)
 cmap_star = matplotlib.colors.ListedColormap(cmaplist_star)
 
 ############ TIME SERIES DATA ############
