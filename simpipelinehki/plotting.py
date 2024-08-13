@@ -110,7 +110,7 @@ def plot_glxevol(simulation,radstr='2p00restar',id=None):
     outflow=np.convolve(galaxy_masked[f'{radstr}_shell_gasoutflow_all_mdot'].values,snapkernel,mode='valid')
     
     #figure
-    fig,axes=plt.subplots(nrows=1,ncols=2,figsize=(6,2.5),gridspec_kw={'left':0.15,'right':0.95,'bottom':0.1,'top':0.95,'hspace':0.2,'wspace':0.3})
+    fig,axes=plt.subplots(nrows=1,ncols=2,figsize=(6,2.5),gridspec_kw={'left':0.15,'right':0.95,'bottom':0.1,'top':0.95,'hspace':0.2,'wspace':0.35})
     fig.set_dpi(dpi)
     for ax in axes:
         ax.grid(True,which='major',alpha=1)
@@ -146,7 +146,7 @@ def plot_glxevol(simulation,radstr='2p00restar',id=None):
     axes[1].set_xlim(snaptime[0],snaptime[-1])
     axes[1].set_ylabel(r'$\dot{M}$ [${\rm M}_{\odot}\,{\rm yr}^{-1}$]')
     axes[1].set_yscale('log')
-    axes[1].legend(loc='lower center')
+    axes[1].legend(loc='lower center',prop={'size':6})
 
     if not os.path.exists(os.getcwd()+'/plots/'):
         os.mkdir(os.getcwd()+'/plots/')
