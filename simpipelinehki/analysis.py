@@ -429,8 +429,7 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
         galaxies['isnap']=galaxies['isnap'].astype(int)
 
     else:
-        logging.info(f'No haloes found in snapshot {snapshot.snapshot_file.split("/")[-1]}.')
-        print(f'No haloes found in snapshot {snapshot.snapshot_file.split("/")[-1]}.')
+        logging.info(f'No haloes found in snapshot {snapshot.snapshot_file.split("/")[-1]} for iproc {iproc}.')
         galaxies=pd.DataFrame()
     
     if verbose:
