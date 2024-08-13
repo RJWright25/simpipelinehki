@@ -473,8 +473,8 @@ def galaxy_analysis(snapshot,haloes,kdtree=None,iproc=0,numproc=1,shells_kpc=Non
         print()
 
     #convert ID and isnap to integers
-    galaxies['ID']=halo_output['ID'].astype(int)
-    galaxies['isnap']=halo_output['isnap'].astype(int)
+    galaxies['ID']=galaxies['ID'].astype(int)
+    galaxies['isnap']=galaxies['isnap'].astype(int)
 
     #write the output to a file
     galaxies.to_hdf(output_name,key='chunk')
