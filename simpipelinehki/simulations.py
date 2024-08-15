@@ -294,8 +294,8 @@ class gadget_simulation:
                             os.remove(os.getcwd()+'/postprocessing/haloes/'+snapdir+'/'+fname)
 
         #make a directory for the logs
-        if not os.path.exists(os.getcwd()+'postprocessing/haloes/logs'):
-            os.makedirs(os.getcwd()+'postprocessing/haloes/logs')
+        if not os.path.exists(os.getcwd()+'/postprocessing/haloes/logs'):
+            os.makedirs(os.getcwd()+'/postprocessing/haloes/logs')
 
         for snapshot in snapshot_list:
             print("Analysing haloes in snapshot = ", snapshot.snapshot_idx, ' --  z = ', snapshot.redshift)
@@ -307,9 +307,9 @@ class gadget_simulation:
                 except:
                     pass
             
-            if not os.path.exists(os.getcwd()+f'postprocessing/haloes/logs/snap_{str(snapshot.snapshot_idx).zfill(3)}/'):
+            if not os.path.exists(os.getcwd()+f'/postprocessing/haloes/logs/snap_{str(snapshot.snapshot_idx).zfill(3)}/'):
                 try:
-                    os.mkdir(os.getcwd()+f'postprocessing/haloes/logs/snap_{str(snapshot.snapshot_idx).zfill(3)}/')
+                    os.mkdir(os.getcwd()+f'/postprocessing/haloes/logs/snap_{str(snapshot.snapshot_idx).zfill(3)}/')
                 except:
                     pass
 
@@ -397,8 +397,8 @@ class gadget_simulation:
                             os.remove(os.getcwd()+'/postprocessing/galaxies/'+snapdir+'/'+fname)
 
         #make a directory for the logs
-        if not os.path.exists(os.getcwd()+'postprocessing/galaxies/logs'):
-            os.makedirs(os.getcwd()+'postprocessing/galaxies/logs')
+        if not os.path.exists(os.getcwd()+'/postprocessing/galaxies/logs'):
+            os.makedirs(os.getcwd()+'/postprocessing/galaxies/logs')
 
         #if haloes are not a dataframe, use the cached haloes
         if not isinstance(haloes,pd.DataFrame):
