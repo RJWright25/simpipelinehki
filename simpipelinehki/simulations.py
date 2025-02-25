@@ -58,7 +58,7 @@ class gadget_simulation:
         The list of paths to the snapshot files.
     snapshots: list
         The list of snapshot objects.
-    snapshot_idxlist: list
+    snapshot_idxs: list
         The list of snapshot indices.
     timelist: list
         The list of times of the snapshots.
