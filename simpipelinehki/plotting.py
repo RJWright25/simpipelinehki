@@ -782,7 +782,7 @@ def plot_bhbinarypars(simulation,binaries=None):
         tlims=(binarypars['t'][0]-0.01,binarypars['t'][-1]+0.01)
         axes[0].set_xlim(tlims)
         axes[1].set_xlim(tlims)
-        axes[1].set_xlabel(r'$t$ [yr]')
+        axes[1].set_xlabel(r'$t$ [Gyr]')
 
         if not os.path.exists(os.getcwd()+'/plots/'):
             os.mkdir(os.getcwd()+'/plots/')
