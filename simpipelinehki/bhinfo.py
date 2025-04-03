@@ -90,6 +90,7 @@ def postprocess_bhdata(path=None,outpath='postprocessing/blackhole_details_post_
     #concatenate the dataframes
     for BHID in BHDetails.keys():
         if type(BHDetails[f"{BHID}"])==list:
+            print(BHDetails[f"{BHID}"])
             BHDetails[f"{BHID}"] = pd.concat(BHDetails[f"{BHID}"],axis=0)
 
     #check first value of each column to see if it is a nan
