@@ -80,10 +80,11 @@ class gadget_simulation:
             self.snapshots = {snapshot_idx:gadget_snapshot_hki(snapshot_file,snapshot_idx=snapshot_idx,cosmorun=cosmorun) for snapshot_idx,snapshot_file in enumerate(self.snapshot_flist)}
         else:
             self.snapshots = {snapshot_idx:gadget_snapshot_hki(snapshot_file,snapshot_idx=snapshot_idx,cosmorun=cosmorun) for snapshot_idx,snapshot_file in zip(snapshot_idxs,self.snapshot_flist)}
-            
-        self.snapshot_idxlist = [snapshot.snapshot_idx for snapshot in self.snapshots]
-        self.timelist = [snapshot.time for snapshot in self.snapshots]
-        self.redshiftlist = [snapshot.redshift for snapshot in self.snapshots]
+        
+        snapshot_idxs=list(self.snapshots.keys())
+        self.snapshot_idxlist = snapshot_idxs
+        self.timelist = [snapshot.time for snapshot in [self.snapshots[i] for i in snapshot_idxs]]
+        self.redshiftlist = [snapshot.redshift for snapshot in [self.snapshots[i] for i in snapshot_idxs]]
         self.hubble = self.snapshots[0].hubble
         self.cosmology = self.snapshots[0].cosmology
 
