@@ -77,9 +77,9 @@ class gadget_simulation:
         self.snapshot_flist = snapshot_file_list;times=[h5py.File(snapshot_file, 'r')['Header'].attrs['Time'] for snapshot_file in self.snapshot_flist]
         self.snapshot_flist = [snapshot_file for _,snapshot_file in sorted(zip(times,self.snapshot_flist))]
         if not snapshot_idxs:
-            self.snapshots = [gadget_snapshot_hki(snapshot_file,snapshot_idx=snapshot_idx,cosmorun=cosmorun) for snapshot_idx,snapshot_file in enumerate(self.snapshot_flist)]
+            self.snapshots = {snapshot_idx:gadget_snapshot_hki(snapshot_file,snapshot_idx=snapshot_idx,cosmorun=cosmorun) for snapshot_idx,snapshot_file in enumerate(self.snapshot_flist)}
         else:
-            self.snapshots = [gadget_snapshot_hki(snapshot_file,snapshot_idx=snapshot_idx,cosmorun=cosmorun) for snapshot_idx,snapshot_file in zip(snapshot_idxs,self.snapshot_flist)]
+            self.snapshots = {snapshot_idx:gadget_snapshot_hki(snapshot_file,snapshot_idx=snapshot_idx,cosmorun=cosmorun) for snapshot_idx,snapshot_file in zip(snapshot_idxs,self.snapshot_flist)}
             
         self.snapshot_idxlist = [snapshot.snapshot_idx for snapshot in self.snapshots]
         self.timelist = [snapshot.time for snapshot in self.snapshots]
