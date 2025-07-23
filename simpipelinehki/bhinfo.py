@@ -271,7 +271,7 @@ def read_ketjubhdata(simulation,path=None):
         return None
     
     if not path:
-        path=simulation.snapshots[-1].snapshot_file.split('/')[:-1]
+        path=simulation.snapshots[list(simulation.snapshots.keys())[0]].snapshot_file.split('/')[:-1]
         path='/'.join(path)+'/ketju_bhs.hdf5'
         
     ketjubhs = load_hdf5(path)

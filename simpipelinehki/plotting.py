@@ -350,7 +350,7 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
     radius=frame*np.sqrt(2)
 
     #get particle data
-    pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=ptypes, center=center, radius=radius)
+    pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=ptypes)
 
     #make 2d histogram
     ptype_mask=pdata['ParticleTypes'].values==ptypes[0]
