@@ -36,11 +36,13 @@ def postprocess_bhdata(path=None,outpath='postprocessing/blackhole_details_post_
 
     # Specify file path and target BH ids
     fileNum = 0
-    fileName = f"{path}/blackhole_details/blackhole_details_{fileNum}.txt"
+    fileName = f"{path}/blackhole_details_{fileNum}.txt"
+    print('Looking for files in:', path)
 
     while(os.path.isfile(fileName)):
         fileNum += 1
-        fileName = f"{path}/blackhole_details/blackhole_details_{fileNum}.txt" 
+        fileName = f"{path}/blackhole_details_{fileNum}.txt" 
+
     print('Total files found:', fileNum)
 
     BHDetails = {}
@@ -49,7 +51,7 @@ def postprocess_bhdata(path=None,outpath='postprocessing/blackhole_details_post_
         if file_index % 100 == 0:
             print('Processing file:', file_index+1, '/', fileNum)
 
-        fileName = f"{path}/blackhole_details/blackhole_details_{file_index}.txt"
+        fileName = f"{path}/blackhole_details_{file_index}.txt"
         data = pd.read_csv(fileName,usecols=list(range(11)),delim_whitespace=True,header=None)
         # data[0] contains "BH=ID". Find the unique BH IDs in this file:
         # replace column with BHIDs
@@ -137,6 +139,7 @@ def postprocess_bhdata(path=None,outpath='postprocessing/blackhole_details_post_
         BHDetails[str(BHIDs[ibh])].to_csv(fname, sep=' ', index=False, header=False)
 
     return BHDetails
+
 
         
 # This function is used to read the black hole details from a file
