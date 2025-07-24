@@ -275,6 +275,12 @@ def read_ketjubhdata(simulation,path=None):
         path='/'.join(path)+'/ketju_bhs.hdf5'
         
     ketjubhs = load_hdf5(path)
+    #convert x,t
+    for bh in ketjubhs:
+        ketjubhs[bh].x = ketjubhs[bh].x/(ketjugw.units.pc)
+        ketjubhs[bh].t = ketjubhs[bh].t/(ketjugw.units.yr)
+
+
     rawbinaries = find_binaries(ketjubhs,remove_unbound_gaps=True)
     ketjubinaries={}
     for bhids, bbh in rawbinaries.items():
