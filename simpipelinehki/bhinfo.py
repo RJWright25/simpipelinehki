@@ -278,20 +278,15 @@ def read_ketjubhdata(simulation,path=None):
         path='/'.join(path)+'/ketju_bhs.hdf5'
         
     ketjubhs = load_hdf5(path,all_bhs_output=True)
-    #convert x,t
-    for bh in ketjubhs:
-        ketjubhs[bh].x = ketjubhs[bh].x/(ketjugw.units.pc)
-        ketjubhs[bh].t = ketjubhs[bh].t/(ketjugw.units.yr)
 
     rawbinaries = find_binaries(ketjubhs,remove_unbound_gaps=True)
     ketjubinaries={}
     for bhids, bbh in rawbinaries.items():
         pars = ketjugw.orbital_parameters(*bbh)
-        if pars['t'].shape[0]>10:
-            ketjubinaries[bhids] = pars
-
         pars['t'] = pars['t']/ketjugw.units.yr
         pars['a_R'] = pars['a_R']/ketjugw.units.pc
+        if pars['t'].shape[0]>10:
+            ketjubinaries[bhids] = pars
 
     return ketjubhs,ketjubinaries
 
