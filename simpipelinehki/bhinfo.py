@@ -277,12 +277,11 @@ def read_ketjubhdata(simulation,path=None):
         path=simulation.snapshots[list(simulation.snapshots.keys())[0]].snapshot_file.split('/')[:-1]
         path='/'.join(path)+'/ketju_bhs.hdf5'
         
-    ketjubhs = load_hdf5(path)
+    ketjubhs = load_hdf5(path,all_bhs_output=True)
     #convert x,t
     for bh in ketjubhs:
         ketjubhs[bh].x = ketjubhs[bh].x/(ketjugw.units.pc)
         ketjubhs[bh].t = ketjubhs[bh].t/(ketjugw.units.yr)
-
 
     rawbinaries = find_binaries(ketjubhs,remove_unbound_gaps=True)
     ketjubinaries={}
