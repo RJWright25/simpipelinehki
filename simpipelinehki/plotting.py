@@ -480,7 +480,7 @@ def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,star
                 os.remove(image_folder+fname)
     
     #split the snapshots into chunks for multiprocessing
-    snapshot_list=simulation.snapshots
+    snapshot_list=simulation.snapshot_list
     snapshots_chunks=split_list(snapshot_list,numproc)
 
     #start the processes
