@@ -17,7 +17,7 @@ import scipy
 import multiprocessing
 import matplotlib
 import matplotlib.pyplot as plt
-import sphviewer
+# import sphviewer
 import moviepy.video.io.ImageSequenceClip
 from .tools import split_list
 
