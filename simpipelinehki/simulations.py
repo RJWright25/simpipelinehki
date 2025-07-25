@@ -81,6 +81,7 @@ class gadget_simulation:
         else:
             self.snapshots = {snapshot_idx:gadget_snapshot_hki(snapshot_file,snapshot_idx=snapshot_idx,cosmorun=cosmorun) for snapshot_idx,snapshot_file in zip(snapshot_idxs,self.snapshot_flist)}
         
+        self.snapshot_list= [self.snapshots[i] for i in self.snapshots.keys()]
         snapshot_idxs=list(self.snapshots.keys())
         self.snapshot_idxlist = snapshot_idxs
         self.timelist = [snapshot.time for snapshot in [self.snapshots[i] for i in snapshot_idxs]]
