@@ -333,7 +333,7 @@ class gadget_snapshot_hki:
             elif key=='Ztot':
                 #metals are: 0 = 3He, 1 = 12C, 2 = 24Mg, 3 = 16O, 4 = 56e, 5 = 28Si, 6 = H, 7 = 14N, 8 = 20Ne, 9 = 32S, 10 = 40Ca, 11 = 62Zn
                 #return total metallicity subracting the hydrogen and helium mass fractions
-                metals=(np.nansum(np.array(part['Metallicity'][:,:]),axis=1)-part['Metallicity'][:,0]-part['Metallicity'][:,6])/np.array(part['Masses'][:])*self.units["Metallicity"]
+                metals=(np.nansum(np.array(part['Metallicity'][:,:]),axis=1)-part['Metallicity'][:,0]-part['Metallicity'][:,6])*self.units["Metallicity"]
                 return metals
             
             ## ERROR

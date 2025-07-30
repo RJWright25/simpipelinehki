@@ -445,7 +445,7 @@ def render_sim_worker(snaplist,type='baryons',frame=None,staralpha=1,clims=None)
         plt.close(fig)
 
 
-def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,staralpha=0.03,clims=None):
+def gen_sim_animation(simulation,path=None,numproc=1,fps=10,type='baryons',frame=None,staralpha=0.03,clims=None):
     """
     Render all simulation snapshots.
 
@@ -469,15 +469,14 @@ def gen_sim_animation(simulation,numproc=1,fps=10,type='baryons',frame=None,star
     """
 
     #make a directory for the outputs; if it already exists, remove the files
-    image_folder=f'{os.getcwd()}/plots/render_sim_{type}/'
-    if not os.path.exists(f'{os.getcwd()}/plots/'):
-        os.mkdir(f'{os.getcwd()}/plots/')
-    if not os.path.exists(image_folder):
-        os.mkdir(image_folder)
-    else:
-        for fname in os.listdir(image_folder):
-            if os.path.exists(image_folder+fname):
-                os.remove(image_folder+fname)
+    if path is None:
+        image_folder=simulation.snapshot_flist[0].split('output')[0]+'/animations/render_sim_'+type+'/'
+        if not os.path.exists(f'{image_folder}'):
+            os.mkdir(f'{image_folder}')
+        else:
+            for fname in os.listdir(image_folder):
+                if os.path.exists(image_folder+fname):
+                    os.remove(image_folder+fname)
     
     #split the snapshots into chunks for multiprocessing
     snapshot_list=simulation.snapshot_list
