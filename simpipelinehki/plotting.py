@@ -418,6 +418,19 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
         for ibh,bh in blackholes.iterrows():
             ax.add_artist(plt.Circle(radius=0.15,xy=[bh[f'Coordinates_x'],bh[f'Coordinates_y']],color='w',lw=1,ls='-',fill=True,zorder=5))
             ax.add_artist(plt.Circle(radius=0.10,xy=[bh[f'Coordinates_x'],bh[f'Coordinates_y']],color='k',lw=0.5,ls='-',fill=True,zorder=5))
+    if 'mwm31' in snapshot.snapshot_file:
+        if blackholes.shape[0]==2:
+            m31=blackholes.loc[blackholes['Masses'].values==np.nanmax(blackholes['Masses'].values),:]
+            mw=blackholes.loc[blackholes['Masses'].values==np.nanmin(blackholes['Masses'].values),:]
+            ax.add_artist(plt.Circle(radius=7,xy=[m31['Coordinates_x'],m31['Coordinates_y']],color='lightgrey',lw=0.751,ls='--',fill=True,zorder=5,alpha=0.5))
+            ax.add_artist(plt.Circle(radius=4,xy=[mw['Coordinates_x'],mw['Coordinates_y']],color='lightgrey',lw=0.751,ls='--',fill=True,zorder=5,alpha=0.5))
+            ax.text(x=m31['Coordinates_x'],y=m31['Coordinates_y']+7+(frame/20)*0.05,s='M31',color='lightgrey',ha='center',va='bottom',zorder=6,alpha=0.5)
+            ax.text(x=mw['Coordinates_x'],y=mw['Coordinates_y']+4+(frame/20)*0.05,s='MW',color='lightgrey',ha='center',va='bottom',zorder=6,alpha=0.5)
+        else:
+            bh=blackholes.iloc[0,:]
+            ax.add_artist(plt.Circle(radius=7,xy=[bh[f'Coordinates_x'],bh[f'Coordinates_y']],color='lightgrey',lw=0.751,ls='--',fill=True,zorder=5,alpha=0.5))
+            ax.text(x=bh[f'Coordinates_x'],y=bh[f'Coordinates_y']+7+(frame/20)*0.05,s='Milkdromeda',color='lightgrey',ha='center',va='bottom',zorder=6,alpha=0.5)
+
 
     ax.set_xlim(-frame,frame)
     ax.set_ylim(-frame,frame)
