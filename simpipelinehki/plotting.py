@@ -405,10 +405,13 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
     #add stars to baryonic plot
     if type=='baryons':
         stars=pdata.loc[pdata['ParticleTypes'].values==4,:]
-        ax.scatter(stars.loc[:,'Coordinates_x'].values,stars.loc[:,'Coordinates_y'].values,c=cname_star,alpha=staralpha,s=0.05,lw=0,zorder=2)
+        ax.scatter(stars.loc[:,'Coordinates_x'].values-center[0],stars.loc[:,'Coordinates_y'].values-center[1],c=cname_star,alpha=staralpha,s=0.05,lw=0,zorder=2)
 
     #plot position of BHs if baryonic particles are being plotted
     blackholes=pdata.loc[pdata['ParticleTypes'].values==5,:]
+    blackholes[f'Coordinates_x']=blackholes['Coordinates_x'].values-center[0]
+    blackholes[f'Coordinates_y']=blackholes['Coordinates_y'].values-center[1]
+    blackholes[f'Coordinates_z']=blackholes['Coordinates_z'].values-center[2]
     if blackholes.shape[0]:
         for ibh,bh in blackholes.iterrows():
             ax.add_artist(plt.Circle(radius=0.15,xy=[bh[f'Coordinates_x'],bh[f'Coordinates_y']],color='w',lw=1,ls='-',fill=True,zorder=5))
