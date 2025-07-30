@@ -350,13 +350,18 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
     if frame =='dynamic':
         #dynamic frame size based on bh positions
         pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=[5])
-        if pdata.shape[0]==0:
+
+        center=np.array([0,0,0])  #center is at the origin
+        if pdata.shape[0]>=1:
+            center= np.mean(pdata.loc[:,[f'Coordinates_x','Coordinates_y','Coordinates_z']].values,axis=0)
+        
+        if pdata.shape[0]<=1:
             print('No black holes found in the snapshot. Using default frame size.')
             frame=20
         else:
             #find the maximum distance of the black holes from the center
-            max_distance=np.max(np.sqrt(np.sum(pdata.loc[:,[f'Coordinates_{x}' for x in 'xyz']].values**2,axis=1)))
-            frame=max_distance+20
+            max_distance=np.max(np.sqrt(np.sum((pdata.loc[:,[f'Coordinates_{x}' for x in 'xyz']].values-center)**2,axis=1)))
+            frame=max_distance*0.75+20
 
     # radius=frame*np.sqrt(2)
 
@@ -365,7 +370,7 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
 
     #make 2d histogram
     ptype_mask=pdata['ParticleTypes'].values==ptypes[0]
-    coordinates=pdata.loc[ptype_mask,[f'Coordinates_{x}' for x in 'xyz']].values
+    coordinates=pdata.loc[ptype_mask,[f'Coordinates_{x}' for x in 'xyz']].values-center
     masses=pdata.loc[ptype_mask,'Masses'].values
 
     bins=np.linspace(-frame,frame,1025)
