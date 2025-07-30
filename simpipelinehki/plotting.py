@@ -349,8 +349,7 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
 
     if frame =='dynamic':
         #dynamic frame size based on bh positions
-        ptypes=[5]
-        pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=ptypes)
+        pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=[5])
         if pdata.shape[0]==0:
             print('No black holes found in the snapshot. Using default frame size.')
             frame=20
@@ -362,6 +361,7 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
     # radius=frame*np.sqrt(2)
 
     #get particle data
+    p
     pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=ptypes)
 
     #make 2d histogram
