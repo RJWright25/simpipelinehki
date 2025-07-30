@@ -423,7 +423,7 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
         bhloc2=blackholes.loc[blackholes['Masses'].values==np.nanmin(blackholes['Masses'].values),:]
 
         separation= np.sqrt((bhloc1['Coordinates_x'].values-bhloc2['Coordinates_x'].values)**2 + (bhloc1['Coordinates_y'].values-bhloc2['Coordinates_y'].values)**2)
-        if blackholes.shape[0]==2 and separation>1.5:
+        if blackholes.shape[0]==2 and separation>0.2:
             m31=blackholes.loc[blackholes['Masses'].values==np.nanmax(blackholes['Masses'].values),:]
             mw=blackholes.loc[blackholes['Masses'].values==np.nanmin(blackholes['Masses'].values),:]
             ax.add_artist(plt.Circle(radius=9,xy=[m31['Coordinates_x'],m31['Coordinates_y']],fc='none',ec='lightgrey',lw=0.751,ls='--',fill=True,zorder=5,alpha=0.5))
