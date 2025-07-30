@@ -347,7 +347,19 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
         if snapshot.cosmorun:
             frame/=2
 
-    radius=frame*np.sqrt(2)
+    if frame =='dynamic':
+        #dynamic frame size based on bh positions
+        ptypes=[5]
+        pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=ptypes)
+        if pdata.shape[0]==0:
+            print('No black holes found in the snapshot. Using default frame size.')
+            frame=20
+        else:
+            #find the maximum distance of the black holes from the center
+            max_distance=np.max(np.sqrt(np.sum(pdata.loc[:,[f'Coordinates_{x}' for x in 'xyz']].values**2,axis=1)))
+            frame=max_distance+20
+
+    # radius=frame*np.sqrt(2)
 
     #get particle data
     pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=ptypes)
