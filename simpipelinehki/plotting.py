@@ -361,7 +361,7 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
         else:
             #find the maximum distance of the black holes from the center
             max_distance=np.max(np.sqrt(np.sum((pdata.loc[:,[f'Coordinates_{x}' for x in 'xyz']].values-center)**2,axis=1)))
-            frame=max_distance*0.75+20
+            frame=max_distance*1+20
 
     # radius=frame*np.sqrt(2)
 
