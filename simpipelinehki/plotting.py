@@ -338,6 +338,8 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
         print('Type not recognized. Options are "baryons", "stars" and "dm".')
         return
     
+
+    
     #find frame and center based on particle positions
     if frame is None:
         #box size
@@ -363,7 +365,7 @@ def render_snap(snapshot,type='baryons',frame=None,center=None,staralpha=0.03,cl
             max_distance=np.max(np.sqrt(np.sum((pdata.loc[:,[f'Coordinates_{x}' for x in 'xyz']].values-center)**2,axis=1)))
             frame=max_distance*1+20
 
-    # radius=frame*np.sqrt(2)
+    staralpha=staralpha*(frame/100)**-1
 
     #get particle data
     pdata=snapshot.get_particle_data(keys=['Coordinates','Masses'], types=ptypes)
