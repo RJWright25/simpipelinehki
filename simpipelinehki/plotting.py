@@ -441,7 +441,8 @@ def render_sim_worker(snaplist,type='baryons',frame=None,staralpha=1,clims=None)
     for snapshot in snaplist:
         print(f"Rendering snap {snapshot.snapshot_idx}...")
         fig,_=render_snap(snapshot,type=type,frame=frame,staralpha=staralpha,clims=clims)
-        fig.savefig(f'plots/render_sim_{type}/snap_{str(snapshot.snapshot_idx).zfill(3)}.png',dpi=dpi)
+        foutput= snapshot.snapshot_file.split('output')[0]+'/animations/render_sim_'+type+'/'
+        fig.savefig(f'{foutput}/snap_{str(snapshot.snapshot_idx).zfill(3)}.png',dpi=dpi)
         plt.close(fig)
 
 
